@@ -2,6 +2,14 @@
 
 This folder turns the six exported ApplyAI screens into one interactive browser app.
 
+## Live site
+
+After GitHub Pages finishes publishing, open:
+
+```text
+https://udayprakashchamakuri-beep.github.io/ApplyPilot/
+```
+
 ## Run
 
 Open `index.html` in a browser:
