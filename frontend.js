@@ -5,6 +5,7 @@ const SETTINGS_KEY = "applypilot:settings";
 const SAVED_JOBS_KEY = "applypilot:saved-jobs";
 const SPA_ROUTE_KEY = "applypilot:route";
 const STRATEGY_KEY = "applypilot:strategy";
+const HOME_VISIT_KEY = "applypilot:home-visited";
 
 const LEGACY_ROUTE_PAGES = {
   home: "index.html",
@@ -66,6 +67,7 @@ function setupSpaNavigation() {
 function refreshSpaRoute(route) {
   if (!isSpaApp()) return;
 
+  if (route === "home") setupHomePage();
   if (route === "resume") setupResumePage();
   if (route === "dashboard") setupInsightsPage();
   if (route === "suited-jobs") setupDashboardPage();
@@ -196,6 +198,163 @@ function setupLandingPage() {
     const [file] = fileInput.files;
     if (file) await runIntake(file);
   });
+}
+
+function setupHomePage() {
+  const homeRoute = document.querySelector('[data-route-view="home"]');
+  if (!homeRoute) return;
+
+  const firstTimeView = homeRoute.querySelector("[data-home-first-time]");
+  const returningView = homeRoute.querySelector("[data-home-returning]");
+  const intake = readJson(STORAGE_KEY);
+  const applications = readJson(APPLICATIONS_KEY) || [];
+  const savedJobs = readJson(SAVED_JOBS_KEY) || [];
+  const seenBefore = safeStorageGet(HOME_VISIT_KEY) === "true";
+  const hasHistory = Boolean(intake?.profile || applications.length || savedJobs.length || seenBefore);
+
+  if (firstTimeView) firstTimeView.classList.toggle("hidden", hasHistory);
+  if (returningView) returningView.classList.toggle("hidden", !hasHistory);
+
+  if (hasHistory) {
+    renderReturningHome(intake, applications);
+  }
+
+  homeRoute.querySelectorAll("[data-home-start-intake]").forEach((button) => {
+    button.onclick = () => {
+      safeStorageSet(HOME_VISIT_KEY, "true");
+      navigateTo("intake");
+    };
+  });
+
+  const sampleWorkflowButton = homeRoute.querySelector("[data-home-open-jobs]");
+  if (sampleWorkflowButton) {
+    sampleWorkflowButton.onclick = () => {
+      safeStorageSet(HOME_VISIT_KEY, "true");
+      navigateTo("suited-jobs");
+    };
+  }
+
+  safeStorageSet(HOME_VISIT_KEY, "true");
+}
+
+function renderReturningHome(intake, applications) {
+  const jobs = Array.isArray(intake?.jobs) ? intake.jobs : [];
+  const strongMatches = jobs.filter((job) => Number(job.matchScore || job.match || 0) >= 75);
+  const greeting = getReturningGreeting(intake?.profile);
+  setText("[data-home-returning-greeting]", greeting);
+  setText(
+    "[data-home-returning-summary-title]",
+    `${strongMatches.length || jobs.length || 0} role${strongMatches.length === 1 ? "" : "s"} match your profile.`
+  );
+  setText(
+    "[data-home-returning-summary-text]",
+    intake?.profile
+      ? "We've analyzed your resume and found high-potential opportunities for you."
+      : "Complete intake to unlock personalized recommendations and role-fit intelligence."
+  );
+
+  const stages = summarizePipelineStages(applications);
+  setText("[data-home-pipeline-applied]", `(${stages.applied})`);
+  setText("[data-home-pipeline-screening]", `(${stages.screening})`);
+  setText("[data-home-pipeline-interviewing]", `(${stages.interviewing})`);
+  setText("[data-home-pipeline-offers]", `(${stages.offers})`);
+
+  const topJobsTarget = document.querySelector("[data-home-top-jobs]");
+  if (topJobsTarget) {
+    const topJobs = (strongMatches.length ? strongMatches : jobs).slice(0, 3);
+    if (!topJobs.length) {
+      topJobsTarget.innerHTML = `<p class="text-sm text-slate-600">No recommendations yet. Run intake to generate top role matches.</p>`;
+    } else {
+      topJobsTarget.innerHTML = topJobs
+        .map((job) => {
+          const jobId = getJobId(job);
+          const score = Number(job.matchScore || job.match || 0);
+          return `
+            <div class="flex items-center justify-between gap-3 rounded-lg border border-slate-200 p-3">
+              <div>
+                <p class="font-semibold leading-tight">${escapeHtml(job.title || job.role || "Role")} at ${escapeHtml(
+            job.company || "Company"
+          )}</p>
+                <p class="text-xs text-slate-600 mt-1">Match: ${escapeHtml(String(score))}%</p>
+              </div>
+              <button type="button" data-home-view-job="${escapeHtml(
+                jobId
+              )}" class="px-3 py-1.5 rounded-lg border border-indigo-300 text-indigo-700 text-sm font-semibold">View</button>
+            </div>
+          `;
+        })
+        .join("");
+
+      topJobsTarget.querySelectorAll("[data-home-view-job]").forEach((button) => {
+        button.addEventListener("click", () => {
+          const selected = jobs.find((candidate) => getJobId(candidate) === button.dataset.homeViewJob);
+          if (!selected) return;
+          localStorage.setItem(SELECTED_JOB_KEY, JSON.stringify(selected));
+          navigateTo("applications");
+        });
+      });
+    }
+  }
+
+  const nextStepsTarget = document.querySelector("[data-home-next-steps]");
+  if (nextStepsTarget) {
+    const nextSteps = [];
+    if (!intake?.profile) {
+      nextSteps.push("Complete intake for better matching.");
+    }
+    if (jobs.length) {
+      nextSteps.push("Review new suited jobs and shortlist top matches.");
+    }
+    if (!applications.length) {
+      nextSteps.push("Approve your first role to start automated applications.");
+    } else {
+      nextSteps.push("Track queued applications and interview updates.");
+    }
+    if (jobs.some((job) => safeList(job.suggestedImprovements, []).length)) {
+      nextSteps.push("Apply suggested skill improvements to boost shortlist probability.");
+    }
+
+    nextStepsTarget.innerHTML = nextSteps
+      .slice(0, 4)
+      .map(
+        (step) => `
+          <li class="flex items-start gap-2">
+            <span class="material-symbols-outlined text-slate-400 text-[18px] mt-0.5">check_box_outline_blank</span>
+            <span>${escapeHtml(step)}</span>
+          </li>
+        `
+      )
+      .join("");
+  }
+}
+
+function getReturningGreeting(profile) {
+  const inferredName = inferProfileName(profile);
+  return inferredName ? `Good morning, ${inferredName}!` : "Good morning!";
+}
+
+function inferProfileName(profile) {
+  const directName = String(profile?.name || profile?.candidateName || "").trim();
+  if (directName) return directName.split(" ")[0];
+
+  const headline = String(profile?.headline || "").trim();
+  if (headline && !/mid|senior|candidate|engineer|developer|designer/i.test(headline)) {
+    return headline.split(" ")[0];
+  }
+
+  return "";
+}
+
+function summarizePipelineStages(applications) {
+  const counts = { applied: 0, screening: 0, interviewing: 0, offers: 0 };
+  applications.forEach((entry) => {
+    const stageText = String(entry?.stage || "").toLowerCase();
+    if (stageText.includes("offer")) counts.offers += 1;
+    else if (stageText.includes("interview")) counts.interviewing += 1;
+    else if (stageText.includes("screen")) counts.screening += 1;
+    else counts.applied += 1;
+  });
+  return counts;
 }
 
 async function runIntake(file) {
