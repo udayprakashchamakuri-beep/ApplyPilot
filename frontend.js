@@ -3,6 +3,7 @@ const SELECTED_JOB_KEY = "applypilot:selected-job";
 const APPLICATIONS_KEY = "applypilot:applications";
 const SETTINGS_KEY = "applypilot:settings";
 const SAVED_JOBS_KEY = "applypilot:saved-jobs";
+const SPA_ROUTE_KEY = "applypilot:route";
 
 const LEGACY_ROUTE_PAGES = {
   intake: "index.html",
@@ -39,24 +40,20 @@ function setupSpaNavigation() {
     });
   });
 
-  window.addEventListener("hashchange", () => {
-    renderSpaRoute();
-    refreshSpaRoute();
-  });
+  const hashRoute = normalizeRoute((window.location.hash || "").replace(/^#/, ""));
+  const storedRoute = normalizeRoute(localStorage.getItem(SPA_ROUTE_KEY) || "");
+  const initialRoute = hashRoute !== "intake" || window.location.hash ? hashRoute : storedRoute || "intake";
 
-  if (!window.location.hash) {
-    navigateTo("intake", { replace: true });
-    return;
+  if (window.location.hash) {
+    window.history.replaceState(null, "", window.location.pathname + window.location.search);
   }
 
-  renderSpaRoute();
-  refreshSpaRoute();
+  setSpaRoute(initialRoute);
 }
 
-function refreshSpaRoute() {
+function refreshSpaRoute(route) {
   if (!isSpaApp()) return;
 
-  const route = normalizeRoute((window.location.hash || "").replace(/^#/, ""));
   if (route === "resume") setupResumePage();
   if (route === "dashboard") setupInsightsPage();
   if (route === "suited-jobs") setupDashboardPage();
@@ -65,10 +62,9 @@ function refreshSpaRoute() {
   if (route === "preferences") setupSettingsPage();
 }
 
-function renderSpaRoute() {
+function renderSpaRoute(route) {
   if (!isSpaApp()) return;
 
-  const route = normalizeRoute((window.location.hash || "").replace(/^#/, ""));
   document.querySelectorAll("[data-route-view]").forEach((section) => {
     section.classList.toggle("hidden", section.dataset.routeView !== route);
   });
@@ -88,19 +84,17 @@ function renderSpaRoute() {
   }
 }
 
-function navigateTo(route, options = {}) {
+function setSpaRoute(route) {
+  const normalized = normalizeRoute(route);
+  localStorage.setItem(SPA_ROUTE_KEY, normalized);
+  renderSpaRoute(normalized);
+  refreshSpaRoute(normalized);
+}
+
+function navigateTo(route) {
   const normalized = normalizeRoute(route);
   if (isSpaApp()) {
-    const hash = `#${normalized}`;
-    if (options.replace) {
-      window.history.replaceState(null, "", hash);
-      renderSpaRoute();
-    } else if (window.location.hash !== hash) {
-      window.location.hash = hash;
-    } else {
-      renderSpaRoute();
-      refreshSpaRoute();
-    }
+    setSpaRoute(normalized);
     return;
   }
 
@@ -109,7 +103,7 @@ function navigateTo(route, options = {}) {
 
 function routeHref(route) {
   const normalized = normalizeRoute(route);
-  return isSpaApp() ? `#${normalized}` : LEGACY_ROUTE_PAGES[normalized] || LEGACY_ROUTE_PAGES.intake;
+  return isSpaApp() ? "#" : LEGACY_ROUTE_PAGES[normalized] || LEGACY_ROUTE_PAGES.intake;
 }
 
 function isSpaApp() {
@@ -367,7 +361,7 @@ function setupCalendarPage() {
               <a class="px-4 py-2 rounded-lg bg-indigo-600 text-white text-sm font-semibold" href="${escapeHtml(
                 link
               )}" target="_blank" rel="noreferrer">Open in Google Calendar</a>
-              <a class="px-4 py-2 rounded-lg bg-slate-100 text-slate-700 text-sm font-semibold" href="${escapeHtml(routeHref("applications"))}">Open Application</a>
+              <a class="px-4 py-2 rounded-lg bg-slate-100 text-slate-700 text-sm font-semibold" href="#" data-go-route="applications">Open Application</a>
             </div>
           </article>
         `;
@@ -390,7 +384,7 @@ function setupCalendarPage() {
         job.company || "Company"
       )}</h3>
           <p class="text-sm text-slate-600">Suggested slot: ${escapeHtml(formatDateTime(job.interviewDate || ""))}</p>
-          <a class="px-4 py-2 rounded-lg bg-slate-100 text-slate-700 text-sm font-semibold w-fit" href="${escapeHtml(routeHref("applications"))}">Approve to create event</a>
+          <a class="px-4 py-2 rounded-lg bg-slate-100 text-slate-700 text-sm font-semibold w-fit" href="#" data-go-route="applications">Approve to create event</a>
         </article>
       `
     )
@@ -444,6 +438,17 @@ function setupGlobalActions() {
       navigateTo("intake");
     });
   });
+
+  if (document.body.dataset.spaRouteBound !== "true") {
+    document.body.dataset.spaRouteBound = "true";
+    document.body.addEventListener("click", (event) => {
+      const trigger = event.target.closest("[data-go-route]");
+      if (!trigger) return;
+      event.preventDefault();
+      const route = trigger.dataset.goRoute;
+      if (route) navigateTo(route);
+    });
+  }
 }
 
 function setupDashboardPage() {
@@ -848,7 +853,7 @@ function renderEmptyJobsState() {
     <article class="bg-white rounded-xl border border-slate-200 p-8">
       <h3 class="text-2xl font-bold mb-2">No live jobs yet</h3>
       <p class="text-slate-600 mb-4">Upload your resume first so APPLYPILOT can fetch real jobs from backend sources.</p>
-      <a href="${escapeHtml(routeHref("intake"))}" class="inline-flex px-4 py-2 rounded-lg bg-indigo-600 text-white font-semibold">Go to intake</a>
+      <a href="#" data-go-route="intake" class="inline-flex px-4 py-2 rounded-lg bg-indigo-600 text-white font-semibold">Go to intake</a>
     </article>
   `;
 }
