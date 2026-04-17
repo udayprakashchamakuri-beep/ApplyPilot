@@ -41,8 +41,16 @@ function setupSpaNavigation() {
   });
 
   const hashRoute = normalizeRoute((window.location.hash || "").replace(/^#/, ""));
-  const storedRoute = normalizeRoute(localStorage.getItem(SPA_ROUTE_KEY) || "");
-  const initialRoute = hashRoute !== "intake" || window.location.hash ? hashRoute : storedRoute || "intake";
+  const storedRoute = normalizeRoute(safeStorageGet(SPA_ROUTE_KEY));
+  const windowRoute = normalizeRoute(consumeWindowRoute());
+  const initialRoute =
+    window.location.hash
+      ? hashRoute
+      : windowRoute !== "intake"
+      ? windowRoute
+      : storedRoute !== "intake"
+      ? storedRoute
+      : chooseDefaultRoute();
 
   if (window.location.hash) {
     window.history.replaceState(null, "", window.location.pathname + window.location.search);
@@ -86,7 +94,7 @@ function renderSpaRoute(route) {
 
 function setSpaRoute(route) {
   const normalized = normalizeRoute(route);
-  localStorage.setItem(SPA_ROUTE_KEY, normalized);
+  safeStorageSet(SPA_ROUTE_KEY, normalized);
   renderSpaRoute(normalized);
   refreshSpaRoute(normalized);
 }
@@ -114,6 +122,40 @@ function normalizeRoute(route) {
   const cleaned = String(route || "").trim().toLowerCase();
   if (LEGACY_ROUTE_PAGES[cleaned]) return cleaned;
   return "intake";
+}
+
+function chooseDefaultRoute() {
+  const intake = readJson(STORAGE_KEY);
+  return intake?.profile ? "dashboard" : "intake";
+}
+
+function consumeWindowRoute() {
+  try {
+    const marker = "applypilot:route=";
+    const value = String(window.name || "");
+    if (!value.startsWith(marker)) return "";
+    const route = value.slice(marker.length);
+    window.name = "";
+    return route;
+  } catch {
+    return "";
+  }
+}
+
+function safeStorageGet(key) {
+  try {
+    return localStorage.getItem(key) || "";
+  } catch {
+    return "";
+  }
+}
+
+function safeStorageSet(key, value) {
+  try {
+    localStorage.setItem(key, value);
+  } catch {
+    // Ignore storage failures so routing still works.
+  }
 }
 
 function setupLandingPage() {

@@ -7,7 +7,10 @@
     <script>
       (function () {
         const basePath = window.location.pathname.replace(/\/[^/]*$/, "/");
-        localStorage.setItem("applypilot:route", "calendar");
+        try {
+          localStorage.setItem("applypilot:route", "calendar");
+        } catch {}
+        window.name = "applypilot:route=calendar";
         window.location.replace(basePath);
       })();
     </script>
