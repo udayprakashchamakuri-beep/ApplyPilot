@@ -250,7 +250,7 @@ document.addEventListener("DOMContentLoaded", () => {
   renderTimeline();
   renderAdapterPlan();
   renderDashboard();
-  navigateToPage("dashboard");
+  navigateToPage("landing");
 });
 
 function hydrateElements() {
@@ -1235,6 +1235,8 @@ function splitInput(value) {
 }
 
 function navigateToPage(pageName) {
+  document.body.dataset.currentPage = pageName;
+
   document.querySelectorAll("[data-page]").forEach((page) => {
     page.classList.toggle("is-active", page.dataset.page === pageName);
   });
@@ -1272,7 +1274,7 @@ function resetState() {
   elements.connectorStatus.textContent = "Automation connectors ready for backend keys";
   renderTimeline();
   renderDashboard();
-  navigateToPage("dashboard");
+  navigateToPage("landing");
   showToast("Intake reset", "Upload a resume to start again.");
 }
 

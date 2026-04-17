@@ -7,7 +7,11 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
-      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Manrope:wght@500;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap"
       rel="stylesheet"
     />
     <link rel="stylesheet" href="./styles.css" />
@@ -24,31 +28,45 @@
         </div>
 
         <nav class="step-rail" id="stepRail">
-          <button class="step-item is-active" type="button" data-page-target="dashboard">
+          <button class="step-item is-active" type="button" data-page-target="landing">
             <span class="step-index">01</span>
+            <span>
+              <strong>Platform</strong>
+              <small>Career automation</small>
+            </span>
+          </button>
+          <button class="step-item" type="button" data-page-target="dashboard">
+            <span class="step-index">02</span>
             <span>
               <strong>Dashboard</strong>
               <small>Status and recommendations</small>
             </span>
           </button>
           <button class="step-item" type="button" data-page-target="intake">
-            <span class="step-index">02</span>
+            <span class="step-index">03</span>
             <span>
-              <strong>Intake</strong>
+              <strong>My resume</strong>
               <small>Resume and job goals</small>
             </span>
           </button>
           <button class="step-item" type="button" data-page-target="jobs">
-            <span class="step-index">03</span>
+            <span class="step-index">04</span>
             <span>
-              <strong>Suited jobs</strong>
+              <strong>Matches</strong>
               <small>Matches and scores</small>
             </span>
           </button>
-          <button class="step-item" type="button" data-page-target="queue">
-            <span class="step-index">04</span>
+          <button class="step-item" type="button" data-page-target="tailoring">
+            <span class="step-index">05</span>
             <span>
-              <strong>Approval queue</strong>
+              <strong>Tailoring</strong>
+              <small>Resume intelligence</small>
+            </span>
+          </button>
+          <button class="step-item" type="button" data-page-target="queue">
+            <span class="step-index">06</span>
+            <span>
+              <strong>Applications</strong>
               <small>Pending and applied jobs</small>
             </span>
           </button>
@@ -61,6 +79,25 @@
       </aside>
 
       <main class="workspace">
+        <header class="top-appbar">
+          <button class="topbar-brand" type="button" data-page-target="landing">
+            <span class="brand-mark compact-mark">A</span>
+            <span>ApplyPilot</span>
+          </button>
+          <div class="search-shell">
+            <span class="material-symbols-outlined" aria-hidden="true">search</span>
+            <input type="search" placeholder="Search matches, skills, or companies..." />
+          </div>
+          <div class="top-actions">
+            <button class="icon-button" type="button" aria-label="Notifications">
+              <span class="material-symbols-outlined" aria-hidden="true">notifications</span>
+            </button>
+            <button class="icon-button" type="button" aria-label="Account">
+              <span class="material-symbols-outlined" aria-hidden="true">account_circle</span>
+            </button>
+          </div>
+        </header>
+
         <header class="workspace-header">
           <div>
             <p class="eyebrow">Approved application automation</p>
@@ -84,15 +121,70 @@
           </div>
         </header>
 
-        <section class="page is-active" id="dashboardPage" data-page="dashboard">
+        <section class="page is-active" id="landingPage" data-page="landing">
+          <div class="landing-shell">
+            <section class="landing-hero">
+              <div>
+                <span class="pill-label">Autonomous career intelligence</span>
+                <h2>AI that finds your best-fit job and waits for your approval.</h2>
+                <p>
+                  Upload a resume, define your target role, and let ApplyPilot analyze live
+                  opportunities with explainable match scores, skill gaps, and tailored applications.
+                </p>
+                <div class="landing-actions">
+                  <button class="button primary" type="button" data-page-target="intake">Upload resume now</button>
+                  <button class="button secondary" type="button" data-page-target="dashboard">View dashboard</button>
+                </div>
+              </div>
+              <div class="resume-drop-card">
+                <div class="drop-card-header">
+                  <h3>Drop your resume</h3>
+                  <span>PDF, DOCX, TXT</span>
+                </div>
+                <label class="landing-drop-zone" for="resumeFile">
+                  <span class="material-symbols-outlined" aria-hidden="true">cloud_upload</span>
+                  <strong>Drag, drop, or browse</strong>
+                  <small>Precision analysis starts after upload.</small>
+                </label>
+                <div class="live-analysis-card">
+                  <div>
+                    <strong>Live analysis</strong>
+                    <small>Matching active opportunities</small>
+                  </div>
+                  <span>89%</span>
+                </div>
+              </div>
+            </section>
+
+            <section class="landing-process">
+              <article>
+                <span class="material-symbols-outlined" aria-hidden="true">upload_file</span>
+                <h3>Upload</h3>
+                <p>ApplyPilot parses the resume into skills, seniority, strengths, and target signals.</p>
+              </article>
+              <article>
+                <span class="material-symbols-outlined" aria-hidden="true">neurology</span>
+                <h3>Analyze</h3>
+                <p>Live jobs are ranked by fit, gaps, location, work mode, and role intent.</p>
+              </article>
+              <article>
+                <span class="material-symbols-outlined" aria-hidden="true">task_alt</span>
+                <h3>Approve</h3>
+                <p>Review the tailored resume, calendar slot, and application before submission.</p>
+              </article>
+            </section>
+          </div>
+        </section>
+
+        <section class="page" id="dashboardPage" data-page="dashboard">
           <div class="dashboard-grid">
             <section class="dashboard-panel dashboard-hero-panel">
               <div class="section-heading">
-                <p class="eyebrow">User dashboard</p>
-                <h2>Live application workspace</h2>
+                <p class="eyebrow">Target market analysis</p>
+                <h2>AI job match dashboard</h2>
                 <p>
-                  Track resume readiness, live source health, matched jobs, and approval progress
-                  from one place.
+                  Track live matches, source health, approval status, skill alignment, and the
+                  next application action from one focused workspace.
                 </p>
               </div>
               <div class="dashboard-stats" id="dashboardStats"></div>
@@ -359,6 +451,84 @@
             </div>
             <div class="adapter-grid" id="adapterGrid"></div>
           </div>
+          </div>
+        </section>
+
+        <section class="page" id="tailoringPage" data-page="tailoring">
+          <div class="tailoring-studio">
+            <section class="tailoring-main">
+              <div class="studio-metrics">
+                <article>
+                  <strong>94%</strong>
+                  <span>Skill alignment</span>
+                  <small>Improved from 62%</small>
+                </article>
+                <article>
+                  <strong>45%</strong>
+                  <span>Keyword density</span>
+                  <small>Higher role coverage</small>
+                </article>
+                <article>
+                  <strong>90%</strong>
+                  <span>ATS confidence</span>
+                  <small>Strong pass likelihood</small>
+                </article>
+              </div>
+              <div class="resume-diff">
+                <article>
+                  <header>
+                    <h3>Original source</h3>
+                    <span>Read only</span>
+                  </header>
+                  <div class="resume-paper muted-paper">
+                    <h4>Candidate summary</h4>
+                    <p>Software candidate with experience building web apps, APIs, and user interfaces.</p>
+                    <ul>
+                      <li>Worked on frontend features with React.</li>
+                      <li>Collaborated with engineers to ship product updates.</li>
+                      <li>Helped maintain reusable components.</li>
+                    </ul>
+                  </div>
+                </article>
+                <article>
+                  <header>
+                    <h3>AI-optimized resume</h3>
+                    <span>Role-tailored</span>
+                  </header>
+                  <div class="resume-paper optimized-paper">
+                    <h4>Tailored positioning</h4>
+                    <p>
+                      Product-focused engineer with React, TypeScript, API integration, and automation
+                      experience aligned to high-impact frontend and full-stack roles.
+                    </p>
+                    <ul>
+                      <li>Led React interface work tied to measurable product outcomes.</li>
+                      <li>Built maintainable API-driven features with reliable handoff and testing.</li>
+                      <li>Prioritized role keywords and matched skills for stronger ATS relevance.</li>
+                    </ul>
+                  </div>
+                </article>
+              </div>
+            </section>
+            <aside class="reasoning-panel">
+              <div class="reasoning-hero">
+                <h3>Intelligence reasoning</h3>
+                <p>Why ApplyPilot changes the resume before approval.</p>
+              </div>
+              <article>
+                <strong>Keyword insertion</strong>
+                <p>Matched skills are moved higher so recruiters and ATS filters see the strongest signals first.</p>
+              </article>
+              <article>
+                <strong>Quantified impact</strong>
+                <p>Passive work is rewritten as measurable outcomes where the resume provides evidence.</p>
+              </article>
+              <article>
+                <strong>Gap handling</strong>
+                <p>Missing skills are surfaced as improvement suggestions instead of being hidden.</p>
+              </article>
+              <button class="button primary wide" type="button" data-page-target="queue">Review approval queue</button>
+            </aside>
           </div>
         </section>
 
