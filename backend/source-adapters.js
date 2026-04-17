@@ -12,6 +12,7 @@ const ADAPTERS = [
 async function searchAllSources({ profile, sources, env = process.env, limit = 25 }) {
   const selected = new Set(sources?.length ? sources : ["SmartRecruiters"]);
   const query = buildQuery(profile);
+  const remoteQuery = buildRemoteQuery(profile, query);
   const searches = [];
 
   if (selected.has("Greenhouse")) searches.push(guarded("Greenhouse", searchGreenhouse(env, limit)));
@@ -20,7 +21,7 @@ async function searchAllSources({ profile, sources, env = process.env, limit = 2
   if (selected.has("SmartRecruiters")) searches.push(guarded("SmartRecruiters", searchSmartRecruiters(query, limit)));
   if (selected.has("USAJOBS")) searches.push(guarded("USAJOBS", searchUSAJOBS(query, profile, env, limit)));
   if (selected.has("Adzuna")) searches.push(guarded("Adzuna", searchAdzuna(query, env, limit)));
-  if (selected.has("Remotive")) searches.push(guarded("Remotive", searchRemotive(query, limit)));
+  if (selected.has("Remotive")) searches.push(guarded("Remotive", searchRemotive(remoteQuery, limit)));
   if (selected.has("Firecrawl")) searches.push(guarded("Firecrawl", searchFirecrawl(env, limit)));
 
   const settled = await Promise.allSettled(searches);
@@ -297,6 +298,12 @@ function buildQuery(profile) {
   const roles = profile.preferences?.roles || [];
   if (roles.length) return roles[0];
   return profile.skills?.slice(0, 2).join(" ") || "software engineer";
+}
+
+function buildRemoteQuery(profile, fallbackQuery) {
+  const skills = profile.skills || [];
+  const preferredSkill = skills.find((skill) => /react|python|node|java|typescript|javascript|data|design/i.test(skill));
+  return preferredSkill || fallbackQuery;
 }
 
 function dedupeJobs(jobs) {
