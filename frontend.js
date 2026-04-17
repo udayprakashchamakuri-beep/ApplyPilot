@@ -822,7 +822,7 @@ function renderMarketCard(intake) {
         <h3 class="text-2xl font-black font-headline leading-tight mb-4">Your best matches are clustering around ${escapeHtml(skills)}.</h3>
         <p class="text-indigo-100 font-medium text-sm leading-relaxed mb-6">Approvals and skipped jobs will become learning signals so future recommendations improve over time.</p>
       </div>
-      <button class="w-full py-4 bg-white text-indigo-900 font-headline font-black rounded-lg hover:bg-indigo-50 transition-colors">Adjust Strategy</button>
+      <button type="button" data-go-route="preferences" class="w-full py-4 bg-white text-indigo-900 font-headline font-black rounded-lg hover:bg-indigo-50 transition-colors">Adjust Strategy</button>
     </article>
   `;
 }
