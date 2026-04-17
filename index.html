@@ -1,639 +1,300 @@
-<!doctype html>
-<html lang="en">
+<!DOCTYPE html>
+<html class="light" lang="en">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>ApplyPilot</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>Pathfinder AI | Professional Job Automation</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
     <link
-      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Manrope:wght@500;700;800&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Manrope:wght@200..800&family=Inter:wght@100..900&display=swap"
       rel="stylesheet"
     />
     <link
       href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap"
       rel="stylesheet"
     />
-    <link rel="stylesheet" href="./styles.css" />
+    <script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              "on-primary": "#ffffff",
+              "surface-container-lowest": "#ffffff",
+              "on-tertiary-fixed-variant": "#004c6e",
+              "on-tertiary": "#ffffff",
+              "secondary-container": "#d5e0f8",
+              "surface-container": "#eceef0",
+              background: "#f7f9fb",
+              "on-secondary-container": "#586377",
+              "inverse-primary": "#c3c0ff",
+              "surface-dim": "#d8dadc",
+              "surface-bright": "#f7f9fb",
+              "on-secondary-fixed-variant": "#3c475a",
+              "surface-tint": "#4d44e3",
+              tertiary: "#004d70",
+              "on-primary-container": "#dad7ff",
+              "surface-container-low": "#f2f4f6",
+              "on-tertiary-fixed": "#001e2f",
+              "on-surface": "#191c1e",
+              "primary-container": "#4f46e5",
+              "on-surface-variant": "#464555",
+              outline: "#777587",
+              primary: "#3525cd",
+              "secondary-fixed-dim": "#bcc7de",
+              "on-secondary": "#ffffff",
+              "on-error": "#ffffff",
+              "tertiary-container": "#006693",
+              "surface-container-high": "#e6e8ea",
+              "secondary-fixed": "#d8e3fb",
+              "on-primary-fixed-variant": "#3323cc",
+              "on-background": "#191c1e",
+              "inverse-surface": "#2d3133",
+              secondary: "#545f73",
+              "surface-variant": "#e0e3e5",
+              "tertiary-fixed": "#c9e6ff",
+              "primary-fixed": "#e2dfff",
+              "surface-container-highest": "#e0e3e5",
+              "on-primary-fixed": "#0f0069",
+              surface: "#f7f9fb",
+              "inverse-on-surface": "#eff1f3",
+              "on-tertiary-container": "#b8e0ff",
+              "tertiary-fixed-dim": "#89ceff",
+              "on-error-container": "#93000a",
+              "on-secondary-fixed": "#111c2d",
+              "outline-variant": "#c7c4d8",
+              "primary-fixed-dim": "#c3c0ff",
+              error: "#ba1a1a",
+              "error-container": "#ffdad6",
+            },
+            borderRadius: {
+              DEFAULT: "0.125rem",
+              lg: "0.25rem",
+              xl: "0.5rem",
+              full: "0.75rem",
+            },
+            fontFamily: {
+              headline: ["Manrope"],
+              body: ["Inter"],
+              label: ["Inter"],
+            },
+          },
+        },
+      };
+    </script>
+    <style>
+      .material-symbols-outlined {
+        font-variation-settings: "FILL" 0, "wght" 400, "GRAD" 0, "opsz" 24;
+      }
+
+      .glass-panel {
+        background: rgba(255, 255, 255, 0.7);
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+      }
+    </style>
   </head>
-  <body>
-    <div class="app-shell">
-      <aside class="sidebar" aria-label="Application progress">
-        <div class="brand-block">
-          <div class="brand-mark">A</div>
-          <div>
-            <p class="brand-name">ApplyPilot</p>
-            <p class="brand-subtitle">Job application control room</p>
-          </div>
+  <body class="bg-background text-on-background font-body selection:bg-primary-fixed selection:text-on-primary-fixed">
+    <nav class="fixed top-0 right-0 w-full z-50 bg-white/70 backdrop-blur-xl flex items-center justify-between px-8 h-16">
+      <div class="flex items-center gap-2">
+        <span class="text-lg font-extrabold text-indigo-900 tracking-tight font-headline">Pathfinder AI</span>
+      </div>
+      <div class="hidden md:flex items-center gap-8">
+        <a class="font-label text-sm uppercase tracking-widest font-bold text-indigo-700" href="dashboard.html">Platform</a>
+        <a
+          class="font-label text-sm uppercase tracking-widest font-bold text-slate-400 hover:text-indigo-600 transition-all"
+          href="dashboard.html"
+          >Analytics</a
+        >
+        <a
+          class="font-label text-sm uppercase tracking-widest font-bold text-slate-400 hover:text-indigo-600 transition-all"
+          href="tailoring.html"
+          >Enterprise</a
+        >
+      </div>
+      <div class="flex items-center gap-4">
+        <span class="material-symbols-outlined text-indigo-700 cursor-pointer p-2 hover:bg-slate-100 rounded-full transition-colors">notifications</span>
+        <span class="material-symbols-outlined text-indigo-700 cursor-pointer p-2 hover:bg-slate-100 rounded-full transition-colors">account_circle</span>
+      </div>
+    </nav>
+    <main class="pt-16">
+      <section class="relative min-h-[921px] flex flex-col items-center justify-center px-4 overflow-hidden">
+        <div class="absolute inset-0 z-0 bg-[radial-gradient(circle_at_50%_50%,_#e2dfff_0%,_transparent_50%)] opacity-30"></div>
+        <div class="relative z-10 max-w-5xl w-full text-center mb-16">
+          <span class="inline-block py-1 px-3 mb-6 rounded-full bg-secondary-fixed text-on-secondary-fixed text-xs font-bold font-label tracking-widest uppercase"
+            >Autonomous Career Intelligence</span
+          >
+          <h1 class="font-headline text-5xl md:text-7xl font-extrabold text-on-surface tracking-tight leading-[1.1] mb-6">
+            AI that finds and applies for your <span class="text-primary bg-clip-text">perfect job</span>.
+          </h1>
+          <p class="text-secondary text-lg md:text-xl max-w-2xl mx-auto mb-10 leading-relaxed">
+            Stop manually searching. Our precision match engine analyzes your profile and executes applications across global platforms autonomously.
+          </p>
         </div>
-
-        <nav class="step-rail" id="stepRail">
-          <button class="step-item is-active" type="button" data-page-target="landing">
-            <span class="step-index">01</span>
-            <span>
-              <strong>Platform</strong>
-              <small>Career automation</small>
-            </span>
-          </button>
-          <button class="step-item" type="button" data-page-target="dashboard">
-            <span class="step-index">02</span>
-            <span>
-              <strong>Dashboard</strong>
-              <small>Status and recommendations</small>
-            </span>
-          </button>
-          <button class="step-item" type="button" data-page-target="intake">
-            <span class="step-index">03</span>
-            <span>
-              <strong>My resume</strong>
-              <small>Resume and job goals</small>
-            </span>
-          </button>
-          <button class="step-item" type="button" data-page-target="jobs">
-            <span class="step-index">04</span>
-            <span>
-              <strong>Matches</strong>
-              <small>Matches and scores</small>
-            </span>
-          </button>
-          <button class="step-item" type="button" data-page-target="tailoring">
-            <span class="step-index">05</span>
-            <span>
-              <strong>Tailoring</strong>
-              <small>Resume intelligence</small>
-            </span>
-          </button>
-          <button class="step-item" type="button" data-page-target="queue">
-            <span class="step-index">06</span>
-            <span>
-              <strong>Applications</strong>
-              <small>Pending and applied jobs</small>
-            </span>
-          </button>
-        </nav>
-
-        <div class="sidebar-status">
-          <span class="status-dot"></span>
-          <span id="connectorStatus">Automation connectors ready for backend keys</span>
-        </div>
-      </aside>
-
-      <main class="workspace">
-        <header class="top-appbar">
-          <button class="topbar-brand" type="button" data-page-target="landing">
-            <span class="brand-mark compact-mark">A</span>
-            <span>ApplyPilot</span>
-          </button>
-          <div class="search-shell">
-            <span class="material-symbols-outlined" aria-hidden="true">search</span>
-            <input type="search" placeholder="Search matches, skills, or companies..." />
-          </div>
-          <div class="top-actions">
-            <button class="icon-button" type="button" aria-label="Notifications">
-              <span class="material-symbols-outlined" aria-hidden="true">notifications</span>
-            </button>
-            <button class="icon-button" type="button" aria-label="Account">
-              <span class="material-symbols-outlined" aria-hidden="true">account_circle</span>
-            </button>
-          </div>
-        </header>
-
-        <header class="workspace-header">
-          <div>
-            <p class="eyebrow">Approved application automation</p>
-            <h1>Understand your best-fit jobs before ApplyPilot applies.</h1>
-            <p class="intro-copy">
-              Upload a resume and job goals. ApplyPilot searches live sources, explains every
-              match score, shows skill gaps, tailors the resume for each role, and waits for your
-              approval before any application step.
-            </p>
-            <div class="capability-strip" aria-label="ApplyPilot advantages">
-              <span>Explainable AI matching</span>
-              <span>Personalized role recommendations</span>
-              <span>Skill-gap analysis</span>
-              <span>Resume tailoring per role</span>
-              <span>Learns from approvals</span>
-            </div>
-          </div>
-          <div class="header-actions">
-            <button class="button secondary" id="resetDemo" type="button">Reset intake</button>
-            <button class="button primary" type="button" data-page-target="intake">Start intake</button>
-          </div>
-        </header>
-
-        <section class="page is-active" id="landingPage" data-page="landing">
-          <div class="landing-shell">
-            <section class="landing-hero">
-              <div>
-                <span class="pill-label">Autonomous career intelligence</span>
-                <h2>AI that finds your best-fit job and waits for your approval.</h2>
-                <p>
-                  Upload a resume, define your target role, and let ApplyPilot analyze live
-                  opportunities with explainable match scores, skill gaps, and tailored applications.
-                </p>
-                <div class="landing-actions">
-                  <button class="button primary" type="button" data-page-target="intake">Upload resume now</button>
-                  <button class="button secondary" type="button" data-page-target="dashboard">View dashboard</button>
-                </div>
+        <div class="relative z-10 w-full max-w-4xl grid md:grid-cols-12 gap-8 items-start">
+          <div class="md:col-span-7">
+            <div class="bg-surface-container-lowest p-8 rounded-xl border border-outline-variant/15 shadow-sm">
+              <div class="flex items-center justify-between mb-8">
+                <h3 class="font-headline font-bold text-xl">Drop your Resume</h3>
+                <span class="text-xs text-outline font-medium">PDF, DOCX (Max 10MB)</span>
               </div>
-              <div class="resume-drop-card">
-                <div class="drop-card-header">
-                  <h3>Drop your resume</h3>
-                  <span>PDF, DOCX, TXT</span>
-                </div>
-                <label class="landing-drop-zone" for="resumeFile">
-                  <span class="material-symbols-outlined" aria-hidden="true">cloud_upload</span>
-                  <strong>Drag, drop, or browse</strong>
-                  <small>Precision analysis starts after upload.</small>
-                </label>
-                <div class="live-analysis-card">
-                  <div>
-                    <strong>Live analysis</strong>
-                    <small>Matching active opportunities</small>
+              <div class="border-2 border-dashed border-outline-variant rounded-lg p-12 text-center hover:border-primary transition-colors cursor-pointer bg-surface-container-low/30">
+                <span class="material-symbols-outlined text-5xl text-primary mb-4">cloud_upload</span>
+                <p class="font-headline font-bold text-on-surface">Drag & Drop or Click to Browse</p>
+                <p class="text-secondary text-sm mt-2">Precision analysis starts immediately upon upload</p>
+              </div>
+              <div class="mt-8 flex items-center gap-6 opacity-60">
+                <span class="text-xs font-bold uppercase tracking-widest text-outline">Integrated with</span>
+                <div class="flex gap-4">
+                  <div class="w-8 h-8 rounded-md bg-slate-200 flex items-center justify-center">
+                    <span class="material-symbols-outlined text-sm">share</span>
                   </div>
-                  <span>89%</span>
+                  <div class="w-8 h-8 rounded-md bg-slate-200 flex items-center justify-center">
+                    <span class="material-symbols-outlined text-sm">work</span>
+                  </div>
+                  <div class="w-8 h-8 rounded-md bg-slate-200 flex items-center justify-center">
+                    <span class="material-symbols-outlined text-sm">public</span>
+                  </div>
                 </div>
               </div>
-            </section>
-
-            <section class="landing-process">
-              <article>
-                <span class="material-symbols-outlined" aria-hidden="true">upload_file</span>
-                <h3>Upload</h3>
-                <p>ApplyPilot parses the resume into skills, seniority, strengths, and target signals.</p>
-              </article>
-              <article>
-                <span class="material-symbols-outlined" aria-hidden="true">neurology</span>
-                <h3>Analyze</h3>
-                <p>Live jobs are ranked by fit, gaps, location, work mode, and role intent.</p>
-              </article>
-              <article>
-                <span class="material-symbols-outlined" aria-hidden="true">task_alt</span>
-                <h3>Approve</h3>
-                <p>Review the tailored resume, calendar slot, and application before submission.</p>
-              </article>
-            </section>
-          </div>
-        </section>
-
-        <section class="page" id="dashboardPage" data-page="dashboard">
-          <div class="dashboard-grid">
-            <section class="dashboard-panel dashboard-hero-panel">
-              <div class="section-heading">
-                <p class="eyebrow">Target market analysis</p>
-                <h2>AI job match dashboard</h2>
-                <p>
-                  Track live matches, source health, approval status, skill alignment, and the
-                  next application action from one focused workspace.
-                </p>
-              </div>
-              <div class="dashboard-stats" id="dashboardStats"></div>
-            </section>
-
-            <section class="dashboard-panel dashboard-hero-panel">
-              <div class="section-heading">
-                <p class="eyebrow">AI matching engine</p>
-                <h2>More than job listing and keyword filtering</h2>
-                <p>
-                  ApplyPilot explains fit, recommends roles, identifies gaps, tailors the resume,
-                  and improves recommendations from user decisions.
-                </p>
-              </div>
-              <div class="intelligence-grid">
-                <article class="intelligence-card">
-                  <span>01</span>
-                  <h3>Explainable AI-based job matching</h3>
-                  <p>
-                    Every score shows the matched skills, role alignment, location fit, work mode,
-                    and possible blockers behind the recommendation.
-                  </p>
-                </article>
-                <article class="intelligence-card">
-                  <span>02</span>
-                  <h3>Personalized role recommendations</h3>
-                  <p>
-                    Jobs are ranked around the uploaded resume, target roles, preferred locations,
-                    work mode, salary goals, and approval threshold.
-                  </p>
-                </article>
-                <article class="intelligence-card">
-                  <span>03</span>
-                  <h3>Skill-gap analysis</h3>
-                  <p>
-                    Each role highlights missing or weakly evidenced skills and suggests what to
-                    strengthen before applying.
-                  </p>
-                </article>
-                <article class="intelligence-card">
-                  <span>04</span>
-                  <h3>Resume tailoring for each role</h3>
-                  <p>
-                    Before approval, ApplyPilot prepares a role-specific resume summary and bullets
-                    aligned to that company and job description.
-                  </p>
-                </article>
-                <article class="intelligence-card">
-                  <span>05</span>
-                  <h3>Interaction-based learning</h3>
-                  <p>
-                    Approvals, rejections, skipped roles, and submitted applications become signals
-                    that improve future recommendations.
-                  </p>
-                </article>
-              </div>
-            </section>
-
-            <section class="dashboard-panel">
-              <div class="section-heading compact-heading">
-                <p class="eyebrow">Resume profile</p>
-                <h2>Candidate signals</h2>
-              </div>
-              <div id="dashboardProfile">
-                <p class="empty-note">Upload a resume to build the profile.</p>
-              </div>
-            </section>
-
-            <section class="dashboard-panel">
-              <div class="section-heading compact-heading">
-                <p class="eyebrow">Live sources</p>
-                <h2>Backend feed status</h2>
-              </div>
-              <div id="dashboardSourceStatus">
-                <p class="empty-note">Run intake to search live sources.</p>
-              </div>
-            </section>
-
-            <section class="dashboard-panel">
-              <div class="section-heading compact-heading">
-                <p class="eyebrow">Next action</p>
-                <h2>Recommendation</h2>
-              </div>
-              <div id="dashboardRecommendation">
-                <p class="empty-note">Start with resume intake to generate suited jobs.</p>
-              </div>
-            </section>
-          </div>
-        </section>
-
-        <section class="page" id="intakePage" data-page="intake">
-          <div class="workflow-grid" id="upload">
-            <div class="upload-panel">
-            <div class="section-heading">
-              <p class="eyebrow">Step 01</p>
-              <h2>Resume and job-seeking details</h2>
-              <p>
-                Upload the resume and tell ApplyPilot what role, location, work mode,
-                salary, timeline, and strengths the user wants to target.
-              </p>
             </div>
-
-            <form class="resume-form" id="resumeForm">
-              <label class="drop-zone" id="dropZone" for="resumeFile">
-                <input
-                  id="resumeFile"
-                  name="resumeFile"
-                  type="file"
-                  accept=".pdf,.doc,.docx,.txt"
-                />
-                <span class="upload-icon">UP</span>
-                <strong id="resumeFileLabel">Drop resume here or browse</strong>
-                <small>PDF, DOCX, DOC, or TXT. Max 10MB.</small>
-              </label>
-
-              <div class="preference-grid">
-                <label>
-                  Target roles
-                  <input
-                    id="targetRoles"
-                    type="text"
-                    value="Frontend Engineer, Product Engineer, Full Stack Developer"
+          </div>
+          <div class="md:col-span-5 space-y-4">
+            <div class="glass-panel p-6 rounded-xl border border-outline-variant/15 shadow-xl">
+              <div class="flex items-center gap-4 mb-4">
+                <div class="w-10 h-10 rounded-full bg-primary flex items-center justify-center">
+                  <span class="material-symbols-outlined text-on-primary">analytics</span>
+                </div>
+                <div>
+                  <h4 class="font-headline font-bold">Live Analysis</h4>
+                  <p class="text-xs text-secondary">Matching active opportunities...</p>
+                </div>
+              </div>
+              <div class="space-y-3">
+                <div class="h-2 w-full bg-surface-container-highest rounded-full overflow-hidden">
+                  <div class="h-full bg-primary w-[75%]"></div>
+                </div>
+                <div class="flex justify-between text-xs font-bold font-label">
+                  <span>MATCH SCORE</span>
+                  <span class="text-primary">89% Precision</span>
+                </div>
+              </div>
+            </div>
+            <div class="bg-surface-container-low p-6 rounded-xl flex items-center justify-between">
+              <div class="flex items-center gap-3">
+                <span class="material-symbols-outlined text-tertiary" style="font-variation-settings: 'FILL' 1;">verified</span>
+                <span class="font-headline font-bold text-sm">Applications Ready</span>
+              </div>
+              <span class="bg-primary text-on-primary px-3 py-1 rounded-full text-xs font-bold">14 New</span>
+            </div>
+          </div>
+        </div>
+      </section>
+      <section class="py-24 px-8 max-w-7xl mx-auto">
+        <div class="grid md:grid-cols-3 gap-12">
+          <div class="space-y-4">
+            <div class="w-12 h-12 bg-primary-fixed rounded-lg flex items-center justify-center">
+              <span class="material-symbols-outlined text-primary">upload_file</span>
+            </div>
+            <h3 class="font-headline font-bold text-2xl tracking-tight">Upload</h3>
+            <p class="text-secondary leading-relaxed">Our AI decodes your professional narrative, skills, and aspirations from any document format with 99.9% accuracy.</p>
+          </div>
+          <div class="space-y-4">
+            <div class="w-12 h-12 bg-primary-fixed rounded-lg flex items-center justify-center">
+              <span class="material-symbols-outlined text-primary">neurology</span>
+            </div>
+            <h3 class="font-headline font-bold text-2xl tracking-tight">Analyze</h3>
+            <p class="text-secondary leading-relaxed">Cross-referencing global job markets to find high-probability matches that align with your career trajectory.</p>
+          </div>
+          <div class="space-y-4">
+            <div class="w-12 h-12 bg-primary-fixed rounded-lg flex items-center justify-center">
+              <span class="material-symbols-outlined text-primary">task_alt</span>
+            </div>
+            <h3 class="font-headline font-bold text-2xl tracking-tight">Approve</h3>
+            <p class="text-secondary leading-relaxed">Review the matches and give the go-ahead. Pathfinder handles the forms, cover letters, and submission tracking.</p>
+          </div>
+        </div>
+      </section>
+      <section class="py-24 bg-surface-container-low">
+        <div class="max-w-7xl mx-auto px-8">
+          <div class="bg-surface-container-lowest rounded-2xl p-1 md:p-12 shadow-sm border border-outline-variant/10 overflow-hidden">
+            <div class="grid lg:grid-cols-2 gap-16 items-center">
+              <div>
+                <h2 class="font-headline text-4xl font-extrabold tracking-tight mb-6">Built for the modern applicant.</h2>
+                <ul class="space-y-6">
+                  <li class="flex items-start gap-4">
+                    <span class="material-symbols-outlined text-primary mt-1">security</span>
+                    <div>
+                      <p class="font-bold">Privacy Dossier Management</p>
+                      <p class="text-sm text-secondary">Your data is encrypted and only shared with verified employers you approve.</p>
+                    </div>
+                  </li>
+                  <li class="flex items-start gap-4">
+                    <span class="material-symbols-outlined text-primary mt-1">auto_awesome</span>
+                    <div>
+                      <p class="font-bold">Smart Tailoring</p>
+                      <p class="text-sm text-secondary">Automatically adjusts application details to highlight relevant skills for each specific role.</p>
+                    </div>
+                  </li>
+                  <li class="flex items-start gap-4">
+                    <span class="material-symbols-outlined text-primary mt-1">speed</span>
+                    <div>
+                      <p class="font-bold">Instant Notifications</p>
+                      <p class="text-sm text-secondary">Get real-time updates when employers view your profile or request an interview.</p>
+                    </div>
+                  </li>
+                </ul>
+                <div class="mt-10">
+                  <a href="dashboard.html" class="inline-flex bg-primary text-on-primary px-8 py-4 rounded-md font-headline font-bold text-sm hover:bg-primary-container transition-colors"
+                    >Start Your Intelligent Search</a
+                  >
+                </div>
+              </div>
+              <div class="relative">
+                <div class="aspect-square bg-slate-100 rounded-2xl overflow-hidden shadow-2xl relative group">
+                  <img
+                    class="w-full h-full object-cover"
+                    alt="Modern corporate skyscraper reflecting a clear blue sky with sharp glass architecture and professional urban atmosphere"
+                    src="https://images.unsplash.com/photo-1497366754035-f200968a6e72?auto=format&fit=crop&w=1200&q=80"
                   />
-                </label>
-                <label>
-                  Preferred locations
-                  <input id="targetLocations" type="text" value="Bengaluru, Hyderabad, Remote" />
-                </label>
-                <label>
-                  Minimum salary
-                  <input id="minimumSalary" type="text" value="INR 18 LPA" />
-                </label>
-                <label>
-                  Approval threshold
-                  <input id="approvalThreshold" type="number" min="60" max="99" value="85" />
-                </label>
-                <label>
-                  Experience level
-                  <select id="experienceLevel">
-                    <option>Internship</option>
-                    <option>Entry level</option>
-                    <option selected>Mid-senior</option>
-                    <option>Senior</option>
-                    <option>Lead or manager</option>
-                  </select>
-                </label>
-                <label>
-                  Job type
-                  <select id="jobType">
-                    <option selected>Full time</option>
-                    <option>Internship</option>
-                    <option>Contract</option>
-                    <option>Part time</option>
-                    <option>Freelance</option>
-                  </select>
-                </label>
-                <label>
-                  Work mode
-                  <select id="workMode">
-                    <option selected>Remote or hybrid</option>
-                    <option>Remote only</option>
-                    <option>Hybrid</option>
-                    <option>On-site</option>
-                  </select>
-                </label>
-                <label>
-                  Notice period
-                  <input id="noticePeriod" type="text" value="Immediate to 30 days" />
-                </label>
-              </div>
-
-              <label class="full-field">
-                Skills or domains to emphasize
-                <textarea id="focusSkills" rows="3">React, TypeScript, APIs, automation, product engineering</textarea>
-              </label>
-
-              <fieldset class="source-selector">
-                <legend>Search sources</legend>
-                <p class="source-note">
-                  Greenhouse, Lever, Ashby, and Remotive return live jobs now. Credentialed sources
-                  stay behind the backend.
-                </p>
-                <label><input type="checkbox" name="source" value="Greenhouse" checked /> Greenhouse</label>
-                <label><input type="checkbox" name="source" value="Lever" checked /> Lever</label>
-                <label><input type="checkbox" name="source" value="Ashby" checked /> Ashby</label>
-                <label>
-                  <input type="checkbox" name="source" value="SmartRecruiters" /> SmartRecruiters key
-                </label>
-                <label>
-                  <input type="checkbox" name="source" value="USAJOBS" /> USAJOBS
-                </label>
-                <label>
-                  <input type="checkbox" name="source" value="Remotive" checked /> Remotive
-                </label>
-                <label>
-                  <input type="checkbox" name="source" value="Firecrawl" /> Company fallback
-                </label>
-              </fieldset>
-
-              <button class="button primary wide" type="submit" id="analyzeButton">
-                Analyze resume and search live jobs
-              </button>
-            </form>
-            </div>
-
-            <aside class="preview-panel" aria-label="Approval preview">
-            <img
-              src="./assets/approval-screen.png"
-              alt="ApplyPilot job approval screen preview"
-              class="pipeline-image"
-            />
-            <div class="preview-caption">
-            <h3>Approval stays with the user</h3>
-            <p>
-                Every application waits at the approval gate with match reasons, skill gaps,
-                a tailored resume, date check, and calendar action.
-            </p>
-            </div>
-            </aside>
-          </div>
-
-          <div class="analysis-section" id="analysis" aria-live="polite">
-            <div class="section-heading">
-              <p class="eyebrow">Resume analysis</p>
-              <h2>Extraction and search pipeline</h2>
-              <p>
-                The resume becomes a structured profile for role recommendations, skill-gap
-                analysis, and tailored applications.
-              </p>
-            </div>
-            <div class="analysis-grid">
-              <div class="analysis-timeline" id="analysisTimeline"></div>
-              <div class="profile-summary" id="profileSummary">
-                <p class="empty-note">Upload a resume to generate the candidate profile.</p>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        <section class="page" id="jobsPage" data-page="jobs">
-          <div class="matches-section" id="matches">
-          <div class="section-heading split-heading">
-            <div>
-              <p class="eyebrow">Step 02</p>
-              <h2>Jobs the user is suited for</h2>
-              <p>
-                Results are ranked by resume skills, role preference, location, work mode,
-                source quality, and the details entered on the intake page.
-              </p>
-            </div>
-            <div class="source-meter" id="sourceMeter">No sources searched yet</div>
-          </div>
-          <div class="job-list" id="jobList">
-            <p class="empty-note">Resume analysis will populate matching roles here.</p>
-          </div>
-          <div class="adapter-section">
-            <div class="section-heading">
-              <p class="eyebrow">Source adapters</p>
-              <h2>Public feeds first, crawling as fallback</h2>
-              <p>
-                ApplyPilot searches public ATS feeds before using crawlers for company careers pages.
-                API keys stay on the backend and never ship inside this public GitHub Pages site.
-              </p>
-            </div>
-            <div class="adapter-grid" id="adapterGrid"></div>
-          </div>
-          </div>
-        </section>
-
-        <section class="page" id="tailoringPage" data-page="tailoring">
-          <div class="tailoring-workspace">
-            <section class="application-dossier-header">
-              <div>
-                <div class="dossier-kicker">
-                  <span>Application dossier #8214</span>
-                  <span class="dossier-badge">Optimized</span>
-                </div>
-                <h2>Senior Software Engineer <span>@ target company</span></h2>
-                <p>
-                  ApplyPilot compares the uploaded resume with the role-specific version before
-                  anything is submitted. The user still controls approval.
-                </p>
-              </div>
-              <div class="tailoring-score-card">
-                <div class="score-ring static-score" style="--score-offset: 17.12">
-                  <svg viewBox="0 0 80 80" aria-hidden="true">
-                    <circle class="score-track" cx="40" cy="40" r="34"></circle>
-                    <circle class="score-value" cx="40" cy="40" r="34"></circle>
-                  </svg>
-                  <strong>92%</strong>
-                </div>
-                <div>
-                  <strong>Match score</strong>
-                  <p>Role keywords, project evidence, and skill overlap are aligned for review.</p>
-                </div>
-              </div>
-            </section>
-
-            <div class="tailoring-studio">
-              <section class="tailoring-main">
-              <div class="studio-metrics">
-                <article>
-                  <strong>94%</strong>
-                  <span>Skill alignment</span>
-                  <small>Improved from 62%</small>
-                </article>
-                <article>
-                  <strong>45%</strong>
-                  <span>Keyword density</span>
-                  <small>Higher role coverage</small>
-                </article>
-                <article>
-                  <strong>90%</strong>
-                  <span>ATS confidence</span>
-                  <small>Strong pass likelihood</small>
-                </article>
-              </div>
-              <div class="resume-diff">
-                <article class="original-resume-panel">
-                  <header>
-                    <h3>Original source</h3>
-                    <span>Read only</span>
-                  </header>
-                  <div class="resume-paper muted-paper">
-                    <h4>Candidate summary</h4>
-                    <p>Software candidate with experience building web apps, APIs, and user interfaces.</p>
-                    <ul>
-                      <li>Worked on frontend features with React.</li>
-                      <li>Collaborated with engineers to ship product updates.</li>
-                      <li>Helped maintain reusable components.</li>
-                    </ul>
+                  <div class="absolute bottom-6 left-6 right-6 glass-panel p-4 rounded-xl border border-white/20">
+                    <div class="flex items-center justify-between">
+                      <div class="flex -space-x-2">
+                        <div class="w-8 h-8 rounded-full border-2 border-white bg-slate-300"></div>
+                        <div class="w-8 h-8 rounded-full border-2 border-white bg-slate-400"></div>
+                        <div class="w-8 h-8 rounded-full border-2 border-white bg-slate-500"></div>
+                      </div>
+                      <span class="text-[10px] font-bold font-label uppercase text-on-surface">500+ Hired Today</span>
+                    </div>
                   </div>
-                </article>
-                <article class="optimized-resume-panel">
-                  <header>
-                    <h3>AI-optimized resume</h3>
-                    <span>Role-tailored</span>
-                  </header>
-                  <div class="resume-paper optimized-paper">
-                    <h4>Tailored positioning</h4>
-                    <span class="rewrite-label">Rewritten</span>
-                    <p>
-                      Product-focused engineer with React, TypeScript, API integration, and automation
-                      experience aligned to high-impact frontend and full-stack roles.
-                    </p>
-                    <span class="rewrite-label">Enhanced bullets</span>
-                    <ul>
-                      <li>Led React interface work tied to measurable product outcomes.</li>
-                      <li>Built maintainable API-driven features with reliable handoff and testing.</li>
-                      <li>Prioritized role keywords and matched skills for stronger ATS relevance.</li>
-                    </ul>
-                  </div>
-                </article>
-              </div>
-            </section>
-            <aside class="reasoning-panel">
-              <div class="reasoning-hero">
-                <h3>Intelligence reasoning</h3>
-                <p>Why ApplyPilot changes the resume before approval.</p>
-              </div>
-              <article>
-                <strong>Keyword insertion</strong>
-                <p>Matched skills are moved higher so recruiters and ATS filters see the strongest signals first.</p>
-              </article>
-              <article>
-                <strong>Quantified impact</strong>
-                <p>Passive work is rewritten as measurable outcomes where the resume provides evidence.</p>
-              </article>
-              <article>
-                <strong>Gap handling</strong>
-                <p>Missing skills are surfaced as improvement suggestions instead of being hidden.</p>
-              </article>
-              <div class="confidence-card">
-                <p>Confidence score</p>
-                <strong>90%</strong>
-                <span>Strong ATS pass signal for the tailored version.</span>
-              </div>
-              <button class="button primary wide" type="button" data-page-target="queue">Review approval queue</button>
-            </aside>
-            </div>
-
-            <section class="approval-action-bar" aria-label="Tailored application approval">
-              <div>
-                <span class="material-symbols-outlined" aria-hidden="true">bolt</span>
-                <div>
-                  <strong>AI is ready to submit this application.</strong>
-                  <p>Review the tailored resume, approval queue, and calendar slot before submission.</p>
                 </div>
               </div>
-              <div class="approval-action-buttons">
-                <button class="button secondary" type="button" data-page-target="jobs">Edit manually</button>
-                <button class="button primary" type="button" data-page-target="queue">
-                  Approve and AI apply
-                  <span class="material-symbols-outlined" aria-hidden="true">rocket_launch</span>
-                </button>
-              </div>
-            </section>
-          </div>
-        </section>
-
-        <section class="page" id="queuePage" data-page="queue">
-          <div class="activity-section" id="approvalQueue">
-            <div class="section-heading split-heading">
-              <div>
-                <p class="eyebrow">Step 03</p>
-                <h2>Approval queue</h2>
-                <p>
-                  Jobs wait here until the user approves the tailored resume, calendar slot,
-                  and final application submission. Each approval becomes feedback for better
-                  recommendations.
-                </p>
-              </div>
-              <span class="calendar-badge" id="queueBadge">No queue yet</span>
-            </div>
-            <div class="activity-list" id="queueList">
-              <p class="empty-note">Analyze a resume to build the approval queue.</p>
             </div>
           </div>
-
-          <div class="activity-section" id="calendar">
-          <div class="section-heading split-heading">
-            <div>
-              <p class="eyebrow">Applied jobs</p>
-              <h2>Submitted applications and calendar</h2>
-              <p>
-                Approved jobs appear here after the app creates the calendar event and submits
-                the application connector.
-              </p>
-            </div>
-            <span class="calendar-badge" id="calendarBadge">Google Calendar connected</span>
-          </div>
-          <div class="activity-list" id="activityList">
-            <p class="empty-note">No approved applications yet.</p>
-          </div>
-          </div>
-        </section>
-      </main>
-    </div>
-
-    <dialog class="approval-dialog" id="approvalDialog">
-      <form method="dialog" class="dialog-shell">
-        <button class="icon-button close-dialog" value="close" aria-label="Close approval dialog">
-          X
-        </button>
-        <div id="approvalContent"></div>
-      </form>
-    </dialog>
-
-    <script src="./config.js"></script>
-    <script src="./app.js" defer></script>
+        </div>
+      </section>
+      <section class="py-24 px-8 text-center bg-primary-fixed/20">
+        <h2 class="font-headline text-3xl font-extrabold mb-4">Ready to automate your career growth?</h2>
+        <p class="text-secondary mb-10 max-w-xl mx-auto">Join 50,000+ professionals using AI to navigate the modern job market with precision.</p>
+        <div class="flex flex-col sm:flex-row justify-center gap-4">
+          <a href="dashboard.html" class="bg-primary text-on-primary px-8 py-4 rounded-md font-headline font-bold text-sm">Upload Resume Now</a>
+          <a href="dashboard.html" class="bg-surface-container-lowest text-primary border border-primary px-8 py-4 rounded-md font-headline font-bold text-sm">View Demo</a>
+        </div>
+      </section>
+    </main>
+    <footer class="w-full py-12 bg-white border-t border-slate-100">
+      <div class="flex flex-col md:flex-row justify-between items-center max-w-7xl mx-auto px-8 gap-8">
+        <div class="text-left">
+          <p class="font-headline font-black text-xl text-indigo-900 mb-2">Pathfinder AI</p>
+          <p class="font-body text-xs font-medium text-slate-400">© 2024 Architect AI. Precision Match Engine.</p>
+        </div>
+        <div class="flex flex-wrap justify-center gap-8">
+          <a class="font-body text-xs font-medium text-slate-400 hover:underline decoration-indigo-500 underline-offset-4 transition-opacity" href="#">Privacy Dossier</a>
+          <a class="font-body text-xs font-medium text-slate-400 hover:underline decoration-indigo-500 underline-offset-4 transition-opacity" href="#">Terms of Intelligence</a>
+          <a class="font-body text-xs font-medium text-slate-400 hover:underline decoration-indigo-500 underline-offset-4 transition-opacity" href="#">System API</a>
+          <a class="font-body text-xs font-medium text-slate-400 hover:underline decoration-indigo-500 underline-offset-4 transition-opacity" href="#">Human Support</a>
+        </div>
+      </div>
+    </footer>
   </body>
 </html>

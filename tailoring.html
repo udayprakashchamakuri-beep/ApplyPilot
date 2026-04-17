@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html class="light" lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <title>Architect AI | Resume Tailoring</title>
+    <link href="https://fonts.googleapis.com" rel="preconnect" />
+    <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect" />
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@200..800&family=Inter:wght@100..900&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet" />
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              "on-primary": "#ffffff",
+              "surface-container-lowest": "#ffffff",
+              "on-tertiary-fixed-variant": "#004c6e",
+              "on-tertiary": "#ffffff",
+              "secondary-container": "#d5e0f8",
+              "surface-container": "#eceef0",
+              background: "#f7f9fb",
+              "on-secondary-container": "#586377",
+              "inverse-primary": "#c3c0ff",
+              "surface-dim": "#d8dadc",
+              "surface-bright": "#f7f9fb",
+              "on-secondary-fixed-variant": "#3c475a",
+              "surface-tint": "#4d44e3",
+              tertiary: "#004d70",
+              "on-primary-container": "#dad7ff",
+              "surface-container-low": "#f2f4f6",
+              "on-tertiary-fixed": "#001e2f",
+              "on-surface": "#191c1e",
+              "primary-container": "#4f46e5",
+              "on-surface-variant": "#464555",
+              outline: "#777587",
+              primary: "#3525cd",
+              "secondary-fixed-dim": "#bcc7de",
+              "on-secondary": "#ffffff",
+              "on-error": "#ffffff",
+              "tertiary-container": "#006693",
+              "surface-container-high": "#e6e8ea",
+              "secondary-fixed": "#d8e3fb",
+              "on-primary-fixed-variant": "#3323cc",
+              "on-background": "#191c1e",
+              "inverse-surface": "#2d3133",
+              secondary: "#545f73",
+              "surface-variant": "#e0e3e5",
+              "tertiary-fixed": "#c9e6ff",
+              "primary-fixed": "#e2dfff",
+              "surface-container-highest": "#e0e3e5",
+              "on-primary-fixed": "#0f0069",
+              surface: "#f7f9fb",
+              "inverse-on-surface": "#eff1f3",
+              "on-tertiary-container": "#b8e0ff",
+              "tertiary-fixed-dim": "#89ceff",
+              "on-error-container": "#93000a",
+              "on-secondary-fixed": "#111c2d",
+              "outline-variant": "#c7c4d8",
+              "primary-fixed-dim": "#c3c0ff",
+              error: "#ba1a1a",
+              "error-container": "#ffdad6",
+            },
+            borderRadius: {
+              DEFAULT: "0.125rem",
+              lg: "0.25rem",
+              xl: "0.5rem",
+              full: "0.75rem",
+            },
+            fontFamily: {
+              headline: ["Manrope"],
+              body: ["Inter"],
+              label: ["Inter"],
+            },
+          },
+        },
+      };
+    </script>
+    <style>
+      .material-symbols-outlined {
+        font-variation-settings: "FILL" 0, "wght" 400, "GRAD" 0, "opsz" 24;
+      }
+
+      body {
+        font-family: "Inter", sans-serif;
+      }
+
+      h1,
+      h2,
+      h3,
+      .font-headline {
+        font-family: "Manrope", sans-serif;
+      }
+    </style>
+  </head>
+  <body class="bg-background text-on-background antialiased overflow-hidden">
+    <aside class="h-screen w-64 fixed left-0 top-0 bg-slate-50 dark:bg-slate-900 flex flex-col py-8 px-4 z-50">
+      <div class="mb-12 px-2 flex items-center gap-3">
+        <div class="w-10 h-10 bg-primary flex items-center justify-center rounded-xl overflow-hidden">
+          <span class="material-symbols-outlined text-white" style="font-variation-settings: 'FILL' 1;">architecture</span>
+        </div>
+        <div>
+          <div class="text-xl font-black tracking-tight text-indigo-800 dark:text-indigo-300">Architect AI</div>
+          <div class="font-headline text-[10px] uppercase tracking-widest text-secondary font-bold">Career Intelligence</div>
+        </div>
+      </div>
+      <nav class="flex-1 space-y-1">
+        <a class="flex items-center gap-3 px-3 py-3 rounded-xl transition-colors text-slate-500 dark:text-slate-400 hover:bg-slate-200/50 dark:hover:bg-slate-800/50" href="dashboard.html">
+          <span class="material-symbols-outlined">dashboard</span>
+          <span class="font-['Manrope'] font-medium">Dashboard</span>
+        </a>
+        <a class="flex items-center gap-3 px-3 py-3 rounded-xl transition-colors text-slate-500 dark:text-slate-400 hover:bg-slate-200/50 dark:hover:bg-slate-800/50" href="index.html">
+          <span class="material-symbols-outlined">description</span>
+          <span class="font-['Manrope'] font-medium">My Resume</span>
+        </a>
+        <a class="flex items-center gap-3 px-3 py-3 rounded-xl bg-slate-100/50 dark:bg-slate-800/50 text-indigo-700 dark:text-indigo-400 font-bold border-r-2 border-indigo-700" href="tailoring.html">
+          <span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">send</span>
+          <span class="font-['Manrope'] font-medium">Applications</span>
+        </a>
+        <a class="flex items-center gap-3 px-3 py-3 rounded-xl transition-colors text-slate-500 dark:text-slate-400 hover:bg-slate-200/50 dark:hover:bg-slate-800/50" href="#">
+          <span class="material-symbols-outlined">calendar_today</span>
+          <span class="font-['Manrope'] font-medium">Interview Calendar</span>
+        </a>
+        <a class="flex items-center gap-3 px-3 py-3 rounded-xl transition-colors text-slate-500 dark:text-slate-400 hover:bg-slate-200/50 dark:hover:bg-slate-800/50" href="#">
+          <span class="material-symbols-outlined">settings</span>
+          <span class="font-['Manrope'] font-medium">Settings</span>
+        </a>
+      </nav>
+      <button class="mt-auto bg-primary text-on-primary py-3 px-4 rounded-lg font-headline font-bold text-sm tracking-wide flex items-center justify-center gap-2 scale-100 active:scale-95 duration-200">
+        <span class="material-symbols-outlined text-sm">add</span>
+        New Application
+      </button>
+    </aside>
+    <main class="ml-64 h-screen flex flex-col relative">
+      <header class="fixed top-0 right-0 w-[calc(100%-16rem)] z-40 bg-white/70 backdrop-blur-xl flex items-center justify-between px-8 h-16">
+        <div class="flex items-center gap-4">
+          <div class="flex items-center bg-surface-container-low px-4 py-2 rounded-full focus-within:ring-2 focus-within:ring-indigo-500/20 border border-outline-variant/15">
+            <span class="material-symbols-outlined text-outline text-sm">search</span>
+            <input class="bg-transparent border-none focus:ring-0 text-sm font-body ml-2 w-64" placeholder="Search applications..." type="text" />
+          </div>
+        </div>
+        <div class="flex items-center gap-6">
+          <div class="flex items-center gap-4">
+            <button class="text-slate-400 hover:text-indigo-600 transition-all">
+              <span class="material-symbols-outlined">notifications</span>
+            </button>
+            <button class="text-slate-400 hover:text-indigo-600 transition-all">
+              <span class="material-symbols-outlined">history</span>
+            </button>
+          </div>
+          <div class="h-8 w-px bg-outline-variant/30"></div>
+          <div class="flex items-center gap-3">
+            <div class="text-right">
+              <p class="text-sm font-bold text-indigo-900 font-headline tracking-tight">Alex Sterling</p>
+              <p class="text-[10px] text-secondary font-bold uppercase tracking-widest">Senior Architect</p>
+            </div>
+            <img alt="Professional Profile" class="w-10 h-10 rounded-full border-2 border-primary-fixed" src="https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=160&q=80" />
+          </div>
+        </div>
+      </header>
+      <section class="mt-16 p-8 flex-1 flex flex-col gap-8 overflow-y-auto pb-40">
+        <div class="flex justify-between items-end">
+          <div>
+            <div class="flex items-center gap-2 mb-2">
+              <span class="text-xs font-bold uppercase tracking-[0.2em] text-secondary font-label">Application Dossier #8214</span>
+              <span class="px-2 py-0.5 rounded-full bg-secondary-fixed text-on-secondary-fixed text-[10px] font-bold">OPTIMIZED</span>
+            </div>
+            <h1 class="text-4xl font-extrabold text-on-surface font-headline tracking-tighter">Senior Software Engineer <span class="text-primary">@ Google</span></h1>
+          </div>
+          <div class="bg-surface-container-lowest p-4 rounded-xl flex items-center gap-6 border border-outline-variant/15">
+            <div class="flex flex-col items-center">
+              <div class="relative w-16 h-16 flex items-center justify-center">
+                <svg class="absolute inset-0 w-full h-full -rotate-90">
+                  <circle class="text-surface-container-highest" cx="32" cy="32" fill="none" r="28" stroke="currentColor" stroke-width="4"></circle>
+                  <circle class="text-primary" cx="32" cy="32" fill="none" r="28" stroke="currentColor" stroke-dasharray="175.9" stroke-dashoffset="14" stroke-width="4"></circle>
+                </svg>
+                <span class="text-xl font-black font-headline text-on-surface">92<span class="text-[10px] font-bold">%</span></span>
+              </div>
+              <span class="text-[10px] font-bold uppercase tracking-widest text-secondary mt-1">Match Score</span>
+            </div>
+            <div class="max-w-[200px]">
+              <p class="text-xs font-medium text-on-surface-variant leading-relaxed">Intelligence engine aligned technical expertise with Google's Core Infrastructure requirements.</p>
+            </div>
+          </div>
+        </div>
+        <div class="grid grid-cols-2 gap-8 flex-1">
+          <div class="flex flex-col gap-4">
+            <div class="flex items-center justify-between px-4">
+              <span class="font-headline font-bold text-sm uppercase tracking-widest text-slate-400">Original Resume</span>
+              <span class="text-xs text-slate-400 font-medium">Uploaded Nov 12, 2023</span>
+            </div>
+            <div class="bg-surface-container-low rounded-xl p-8 border border-outline-variant/10 h-full relative overflow-hidden">
+              <div class="space-y-6 opacity-60">
+                <div class="border-b border-outline-variant/20 pb-4">
+                  <h3 class="text-lg font-bold font-headline mb-1">Alex Sterling</h3>
+                  <p class="text-sm">Seattle, WA • Full Stack Developer</p>
+                </div>
+                <div class="space-y-4">
+                  <h4 class="text-xs font-bold uppercase tracking-wider text-secondary">Summary</h4>
+                  <p class="text-sm leading-relaxed">Experienced developer with 8 years in the industry. Skilled in React, Node.js, and AWS. Passionate about building scalable web applications and leading small teams to success in fast-paced environments.</p>
+                </div>
+                <div class="space-y-4">
+                  <h4 class="text-xs font-bold uppercase tracking-wider text-secondary">Experience</h4>
+                  <div>
+                    <p class="text-sm font-bold">Lead Developer | TechFlow Inc.</p>
+                    <p class="text-[11px] mb-2">2020 - Present</p>
+                    <ul class="text-sm list-disc pl-4 space-y-2">
+                      <li>Built several microservices using Node.js and TypeScript.</li>
+                      <li>Managed a team of 5 engineers.</li>
+                      <li>Reduced server costs by 15% through optimization.</li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+              <div class="absolute inset-0 flex items-center justify-center pointer-events-none">
+                <span class="text-6xl font-black text-outline/5 -rotate-12 select-none">BASELINE</span>
+              </div>
+            </div>
+          </div>
+          <div class="flex flex-col gap-4">
+            <div class="flex items-center justify-between px-4">
+              <div class="flex items-center gap-2">
+                <span class="font-headline font-bold text-sm uppercase tracking-widest text-indigo-700">AI Tailored Version</span>
+                <span class="flex h-2 w-2 rounded-full bg-indigo-500 animate-pulse"></span>
+              </div>
+              <span class="text-xs text-indigo-600 font-bold uppercase">Optimized for Google</span>
+            </div>
+            <div class="bg-surface-container-lowest shadow-sm rounded-xl p-8 border-2 border-primary/10 h-full relative">
+              <div class="space-y-6">
+                <div class="border-b border-primary/10 pb-4">
+                  <h3 class="text-lg font-bold font-headline text-on-surface mb-1">Alex Sterling</h3>
+                  <p class="text-sm text-on-surface-variant">Seattle, WA • <span class="bg-primary/10 text-primary px-1 rounded">Senior Software Engineer | Infrastructure & Scale</span></p>
+                </div>
+                <div class="space-y-4">
+                  <div class="flex justify-between items-center">
+                    <h4 class="text-xs font-bold uppercase tracking-wider text-secondary">Executive Summary</h4>
+                    <span class="text-[10px] bg-tertiary-fixed text-on-tertiary-fixed-variant px-1.5 py-0.5 rounded font-bold">REWRITTEN</span>
+                  </div>
+                  <p class="text-sm leading-relaxed text-on-surface">
+                    Precision-focused Senior Engineer with 8+ years specializing in
+                    <span class="bg-indigo-50 font-semibold border-b border-indigo-200">distributed systems and large-scale cloud architecture</span>. Expert at navigating complex infrastructure challenges at the petabyte scale, aligning with Google's commitment to reliability and engineering excellence.
+                  </p>
+                </div>
+                <div class="space-y-4">
+                  <div class="flex justify-between items-center">
+                    <h4 class="text-xs font-bold uppercase tracking-wider text-secondary">Strategic Experience</h4>
+                    <span class="text-[10px] bg-tertiary-fixed text-on-tertiary-fixed-variant px-1.5 py-0.5 rounded font-bold">ENHANCED BULLETS</span>
+                  </div>
+                  <div>
+                    <p class="text-sm font-bold text-indigo-900">Lead Infrastructure Engineer | TechFlow Inc.</p>
+                    <p class="text-[11px] text-slate-400 mb-2">2020 - Present</p>
+                    <ul class="text-sm list-disc pl-4 space-y-3">
+                      <li>Architected and deployed <span class="font-semibold text-primary">high-concurrency microservices</span> utilizing Node.js/TypeScript, specifically optimizing for low-latency throughput similar to GCP standards.</li>
+                      <li>Directed a high-performance team of 5, fostering an <span class="italic">SRE-driven culture</span> that improved deployment frequency by 40%.</li>
+                      <li>Engineered a proprietary caching layer that <span class="font-semibold text-primary">slashed cloud infrastructure spend by $150k/annum</span> while maintaining 99.99% uptime.</li>
+                    </ul>
+                  </div>
+                </div>
+                <div class="mt-8 bg-surface-container-low p-4 rounded-lg border-l-4 border-primary">
+                  <div class="flex gap-3">
+                    <span class="material-symbols-outlined text-primary text-lg">auto_awesome</span>
+                    <div>
+                      <p class="text-xs font-bold text-indigo-900 mb-1">Architect AI Reasoning</p>
+                      <p class="text-[11px] text-on-surface-variant leading-normal">Shifted terminology from "Full Stack" to "Infrastructure" to better align with the specific requisition requirements for the Google Cloud Core team. Quantified results to emphasize impact.</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+      <section class="fixed bottom-0 right-0 w-[calc(100%-16rem)] bg-white/70 backdrop-blur-2xl px-10 py-6 border-t border-outline-variant/10 z-50">
+        <div class="max-w-6xl mx-auto flex items-center justify-between">
+          <div class="flex items-center gap-4">
+            <div class="w-10 h-10 rounded-full bg-indigo-50 flex items-center justify-center text-primary">
+              <span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">bolt</span>
+            </div>
+            <div>
+              <p class="text-sm font-bold font-headline text-on-surface">AI is ready to submit this application.</p>
+              <p class="text-xs text-secondary">Final verification complete. Precision match verified.</p>
+            </div>
+          </div>
+          <div class="flex items-center gap-4">
+            <a href="dashboard.html" class="px-6 py-3 rounded-lg text-sm font-bold font-headline text-secondary hover:bg-surface-container-low transition-colors">Edit Manually</a>
+            <button class="bg-primary text-on-primary py-4 px-10 rounded-xl font-headline font-black text-sm tracking-widest shadow-[0_10px_30px_-10px_rgba(53,37,205,0.4)] hover:bg-primary-container transition-all active:scale-95 flex items-center gap-3">
+              APPROVE & AI APPLY
+              <span class="material-symbols-outlined">rocket_launch</span>
+            </button>
+          </div>
+        </div>
+      </section>
+    </main>
+    <footer class="hidden">
+      <p>© 2024 Architect AI. Precision Match Engine.</p>
+    </footer>
+  </body>
+</html>
