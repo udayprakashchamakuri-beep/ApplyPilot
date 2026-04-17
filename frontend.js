@@ -1,16 +1,26 @@
 const STORAGE_KEY = "applypilot:intake";
 const SELECTED_JOB_KEY = "applypilot:selected-job";
 const APPLICATIONS_KEY = "applypilot:applications";
+const SETTINGS_KEY = "applypilot:settings";
 
 document.addEventListener("DOMContentLoaded", () => {
   setupLandingPage();
+  setupResumePage();
   setupDashboardPage();
   setupTailoringPage();
+  setupCalendarPage();
+  setupSettingsPage();
+  setupGlobalActions();
 });
 
 function setupLandingPage() {
   const uploadZone = document.querySelector("[data-upload-zone]");
   if (!uploadZone) return;
+
+  const existingIntake = readJson(STORAGE_KEY);
+  if (existingIntake?.profile) {
+    setLandingStatus(`Last resume: ${existingIntake.profile.fileName || "uploaded resume"} is ready.`);
+  }
 
   const fileInput = document.createElement("input");
   fileInput.type = "file";
@@ -38,21 +48,171 @@ function setupLandingPage() {
 
 async function runIntake(file) {
   setLandingStatus(`Analyzing ${file.name} and searching live sources...`);
+  const settings = readJson(SETTINGS_KEY) || {};
+  const sources = normalizeSources(settings.sources);
+
   const formData = new FormData();
   formData.append("resume", file);
   formData.append("preferences", JSON.stringify(buildDefaultPreferences()));
-  formData.append("sources", JSON.stringify(["Greenhouse", "Lever", "Ashby", "Remotive"]));
-  formData.append("limit", "24");
+  formData.append("sources", JSON.stringify(sources));
+  formData.append("limit", String(settings.limit || 24));
 
   try {
     const data = await postForm("/api/intake", formData);
     localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
     localStorage.removeItem(SELECTED_JOB_KEY);
-    setLandingStatus(`${data.jobs?.length || 0} live matches found. Opening dashboard...`);
-    window.location.href = "dashboard.html";
+    setLandingStatus(`${data.jobs?.length || 0} live matches found. Opening resume view...`);
+    showToast("Resume analyzed", "Your resume is parsed and ready.");
+    window.location.href = "resume.html";
   } catch (error) {
     setLandingStatus(`Backend failed: ${error.message}`);
+    showToast("Intake failed", error.message, "error");
   }
+}
+
+function setupResumePage() {
+  const container = document.querySelector("[data-resume-page]");
+  if (!container) return;
+
+  const intake = readJson(STORAGE_KEY);
+  const headline = document.querySelector("[data-resume-headline]");
+  const summary = document.querySelector("[data-resume-summary]");
+  const skills = document.querySelector("[data-resume-skills]");
+  const meta = document.querySelector("[data-resume-meta]");
+  const action = document.querySelector("[data-resume-action]");
+
+  if (!intake?.profile) {
+    if (headline) headline.textContent = "No resume uploaded yet";
+    if (summary) summary.textContent = "Upload your resume from the landing page to generate your profile.";
+    if (skills) skills.innerHTML = `<span class="px-3 py-1 rounded-full bg-slate-100 text-slate-500 text-xs font-semibold">Waiting for resume</span>`;
+    if (meta) meta.textContent = "Use Start intake on the landing page.";
+    action?.addEventListener("click", () => {
+      window.location.href = "index.html";
+    });
+    return;
+  }
+
+  if (headline) headline.textContent = intake.profile.headline || intake.profile.fileName || "Resume profile";
+  if (summary) summary.textContent = intake.profile.summary || "Profile generated from uploaded resume.";
+  if (skills) {
+    skills.innerHTML = safeList(intake.profile.skills, ["Skills pending extraction"])
+      .slice(0, 16)
+      .map(
+        (skill) =>
+          `<span class="px-3 py-1 rounded-full bg-indigo-50 text-indigo-700 text-xs font-semibold">${escapeHtml(
+            skill
+          )}</span>`
+      )
+      .join("");
+  }
+  if (meta) {
+    const count = intake.jobs?.length || 0;
+    meta.textContent = `${escapeHtml(intake.profile.fileName || "resume")} analyzed. ${count} suited jobs are ready.`;
+  }
+  action?.addEventListener("click", () => {
+    window.location.href = "dashboard.html";
+  });
+}
+
+function setupCalendarPage() {
+  const list = document.querySelector("[data-calendar-list]");
+  if (!list) return;
+
+  const applications = readJson(APPLICATIONS_KEY) || [];
+  const intake = readJson(STORAGE_KEY);
+
+  if (applications.length) {
+    list.innerHTML = applications
+      .map(({ job, result }) => {
+        const slot = result?.calendar?.start || job.interviewDate || "";
+        const link = result?.calendar?.link || buildCalendarLinkFromJob(job);
+        return `
+          <article class="bg-white rounded-xl border border-slate-200 p-5 flex flex-col gap-2">
+            <h3 class="text-lg font-bold text-slate-900">${escapeHtml(job.title || job.role || "Role")} at ${escapeHtml(
+          job.company || "Company"
+        )}</h3>
+            <p class="text-sm text-slate-600">Source: ${escapeHtml(job.source || "Unknown")} | Match: ${escapeHtml(
+          String(job.matchScore || job.match || "NA")
+        )}%</p>
+            <p class="text-sm text-slate-600">Interview/assessment slot: ${escapeHtml(formatDateTime(slot))}</p>
+            <div class="flex gap-3 mt-2">
+              <a class="px-4 py-2 rounded-lg bg-indigo-600 text-white text-sm font-semibold" href="${escapeHtml(
+                link
+              )}" target="_blank" rel="noreferrer">Open in Google Calendar</a>
+              <a class="px-4 py-2 rounded-lg bg-slate-100 text-slate-700 text-sm font-semibold" href="tailoring.html">Open Application</a>
+            </div>
+          </article>
+        `;
+      })
+      .join("");
+    return;
+  }
+
+  const upcoming = intake?.jobs?.slice(0, 5) || [];
+  if (!upcoming.length) {
+    list.innerHTML = `<p class="text-slate-600">No interview events yet. Approve a job from Applications to create one.</p>`;
+    return;
+  }
+
+  list.innerHTML = upcoming
+    .map(
+      (job) => `
+        <article class="bg-white rounded-xl border border-slate-200 p-5 flex flex-col gap-2">
+          <h3 class="text-lg font-bold text-slate-900">${escapeHtml(job.title || job.role || "Role")} at ${escapeHtml(
+        job.company || "Company"
+      )}</h3>
+          <p class="text-sm text-slate-600">Suggested slot: ${escapeHtml(formatDateTime(job.interviewDate || ""))}</p>
+          <a class="px-4 py-2 rounded-lg bg-slate-100 text-slate-700 text-sm font-semibold w-fit" href="tailoring.html">Approve to create event</a>
+        </article>
+      `
+    )
+    .join("");
+}
+
+function setupSettingsPage() {
+  const form = document.querySelector("[data-settings-form]");
+  if (!form) return;
+
+  const status = document.querySelector("[data-settings-status]");
+  const defaults = buildDefaultPreferences();
+  const saved = readJson(SETTINGS_KEY) || {};
+
+  const roles = document.querySelector("[data-setting-roles]");
+  const locations = document.querySelector("[data-setting-locations]");
+  const threshold = document.querySelector("[data-setting-threshold]");
+  const minSalary = document.querySelector("[data-setting-min-salary]");
+  const sources = document.querySelector("[data-setting-sources]");
+
+  roles.value = toCsv(saved.roles || defaults.roles);
+  locations.value = toCsv(saved.locations || defaults.locations);
+  threshold.value = String(saved.threshold || defaults.threshold);
+  minSalary.value = saved.minimumSalary || defaults.minimumSalary;
+  sources.value = toCsv(saved.sources || normalizeSources());
+
+  form.addEventListener("submit", (event) => {
+    event.preventDefault();
+    const nextSettings = {
+      roles: csvToList(roles.value),
+      locations: csvToList(locations.value),
+      threshold: clampNumber(threshold.value, 50, 99, 75),
+      minimumSalary: minSalary.value.trim() || defaults.minimumSalary,
+      sources: normalizeSources(csvToList(sources.value)),
+    };
+    localStorage.setItem(SETTINGS_KEY, JSON.stringify(nextSettings));
+    if (status) {
+      status.textContent = "Settings saved. New intake runs will use these values.";
+    }
+    showToast("Settings saved", "Your next resume intake will use the updated preferences.");
+  });
+}
+
+function setupGlobalActions() {
+  document.querySelectorAll("[data-new-application]").forEach((element) => {
+    element.addEventListener("click", (event) => {
+      event.preventDefault();
+      window.location.href = "index.html";
+    });
+  });
 }
 
 function setupDashboardPage() {
@@ -60,30 +220,81 @@ function setupDashboardPage() {
   if (!grid) return;
 
   const intake = readJson(STORAGE_KEY);
+  const searchInput = document.querySelector("[data-dashboard-search]");
+  const filterButton = document.querySelector("[data-dashboard-filter]");
+  const updatePortfolioButton = document.querySelector("[data-update-portfolio]");
+  let query = "";
+  let minScore = 0;
+
+  updatePortfolioButton?.addEventListener("click", () => {
+    window.location.href = "resume.html";
+  });
+
   if (!intake?.jobs?.length) {
     setDashboardStatus("Upload a resume from the landing page to replace these sample cards with live jobs.");
+    grid.innerHTML = renderEmptyJobsState();
     return;
   }
 
-  setDashboardStatus(`${intake.jobs.length} live jobs ranked from backend sources.`);
-  grid.innerHTML = intake.jobs.slice(0, 8).map((job) => renderJobCard(job)).join("") + renderMarketCard(intake);
-  grid.querySelectorAll("[data-select-job]").forEach((button) => {
-    button.addEventListener("click", () => {
-      const job = intake.jobs.find((candidate) => getJobId(candidate) === button.dataset.selectJob);
-      localStorage.setItem(SELECTED_JOB_KEY, JSON.stringify(job));
-      window.location.href = "tailoring.html";
+  const allJobs = intake.jobs;
+
+  const rerender = () => {
+    const filteredJobs = allJobs.filter((job) => {
+      const score = Number(job.matchScore || job.match || 0);
+      const roleText = `${job.title || job.role || ""} ${job.company || ""} ${job.location || ""}`.toLowerCase();
+      const skillText = safeList(job.matchedSkills, []).join(" ").toLowerCase();
+      const matchesQuery = !query || roleText.includes(query) || skillText.includes(query);
+      return score >= minScore && matchesQuery;
     });
+
+    if (!filteredJobs.length) {
+      setDashboardStatus("No jobs matched your current search or filter. Clear search or disable high-score filter.");
+      grid.innerHTML = renderNoFilterResultCard();
+      return;
+    }
+
+    setDashboardStatus(`${filteredJobs.length} live jobs ready. Search and filters are active.`);
+    grid.innerHTML = filteredJobs.slice(0, 8).map((job) => renderJobCard(job)).join("") + renderMarketCard(intake);
+    grid.querySelectorAll("[data-select-job]").forEach((button) => {
+      button.addEventListener("click", () => {
+        const job = allJobs.find((candidate) => getJobId(candidate) === button.dataset.selectJob);
+        localStorage.setItem(SELECTED_JOB_KEY, JSON.stringify(job));
+        window.location.href = "tailoring.html";
+      });
+    });
+  };
+
+  searchInput?.addEventListener("input", (event) => {
+    query = String(event.target.value || "").trim().toLowerCase();
+    rerender();
   });
+
+  filterButton?.addEventListener("click", () => {
+    minScore = minScore ? 0 : 80;
+    filterButton.textContent = minScore ? "Filters (80%+)" : "Filters";
+    rerender();
+  });
+
+  rerender();
 }
 
 async function setupTailoringPage() {
   const title = document.querySelector("[data-tailoring-title]");
   if (!title) return;
 
+  bindTailoringSearch();
+  bindManualEditButton();
+
   const intake = readJson(STORAGE_KEY);
   const selectedJob = readJson(SELECTED_JOB_KEY) || intake?.jobs?.[0];
+  const approveButton = document.querySelector("[data-approve-apply]");
+
   if (!intake?.profile || !selectedJob) {
-    setTailoringStatus("Upload a resume and choose a match to generate a tailored application dossier.");
+    setTailoringStatus("Upload a resume and choose a matched job to generate a tailored application.");
+    approveButton?.addEventListener("click", () => {
+      showToast("No selected job", "Pick a suited role from dashboard first.");
+      window.location.href = "dashboard.html";
+    });
     return;
   }
 
@@ -96,12 +307,12 @@ async function setupTailoringPage() {
       job: selectedJob,
     });
     renderTailoredResume(result.tailoredResume, result.calendar);
-    setTailoringStatus("Backend tailoring complete. Ready for approval.");
+    setTailoringStatus("Tailoring complete. You can edit manually or approve.");
   } catch (error) {
     setTailoringStatus(`Tailoring failed: ${error.message}`);
+    showToast("Tailoring failed", error.message, "error");
   }
 
-  const approveButton = document.querySelector("[data-approve-apply]");
   approveButton?.addEventListener("click", async () => {
     approveButton.disabled = true;
     approveButton.textContent = "APPLYING...";
@@ -116,12 +327,59 @@ async function setupTailoringPage() {
       applications.unshift({ job: selectedJob, result, createdAt: new Date().toISOString() });
       localStorage.setItem(APPLICATIONS_KEY, JSON.stringify(applications));
       setTailoringStatus(`Application approved. Confirmation ${result.application.confirmationId}.`);
-      approveButton.textContent = "APPROVED";
+      approveButton.textContent = "APPLIED";
+      showToast("Application queued", "Approved application was recorded and added to Interview Calendar.");
     } catch (error) {
       approveButton.disabled = false;
       approveButton.textContent = "APPROVE & AI APPLY";
       setTailoringStatus(`Apply failed: ${error.message}`);
+      showToast("Apply failed", error.message, "error");
     }
+  });
+}
+
+function bindTailoringSearch() {
+  const searchInput = document.querySelector("[data-tailoring-search]");
+  if (!searchInput) return;
+  const original = document.querySelector("[data-original-resume]");
+  const tailored = document.querySelector("[data-tailored-resume]");
+  const panels = [original, tailored].filter(Boolean);
+
+  searchInput.addEventListener("input", (event) => {
+    const query = String(event.target.value || "").trim().toLowerCase();
+    if (!query) {
+      panels.forEach((panel) => {
+        panel.classList.remove("opacity-40");
+      });
+      return;
+    }
+
+    let hits = 0;
+    panels.forEach((panel) => {
+      const isMatch = panel.textContent.toLowerCase().includes(query);
+      panel.classList.toggle("opacity-40", !isMatch);
+      if (isMatch) hits += 1;
+    });
+    setTailoringStatus(`${hits} section(s) matched "${query}".`);
+  });
+}
+
+function bindManualEditButton() {
+  const button = document.querySelector("[data-edit-manual]");
+  const target = document.querySelector("[data-tailored-resume]");
+  if (!button || !target) return;
+
+  button.addEventListener("click", () => {
+    const currentlyEditable = target.getAttribute("contenteditable") === "true";
+    target.setAttribute("contenteditable", currentlyEditable ? "false" : "true");
+    target.classList.toggle("ring-2", !currentlyEditable);
+    target.classList.toggle("ring-indigo-300", !currentlyEditable);
+    button.textContent = currentlyEditable ? "Edit Manually" : "Stop Editing";
+    setTailoringStatus(
+      currentlyEditable
+        ? "Manual edit mode disabled. You can approve and apply now."
+        : "Manual edit mode enabled. Update text directly in the tailored resume panel."
+    );
   });
 }
 
@@ -161,7 +419,7 @@ function renderJobCard(job) {
         <div class="bg-surface-container-low rounded-xl p-6">
           <div class="flex items-center gap-2 mb-4">
             <span class="material-symbols-outlined text-primary text-xl">auto_awesome</span>
-            <h4 class="text-sm font-black font-headline uppercase tracking-widest text-on-surface">Architect AI Analysis</h4>
+            <h4 class="text-sm font-black font-headline uppercase tracking-widest text-on-surface">APPLYPILOT Analysis</h4>
           </div>
           <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
@@ -260,19 +518,38 @@ function renderTailoredResume(tailoredResume, calendar) {
         <span class="text-[10px] bg-tertiary-fixed text-on-tertiary-fixed-variant px-1.5 py-0.5 rounded font-bold">ENHANCED BULLETS</span>
       </div>
       <ul class="text-sm list-disc pl-4 space-y-3">
-        ${tailoredResume.bullets.map((bullet) => `<li>${escapeHtml(bullet)}</li>`).join("")}
+        ${(tailoredResume.bullets || []).map((bullet) => `<li>${escapeHtml(bullet)}</li>`).join("")}
       </ul>
     </div>
     <div class="mt-8 bg-surface-container-low p-4 rounded-lg border-l-4 border-primary">
       <div class="flex gap-3">
         <span class="material-symbols-outlined text-primary text-lg">auto_awesome</span>
         <div>
-          <p class="text-xs font-bold text-indigo-900 mb-1">Architect AI Reasoning</p>
+          <p class="text-xs font-bold text-indigo-900 mb-1">APPLYPILOT Reasoning</p>
           <p class="text-[11px] text-on-surface-variant leading-normal">${escapeHtml(tailoredResume.changes?.join(" ") || "Backend generated a role-specific version for approval.")}</p>
           <p class="text-[11px] text-on-surface-variant leading-normal mt-2">${escapeHtml(calendar?.message || "")}</p>
         </div>
       </div>
     </div>
+  `;
+}
+
+function renderEmptyJobsState() {
+  return `
+    <article class="bg-white rounded-xl border border-slate-200 p-8">
+      <h3 class="text-2xl font-bold mb-2">No live jobs yet</h3>
+      <p class="text-slate-600 mb-4">Upload your resume first so APPLYPILOT can fetch real jobs from backend sources.</p>
+      <a href="index.html" class="inline-flex px-4 py-2 rounded-lg bg-indigo-600 text-white font-semibold">Go to intake</a>
+    </article>
+  `;
+}
+
+function renderNoFilterResultCard() {
+  return `
+    <article class="bg-white rounded-xl border border-slate-200 p-8">
+      <h3 class="text-2xl font-bold mb-2">No matches for current filter</h3>
+      <p class="text-slate-600">Clear the search box or disable the high-score filter to see more jobs.</p>
+    </article>
   `;
 }
 
@@ -283,16 +560,17 @@ function readCurrentTailoredResume() {
 }
 
 function buildDefaultPreferences() {
+  const saved = readJson(SETTINGS_KEY) || {};
   return {
-    roles: ["Frontend Engineer", "Product Engineer", "Full Stack Developer"],
-    locations: ["Bengaluru", "Hyderabad", "Remote"],
-    minimumSalary: "INR 18 LPA",
-    threshold: 75,
-    experienceLevel: "Mid-senior",
-    jobType: "Full time",
-    workMode: "Remote or hybrid",
-    noticePeriod: "Immediate to 30 days",
-    focusSkills: ["React", "TypeScript", "APIs", "automation", "product engineering"],
+    roles: csvOrArray(saved.roles, ["Frontend Engineer", "Product Engineer", "Full Stack Developer"]),
+    locations: csvOrArray(saved.locations, ["Bengaluru", "Hyderabad", "Remote"]),
+    minimumSalary: saved.minimumSalary || "INR 18 LPA",
+    threshold: clampNumber(saved.threshold, 50, 99, 75),
+    experienceLevel: saved.experienceLevel || "Mid-senior",
+    jobType: saved.jobType || "Full time",
+    workMode: saved.workMode || "Remote or hybrid",
+    noticePeriod: saved.noticePeriod || "Immediate to 30 days",
+    focusSkills: csvOrArray(saved.focusSkills, ["React", "TypeScript", "APIs", "automation", "product engineering"]),
   };
 }
 
@@ -330,8 +608,9 @@ function readJson(key) {
 }
 
 function setLandingStatus(message) {
-  const target = document.querySelector("[data-upload-status]");
-  if (target) target.textContent = message;
+  document.querySelectorAll("[data-upload-status]").forEach((target) => {
+    target.textContent = message;
+  });
 }
 
 function setDashboardStatus(message) {
@@ -357,6 +636,88 @@ function formatPosted(value) {
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) return "Recent";
   return new Intl.DateTimeFormat("en-IN", { dateStyle: "medium" }).format(date);
+}
+
+function formatDateTime(value) {
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return "Date not available";
+  return new Intl.DateTimeFormat("en-IN", {
+    dateStyle: "medium",
+    timeStyle: "short",
+    timeZone: "Asia/Kolkata",
+  }).format(date);
+}
+
+function buildCalendarLinkFromJob(job) {
+  const start = new Date(job?.interviewDate || Date.now() + 5 * 24 * 60 * 60 * 1000);
+  start.setMinutes(0, 0, 0);
+  const end = new Date(start.getTime() + 60 * 60 * 1000);
+  const format = (date) =>
+    date
+      .toISOString()
+      .replace(/[-:]/g, "")
+      .replace(/\.\d{3}Z$/, "Z");
+  const params = new URLSearchParams({
+    action: "TEMPLATE",
+    text: `${job.company || "Company"} ${job.title || job.role || "Interview"} interview`,
+    dates: `${format(start)}/${format(end)}`,
+    details: `Prepared in APPLYPILOT after approval.`,
+    location: job.location || "Online",
+  });
+  return `https://calendar.google.com/calendar/render?${params.toString()}`;
+}
+
+function showToast(title, message, type = "info") {
+  const existing = document.querySelector("[data-global-toast]");
+  if (existing) existing.remove();
+
+  const toast = document.createElement("div");
+  toast.dataset.globalToast = "true";
+  toast.className = "max-w-sm rounded-xl px-4 py-3 shadow-xl text-sm";
+  toast.style.position = "fixed";
+  toast.style.bottom = "16px";
+  toast.style.right = "16px";
+  toast.style.zIndex = "1000";
+  toast.style.background = type === "error" ? "#dc2626" : "#0f172a";
+  toast.style.color = "#ffffff";
+  toast.innerHTML = `<p class="font-semibold">${escapeHtml(title)}</p><p class="opacity-90">${escapeHtml(
+    message
+  )}</p>`;
+  document.body.appendChild(toast);
+  window.setTimeout(() => {
+    toast.remove();
+  }, 3500);
+}
+
+function csvOrArray(value, fallback) {
+  if (Array.isArray(value)) return value.filter(Boolean);
+  if (typeof value === "string") return csvToList(value);
+  return fallback;
+}
+
+function csvToList(value) {
+  return String(value || "")
+    .split(",")
+    .map((item) => item.trim())
+    .filter(Boolean);
+}
+
+function toCsv(value) {
+  return Array.isArray(value) ? value.join(", ") : String(value || "");
+}
+
+function normalizeSources(list) {
+  const fallback = ["Greenhouse", "Lever", "Ashby", "Remotive"];
+  const items = Array.isArray(list) && list.length ? list : fallback;
+  const allowed = new Set(["Greenhouse", "Lever", "Ashby", "SmartRecruiters", "USAJOBS", "Adzuna", "Remotive", "Firecrawl"]);
+  const normalized = items.filter((source) => allowed.has(source));
+  return normalized.length ? normalized : fallback;
+}
+
+function clampNumber(value, min, max, fallback) {
+  const number = Number(value);
+  if (Number.isNaN(number)) return fallback;
+  return Math.max(min, Math.min(max, number));
 }
 
 function escapeHtml(value) {
