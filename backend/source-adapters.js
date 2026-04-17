@@ -14,27 +14,34 @@ async function searchAllSources({ profile, sources, env = process.env, limit = 2
   const query = buildQuery(profile);
   const searches = [];
 
-  if (selected.has("Greenhouse")) searches.push(searchGreenhouse(env, limit));
-  if (selected.has("Lever")) searches.push(searchLever(env, limit));
-  if (selected.has("Ashby")) searches.push(searchAshby(env, limit));
-  if (selected.has("SmartRecruiters")) searches.push(searchSmartRecruiters(query, limit));
-  if (selected.has("USAJOBS")) searches.push(searchUSAJOBS(query, profile, env, limit));
-  if (selected.has("Adzuna")) searches.push(searchAdzuna(query, env, limit));
-  if (selected.has("Remotive")) searches.push(searchRemotive(query, limit));
-  if (selected.has("Firecrawl")) searches.push(searchFirecrawl(env, limit));
+  if (selected.has("Greenhouse")) searches.push(guarded("Greenhouse", searchGreenhouse(env, limit)));
+  if (selected.has("Lever")) searches.push(guarded("Lever", searchLever(env, limit)));
+  if (selected.has("Ashby")) searches.push(guarded("Ashby", searchAshby(env, limit)));
+  if (selected.has("SmartRecruiters")) searches.push(guarded("SmartRecruiters", searchSmartRecruiters(query, limit)));
+  if (selected.has("USAJOBS")) searches.push(guarded("USAJOBS", searchUSAJOBS(query, profile, env, limit)));
+  if (selected.has("Adzuna")) searches.push(guarded("Adzuna", searchAdzuna(query, env, limit)));
+  if (selected.has("Remotive")) searches.push(guarded("Remotive", searchRemotive(query, limit)));
+  if (selected.has("Firecrawl")) searches.push(guarded("Firecrawl", searchFirecrawl(env, limit)));
 
   const settled = await Promise.allSettled(searches);
   const jobs = settled.flatMap((result) => (result.status === "fulfilled" ? result.value.jobs : []));
-  const diagnostics = settled.map((result) =>
-    result.status === "fulfilled"
-      ? result.value.diagnostic
-      : { source: "Unknown", status: "failed", message: result.reason?.message || "Search failed" }
-  );
+  const diagnostics = settled.map((result) => result.value.diagnostic);
 
   return {
     jobs: dedupeJobs(jobs).slice(0, limit),
     diagnostics,
   };
+}
+
+async function guarded(source, promise) {
+  try {
+    return await promise;
+  } catch (error) {
+    return {
+      jobs: [],
+      diagnostic: { source, status: "failed", message: error.message || "Search failed" },
+    };
+  }
 }
 
 async function searchGreenhouse(env, limit) {

@@ -10,6 +10,12 @@ After GitHub Pages finishes publishing, open:
 https://udayprakashchamakuri-beep.github.io/ApplyPilot/
 ```
 
+Vercel deployment with backend API:
+
+```text
+https://applypilot-rose.vercel.app
+```
+
 ## Run
 
 Open `index.html` in a browser:
@@ -37,6 +43,34 @@ http://localhost:8787
 ```
 
 When opened from `localhost:8787`, the frontend automatically calls the backend APIs.
+
+## Deploy with Vercel
+
+Vercel can host the static frontend and the backend API together. The backend API is exposed through:
+
+```text
+/api/health
+/api/analyze-resume
+/api/search-jobs
+/api/intake
+```
+
+For Vercel deployments, add secrets in the Vercel project settings:
+
+```text
+FEATHERLESS_API_KEY
+FIRECRAWL_API_KEY
+GREENHOUSE_BOARDS
+LEVER_ACCOUNTS
+ASHBY_BOARDS
+COMPANY_CAREER_URLS
+USAJOBS_API_KEY
+USAJOBS_USER_AGENT
+ADZUNA_APP_ID
+ADZUNA_APP_KEY
+```
+
+On `*.vercel.app`, the frontend automatically calls the same-origin backend API.
 
 Backend endpoints:
 

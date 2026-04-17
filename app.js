@@ -4,7 +4,7 @@ const state = {
   matches: [],
   approvedApplications: [],
   selectedJob: null,
-  selectedSources: ["Greenhouse", "Lever", "Ashby", "SmartRecruiters", "Firecrawl"],
+  selectedSources: ["Greenhouse", "Lever", "Ashby", "SmartRecruiters", "Remotive", "Firecrawl"],
   searchDiagnostics: [],
 };
 
