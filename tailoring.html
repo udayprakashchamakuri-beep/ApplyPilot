@@ -167,7 +167,7 @@
               <span class="text-xs font-bold uppercase tracking-[0.2em] text-secondary font-label">Application Dossier #8214</span>
               <span class="px-2 py-0.5 rounded-full bg-secondary-fixed text-on-secondary-fixed text-[10px] font-bold">OPTIMIZED</span>
             </div>
-            <h1 class="text-4xl font-extrabold text-on-surface font-headline tracking-tighter">Senior Software Engineer <span class="text-primary">@ Google</span></h1>
+            <h1 class="text-4xl font-extrabold text-on-surface font-headline tracking-tighter" data-tailoring-title>Senior Software Engineer <span class="text-primary">@ Google</span></h1>
           </div>
           <div class="bg-surface-container-lowest p-4 rounded-xl flex items-center gap-6 border border-outline-variant/15">
             <div class="flex flex-col items-center">
@@ -176,12 +176,12 @@
                   <circle class="text-surface-container-highest" cx="32" cy="32" fill="none" r="28" stroke="currentColor" stroke-width="4"></circle>
                   <circle class="text-primary" cx="32" cy="32" fill="none" r="28" stroke="currentColor" stroke-dasharray="175.9" stroke-dashoffset="14" stroke-width="4"></circle>
                 </svg>
-                <span class="text-xl font-black font-headline text-on-surface">92<span class="text-[10px] font-bold">%</span></span>
+                <span class="text-xl font-black font-headline text-on-surface" data-tailoring-score>92<span class="text-[10px] font-bold">%</span></span>
               </div>
               <span class="text-[10px] font-bold uppercase tracking-widest text-secondary mt-1">Match Score</span>
             </div>
             <div class="max-w-[200px]">
-              <p class="text-xs font-medium text-on-surface-variant leading-relaxed">Intelligence engine aligned technical expertise with Google's Core Infrastructure requirements.</p>
+              <p class="text-xs font-medium text-on-surface-variant leading-relaxed" data-tailoring-status>Intelligence engine aligned technical expertise with Google's Core Infrastructure requirements.</p>
             </div>
           </div>
         </div>
@@ -192,7 +192,7 @@
               <span class="text-xs text-slate-400 font-medium">Uploaded Nov 12, 2023</span>
             </div>
             <div class="bg-surface-container-low rounded-xl p-8 border border-outline-variant/10 h-full relative overflow-hidden">
-              <div class="space-y-6 opacity-60">
+              <div class="space-y-6 opacity-60" data-original-resume>
                 <div class="border-b border-outline-variant/20 pb-4">
                   <h3 class="text-lg font-bold font-headline mb-1">Alex Sterling</h3>
                   <p class="text-sm">Seattle, WA • Full Stack Developer</p>
@@ -228,7 +228,7 @@
               <span class="text-xs text-indigo-600 font-bold uppercase">Optimized for Google</span>
             </div>
             <div class="bg-surface-container-lowest shadow-sm rounded-xl p-8 border-2 border-primary/10 h-full relative">
-              <div class="space-y-6">
+              <div class="space-y-6" data-tailored-resume>
                 <div class="border-b border-primary/10 pb-4">
                   <h3 class="text-lg font-bold font-headline text-on-surface mb-1">Alex Sterling</h3>
                   <p class="text-sm text-on-surface-variant">Seattle, WA • <span class="bg-primary/10 text-primary px-1 rounded">Senior Software Engineer | Infrastructure & Scale</span></p>
@@ -285,7 +285,10 @@
           </div>
           <div class="flex items-center gap-4">
             <a href="dashboard.html" class="px-6 py-3 rounded-lg text-sm font-bold font-headline text-secondary hover:bg-surface-container-low transition-colors">Edit Manually</a>
-            <button class="bg-primary text-on-primary py-4 px-10 rounded-xl font-headline font-black text-sm tracking-widest shadow-[0_10px_30px_-10px_rgba(53,37,205,0.4)] hover:bg-primary-container transition-all active:scale-95 flex items-center gap-3">
+            <button
+              class="bg-primary text-on-primary py-4 px-10 rounded-xl font-headline font-black text-sm tracking-widest shadow-[0_10px_30px_-10px_rgba(53,37,205,0.4)] hover:bg-primary-container transition-all active:scale-95 flex items-center gap-3 disabled:opacity-60"
+              data-approve-apply
+            >
               APPROVE & AI APPLY
               <span class="material-symbols-outlined">rocket_launch</span>
             </button>
@@ -296,5 +299,7 @@
     <footer class="hidden">
       <p>© 2024 Architect AI. Precision Match Engine.</p>
     </footer>
+    <script src="./config.js"></script>
+    <script src="./frontend.js"></script>
   </body>
 </html>

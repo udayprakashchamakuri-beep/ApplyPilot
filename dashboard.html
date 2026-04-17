@@ -161,14 +161,14 @@
         <div class="mb-12 flex flex-col md:flex-row md:items-end justify-between gap-6">
           <div>
             <h2 class="text-3xl font-black font-headline text-on-surface tracking-tight mb-2">Target Market Analysis</h2>
-            <p class="text-secondary max-w-2xl font-medium">We've scanned 4,290 listings. Here are the top 12 matches based on your technical architectural expertise and growth trajectory.</p>
+            <p class="text-secondary max-w-2xl font-medium" data-dashboard-status>We've scanned 4,290 listings. Here are the top 12 matches based on your technical architectural expertise and growth trajectory.</p>
           </div>
           <div class="flex gap-3">
             <button class="px-6 py-2 bg-surface-container-low text-on-surface text-sm font-bold font-headline rounded-lg hover:bg-surface-container transition-colors">Filters</button>
             <button class="px-6 py-2 bg-primary text-on-primary text-sm font-bold font-headline rounded-lg hover:opacity-90 transition-opacity">Update Portfolio</button>
           </div>
         </div>
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8" data-job-grid>
           <article class="bg-surface-container-lowest rounded-full p-8 transition-all hover:translate-y-[-4px]">
             <div class="flex justify-between items-start mb-8">
               <div class="flex gap-4">
@@ -365,5 +365,7 @@
         </div>
       </footer>
     </main>
+    <script src="./config.js"></script>
+    <script src="./frontend.js"></script>
   </body>
 </html>

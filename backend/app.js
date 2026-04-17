@@ -110,6 +110,62 @@ function createApp(options = {}) {
     }
   });
 
+  app.post("/api/tailor-resume", async (req, res, next) => {
+    try {
+      const { profile, job } = req.body;
+      if (!profile) {
+        res.status(400).json({ error: "profile is required" });
+        return;
+      }
+      if (!job) {
+        res.status(400).json({ error: "job is required" });
+        return;
+      }
+
+      const tailoredResume = buildTailoredResume(profile, job);
+      const calendar = buildCalendarSuggestion(job);
+      res.json({ tailoredResume, calendar });
+    } catch (error) {
+      next(error);
+    }
+  });
+
+  app.post("/api/apply", async (req, res, next) => {
+    try {
+      const { profile, job, tailoredResume } = req.body;
+      if (!profile) {
+        res.status(400).json({ error: "profile is required" });
+        return;
+      }
+      if (!job) {
+        res.status(400).json({ error: "job is required" });
+        return;
+      }
+
+      const calendar = buildCalendarSuggestion(job);
+      const application = {
+        provider: job.source || "ApplyPilot",
+        confirmationId: `APP-${String(job.source || "JOB").slice(0, 3).toUpperCase()}-${Date.now()
+          .toString()
+          .slice(-6)}`,
+        status: "queued_for_connector",
+        submittedAt: new Date().toISOString(),
+        applyUrl: job.applyUrl,
+        note:
+          "This MVP records the approved application and prepares the connector payload. Direct third-party submission and Google Calendar OAuth are the next production step.",
+      };
+
+      res.json({
+        ok: true,
+        application,
+        calendar,
+        tailoredResume: tailoredResume || buildTailoredResume(profile, job),
+      });
+    } catch (error) {
+      next(error);
+    }
+  });
+
   app.use((error, req, res, next) => {
     const status = error.message?.includes("required") || error.message?.includes("Unsupported") ? 400 : 500;
     res.status(status).json({
@@ -118,6 +174,71 @@ function createApp(options = {}) {
   });
 
   return app;
+}
+
+function buildTailoredResume(profile, job) {
+  const matchedSkills = Array.isArray(job.matchedSkills) && job.matchedSkills.length ? job.matchedSkills : [];
+  const skills = matchedSkills.length ? matchedSkills : profile.skills || [];
+  const leadSkill = skills[0] || "product engineering";
+  const secondSkill = skills[1] || "API delivery";
+  const company = job.company || "the company";
+  const role = job.title || job.role || "the role";
+  const gap = Array.isArray(job.gaps) && job.gaps.length ? job.gaps[0] : "role-specific depth";
+
+  return {
+    headline: `${profile.headline || "Software candidate"} - tailored for ${role}`,
+    summary: `Position ${profile.fileName || "the resume"} around ${company}'s need for ${leadSkill}, ${secondSkill}, measurable delivery, and role-specific ownership.`,
+    bullets: [
+      `Lead ${leadSkill} work aligned to ${role} responsibilities and measurable product outcomes.`,
+      `Build maintainable systems using ${secondSkill} with clear ownership, testability, and production readiness.`,
+      `Prioritize matched evidence from the uploaded resume for ${company}'s screening and ATS review.`,
+      `Address ${gap} as a focused improvement area while keeping the application honest and explainable.`,
+    ],
+    changes: [
+      `Moved ${leadSkill} and ${secondSkill} into the opening summary.`,
+      "Converted generic responsibilities into impact-led bullets.",
+      "Kept gaps visible so the user can improve before approval.",
+    ],
+  };
+}
+
+function buildCalendarSuggestion(job) {
+  const base = job.interviewDate || defaultFutureDate(5);
+  const start = new Date(base);
+  const end = new Date(start.getTime() + 60 * 60 * 1000);
+  return {
+    provider: "Google Calendar",
+    status: "ready_for_oauth",
+    start: start.toISOString(),
+    end: end.toISOString(),
+    title: `${job.company || "Company"} ${job.title || job.role || "interview"} interview or assessment`,
+    message:
+      "Calendar slot is prepared. Production Google Calendar OAuth can create the event after user approval.",
+    link: buildCalendarUrl(job, start, end),
+  };
+}
+
+function buildCalendarUrl(job, start, end) {
+  const format = (date) =>
+    date
+      .toISOString()
+      .replace(/[-:]/g, "")
+      .replace(/\.\d{3}Z$/, "Z");
+  const params = new URLSearchParams({
+    action: "TEMPLATE",
+    text: `${job.company || "Company"} ${job.title || job.role || "interview"} interview or assessment`,
+    dates: `${format(start)}/${format(end)}`,
+    details: `Application approved in ApplyPilot. Source: ${job.source || "Unknown"}.`,
+    location: job.location || "Online",
+  });
+  return `https://calendar.google.com/calendar/render?${params.toString()}`;
+}
+
+function defaultFutureDate(daysAhead) {
+  const date = new Date();
+  date.setDate(date.getDate() + daysAhead);
+  date.setHours(10, 0, 0, 0);
+  return date.toISOString();
 }
 
 function parsePreferences(value) {

@@ -138,10 +138,13 @@
                 <h3 class="font-headline font-bold text-xl">Drop your Resume</h3>
                 <span class="text-xs text-outline font-medium">PDF, DOCX (Max 10MB)</span>
               </div>
-              <div class="border-2 border-dashed border-outline-variant rounded-lg p-12 text-center hover:border-primary transition-colors cursor-pointer bg-surface-container-low/30">
+              <div
+                class="border-2 border-dashed border-outline-variant rounded-lg p-12 text-center hover:border-primary transition-colors cursor-pointer bg-surface-container-low/30"
+                data-upload-zone
+              >
                 <span class="material-symbols-outlined text-5xl text-primary mb-4">cloud_upload</span>
                 <p class="font-headline font-bold text-on-surface">Drag & Drop or Click to Browse</p>
-                <p class="text-secondary text-sm mt-2">Precision analysis starts immediately upon upload</p>
+                <p class="text-secondary text-sm mt-2" data-upload-status>Precision analysis starts immediately upon upload</p>
               </div>
               <div class="mt-8 flex items-center gap-6 opacity-60">
                 <span class="text-xs font-bold uppercase tracking-widest text-outline">Integrated with</span>
@@ -167,7 +170,7 @@
                 </div>
                 <div>
                   <h4 class="font-headline font-bold">Live Analysis</h4>
-                  <p class="text-xs text-secondary">Matching active opportunities...</p>
+                  <p class="text-xs text-secondary" data-upload-status>Matching active opportunities...</p>
                 </div>
               </div>
               <div class="space-y-3">
@@ -296,5 +299,7 @@
         </div>
       </div>
     </footer>
+    <script src="./config.js"></script>
+    <script src="./frontend.js"></script>
   </body>
 </html>
