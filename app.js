@@ -608,20 +608,20 @@ function renderProfile(profile) {
 function renderJobs() {
   if (!state.matches.length) {
     elements.jobList.innerHTML = `<p class="empty-note">No jobs matched the selected sources. Add more sources or lower the threshold.</p>`;
+    elements.sourceMeter.textContent = "No matches ready";
     renderSearchDiagnostics();
     return;
   }
 
   elements.sourceMeter.textContent = `${state.selectedSources.join(", ")} searched`;
 
-  elements.jobList.innerHTML = state.matches
+  const jobCards = state.matches
     .map(
       (job) => {
         const applied = isJobApplied(job.id);
         const reasons = job.matchReasons?.length
           ? job.matchReasons
           : [`Matched skills: ${job.matchedSkills.join(", ") || "Review job description"}`];
-        const gapText = job.gaps?.length ? ` Skill gaps: ${job.gaps.join(", ")}.` : "";
         const whyNot = job.whyNotMatch?.length ? job.whyNotMatch : ["No major blocker detected"];
         const improvements = job.suggestedImprovements?.length
           ? job.suggestedImprovements
@@ -630,40 +630,70 @@ function renderJobs() {
           ? job.learningSignals
           : ["Track approval behavior to improve future recommendations"];
         return `
-      <article class="job-card">
-        <div>
-          <div class="job-title-row">
-            <h3>${escapeHtml(job.role)}</h3>
-            <span class="tag neutral">${escapeHtml(job.source)}</span>
-            <span class="tag">${job.match}% match</span>
-            ${applied ? `<span class="tag">Applied</span>` : `<span class="tag warning">Needs approval</span>`}
+      <article class="job-match-card ${applied ? "is-applied" : ""}">
+        <div class="job-match-header">
+          <div class="job-identity">
+            <div class="company-mark" aria-hidden="true">${escapeHtml(getCompanyInitial(job.company))}</div>
+            <div>
+              <h3>${escapeHtml(job.role)}</h3>
+              <p>${escapeHtml(job.company)} - ${escapeHtml(job.location)}</p>
+              <div class="source-tags">
+                <span>${escapeHtml(job.source)}</span>
+                <span>${escapeHtml(job.posted || "Recent")}</span>
+                <span>${escapeHtml(job.salary)}</span>
+              </div>
+            </div>
           </div>
-          <p class="job-meta">${escapeHtml(job.company)} - ${escapeHtml(job.location)} - ${escapeHtml(
-        job.salary
-      )}</p>
-          <p class="job-details">${escapeHtml(job.friction)}. Matching skills: ${job.matchedSkills
-        .map(escapeHtml)
-        .join(", ")}.${escapeHtml(gapText)}</p>
-          <div class="match-insights">
-            ${renderInsightList("Why match", reasons)}
-            ${renderInsightList("Why not match", whyNot)}
-            ${renderInsightList("Improve chances", improvements)}
-            ${renderInsightList("Track results and learn", learning)}
-          </div>
-          <div class="tag-row">
-            ${job.skills.slice(0, 5).map((skill) => `<span class="tag neutral">${escapeHtml(skill)}</span>`).join("")}
+          <div class="score-widget">
+            ${renderScoreRing(job.match)}
+            <span>Resume fit</span>
           </div>
         </div>
-        <div class="job-card-actions">
-          <div>
-            <div class="score">${job.match}%</div>
-            <small>Resume fit</small>
+
+        <div class="ai-analysis-panel">
+          <div class="analysis-panel-title">
+            <span class="material-symbols-outlined" aria-hidden="true">auto_awesome</span>
+            <h4>ApplyPilot AI analysis</h4>
+            ${applied ? `<span class="application-state">Applied</span>` : `<span class="application-state pending">Needs approval</span>`}
           </div>
-          ${
-            applied
-              ? `<button class="button secondary" type="button" disabled>Already applied</button>`
-              : `<button class="button primary" type="button" data-review-job="${job.id}">Review and approve</button>`
-          }
+          <div class="analysis-card-grid">
+            <section class="analysis-column">
+              <p>Core alignment</p>
+              ${renderIconList(reasons, "check_circle")}
+            </section>
+            <section class="analysis-column friction-column">
+              <p>Potential friction</p>
+              ${renderIconList(whyNot, "warning")}
+            </section>
+          </div>
+          <div class="recommendation-strip">
+            <p>Skill-gap analysis and recommendations</p>
+            ${renderInsightPills(improvements)}
+          </div>
+          <div class="learning-strip">
+            <strong>Learning signals</strong>
+            <span>${escapeHtml(learning[0])}</span>
+          </div>
+        </div>
+
+        <div class="job-card-footer">
+          <div class="tag-row">
+            ${job.skills.slice(0, 6).map((skill) => `<span class="tag neutral">${escapeHtml(skill)}</span>`).join("")}
+            ${job.gaps.slice(0, 2).map((gap) => `<span class="tag warning">Gap: ${escapeHtml(gap)}</span>`).join("")}
+          </div>
+          <div class="job-card-actions">
+            ${
+              applied
+                ? `<button class="button secondary" type="button" disabled>Already applied</button>`
+                : `<button class="button primary" type="button" data-review-job="${job.id}">
+                    Review and apply
+                    <span class="material-symbols-outlined" aria-hidden="true">open_in_new</span>
+                  </button>`
+            }
+            <button class="icon-button" type="button" aria-label="Save job">
+              <span class="material-symbols-outlined" aria-hidden="true">bookmark_add</span>
+            </button>
+          </div>
         </div>
       </article>
     `;
@@ -671,7 +701,9 @@ function renderJobs() {
     )
     .join("");
 
-  document.querySelectorAll("[data-review-job]").forEach((button) => {
+  elements.jobList.innerHTML = `<div class="match-board">${jobCards}${renderMarketInsightCard()}</div>`;
+
+  elements.jobList.querySelectorAll("[data-review-job]").forEach((button) => {
     button.addEventListener("click", async () => {
       const job = state.matches.find((candidate) => candidate.id === button.dataset.reviewJob);
       await openApproval(job);
@@ -679,6 +711,79 @@ function renderJobs() {
   });
 
   renderSearchDiagnostics();
+}
+
+function getCompanyInitial(company) {
+  return String(company || "A").trim().charAt(0).toUpperCase() || "A";
+}
+
+function renderScoreRing(score) {
+  const normalizedScore = Math.max(0, Math.min(100, Number(score) || 0));
+  const circumference = 214;
+  const offset = circumference - (normalizedScore / 100) * circumference;
+  return `
+    <div class="score-ring" style="--score-offset: ${offset.toFixed(2)}">
+      <svg viewBox="0 0 80 80" aria-hidden="true">
+        <circle class="score-track" cx="40" cy="40" r="34"></circle>
+        <circle class="score-value" cx="40" cy="40" r="34"></circle>
+      </svg>
+      <strong>${normalizedScore}%</strong>
+    </div>
+  `;
+}
+
+function renderIconList(items, icon) {
+  const safeItems = items?.length ? items : ["Review this role before approval"];
+  return `
+    <ul class="icon-list">
+      ${safeItems
+        .slice(0, 3)
+        .map(
+          (item) => `
+            <li>
+              <span class="material-symbols-outlined" aria-hidden="true">${icon}</span>
+              <span>${escapeHtml(item)}</span>
+            </li>
+          `
+        )
+        .join("")}
+    </ul>
+  `;
+}
+
+function renderInsightPills(items) {
+  const safeItems = items?.length ? items : ["Tailor the resume before applying"];
+  return `
+    <div class="insight-pill-list">
+      ${safeItems.slice(0, 4).map((item) => `<span>${escapeHtml(item)}</span>`).join("")}
+    </div>
+  `;
+}
+
+function renderMarketInsightCard() {
+  const topJob = state.matches[0];
+  const approvedCount = state.approvedApplications.length;
+  const commonSkills = uniqueList(state.matches.flatMap((job) => job.matchedSkills || [])).slice(0, 4);
+  const skillCopy = commonSkills.length ? commonSkills.join(", ") : "the uploaded resume skills";
+
+  return `
+    <article class="market-insight-card">
+      <div>
+        <span class="live-dot"></span>
+        <p class="eyebrow">Active market insight</p>
+      </div>
+      <h3>${escapeHtml(topJob.role)} is the strongest current fit.</h3>
+      <p>
+        The strongest live matches are clustering around ${escapeHtml(skillCopy)}. Approving,
+        skipping, or applying from this board will tune future recommendations.
+      </p>
+      <div class="market-insight-actions">
+        <span>${state.matches.length} matches ranked</span>
+        <span>${approvedCount} applied after approval</span>
+      </div>
+      <button class="button secondary" type="button" data-review-job="${topJob.id}">Review top match</button>
+    </article>
+  `;
 }
 
 function renderInsightList(title, items) {

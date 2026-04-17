@@ -455,8 +455,36 @@
         </section>
 
         <section class="page" id="tailoringPage" data-page="tailoring">
-          <div class="tailoring-studio">
-            <section class="tailoring-main">
+          <div class="tailoring-workspace">
+            <section class="application-dossier-header">
+              <div>
+                <div class="dossier-kicker">
+                  <span>Application dossier #8214</span>
+                  <span class="dossier-badge">Optimized</span>
+                </div>
+                <h2>Senior Software Engineer <span>@ target company</span></h2>
+                <p>
+                  ApplyPilot compares the uploaded resume with the role-specific version before
+                  anything is submitted. The user still controls approval.
+                </p>
+              </div>
+              <div class="tailoring-score-card">
+                <div class="score-ring static-score" style="--score-offset: 17.12">
+                  <svg viewBox="0 0 80 80" aria-hidden="true">
+                    <circle class="score-track" cx="40" cy="40" r="34"></circle>
+                    <circle class="score-value" cx="40" cy="40" r="34"></circle>
+                  </svg>
+                  <strong>92%</strong>
+                </div>
+                <div>
+                  <strong>Match score</strong>
+                  <p>Role keywords, project evidence, and skill overlap are aligned for review.</p>
+                </div>
+              </div>
+            </section>
+
+            <div class="tailoring-studio">
+              <section class="tailoring-main">
               <div class="studio-metrics">
                 <article>
                   <strong>94%</strong>
@@ -475,7 +503,7 @@
                 </article>
               </div>
               <div class="resume-diff">
-                <article>
+                <article class="original-resume-panel">
                   <header>
                     <h3>Original source</h3>
                     <span>Read only</span>
@@ -490,17 +518,19 @@
                     </ul>
                   </div>
                 </article>
-                <article>
+                <article class="optimized-resume-panel">
                   <header>
                     <h3>AI-optimized resume</h3>
                     <span>Role-tailored</span>
                   </header>
                   <div class="resume-paper optimized-paper">
                     <h4>Tailored positioning</h4>
+                    <span class="rewrite-label">Rewritten</span>
                     <p>
                       Product-focused engineer with React, TypeScript, API integration, and automation
                       experience aligned to high-impact frontend and full-stack roles.
                     </p>
+                    <span class="rewrite-label">Enhanced bullets</span>
                     <ul>
                       <li>Led React interface work tied to measurable product outcomes.</li>
                       <li>Built maintainable API-driven features with reliable handoff and testing.</li>
@@ -527,8 +557,31 @@
                 <strong>Gap handling</strong>
                 <p>Missing skills are surfaced as improvement suggestions instead of being hidden.</p>
               </article>
+              <div class="confidence-card">
+                <p>Confidence score</p>
+                <strong>90%</strong>
+                <span>Strong ATS pass signal for the tailored version.</span>
+              </div>
               <button class="button primary wide" type="button" data-page-target="queue">Review approval queue</button>
             </aside>
+            </div>
+
+            <section class="approval-action-bar" aria-label="Tailored application approval">
+              <div>
+                <span class="material-symbols-outlined" aria-hidden="true">bolt</span>
+                <div>
+                  <strong>AI is ready to submit this application.</strong>
+                  <p>Review the tailored resume, approval queue, and calendar slot before submission.</p>
+                </div>
+              </div>
+              <div class="approval-action-buttons">
+                <button class="button secondary" type="button" data-page-target="jobs">Edit manually</button>
+                <button class="button primary" type="button" data-page-target="queue">
+                  Approve and AI apply
+                  <span class="material-symbols-outlined" aria-hidden="true">rocket_launch</span>
+                </button>
+              </div>
+            </section>
           </div>
         </section>
 

@@ -1260,6 +1260,357 @@ body[data-current-page="landing"] .top-appbar {
   color: var(--primary);
 }
 
+.match-board {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 18px;
+}
+
+.job-match-card,
+.market-insight-card {
+  min-width: 0;
+  display: grid;
+  gap: 22px;
+  padding: 24px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-soft);
+  transition: border-color 160ms ease, transform 160ms ease, box-shadow 160ms ease;
+}
+
+.job-match-card:hover {
+  transform: translateY(-3px);
+  border-color: var(--primary);
+  box-shadow: var(--shadow);
+}
+
+.job-match-card.is-applied {
+  border-color: rgba(15, 107, 75, 0.32);
+  background: linear-gradient(180deg, rgba(227, 243, 235, 0.54), #ffffff 34%);
+}
+
+.job-match-header {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 92px;
+  gap: 18px;
+  align-items: start;
+}
+
+.job-identity {
+  min-width: 0;
+  display: flex;
+  gap: 14px;
+  align-items: flex-start;
+}
+
+.company-mark {
+  width: 54px;
+  height: 54px;
+  flex: 0 0 auto;
+  display: grid;
+  place-items: center;
+  color: var(--primary-dark);
+  background: var(--primary-soft);
+  border: 1px solid rgba(15, 107, 75, 0.14);
+  border-radius: var(--radius);
+  font-family: Manrope, Inter, Arial, sans-serif;
+  font-size: 22px;
+  font-weight: 800;
+}
+
+.job-identity h3 {
+  margin: 0;
+  font-family: Manrope, Inter, Arial, sans-serif;
+  font-size: 21px;
+  line-height: 1.18;
+}
+
+.job-identity p {
+  margin: 6px 0 0;
+  color: var(--muted);
+  line-height: 1.45;
+}
+
+.source-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+  margin-top: 10px;
+}
+
+.source-tags span,
+.application-state,
+.insight-pill-list span,
+.market-insight-actions span,
+.rewrite-label,
+.dossier-badge {
+  display: inline-flex;
+  align-items: center;
+  min-height: 24px;
+  padding: 0 8px;
+  border-radius: var(--radius);
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.source-tags span {
+  color: var(--muted);
+  background: var(--surface-low);
+  border: 1px solid var(--line);
+}
+
+.score-widget {
+  display: grid;
+  justify-items: center;
+  gap: 6px;
+}
+
+.score-widget > span {
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.score-ring {
+  position: relative;
+  width: 82px;
+  height: 82px;
+  display: grid;
+  place-items: center;
+}
+
+.score-ring svg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  transform: rotate(-90deg);
+}
+
+.score-ring circle {
+  fill: none;
+  stroke-width: 6;
+}
+
+.score-track {
+  stroke: var(--surface-high);
+}
+
+.score-value {
+  stroke: var(--primary);
+  stroke-linecap: round;
+  stroke-dasharray: 214;
+  stroke-dashoffset: var(--score-offset);
+}
+
+.score-ring strong {
+  position: relative;
+  z-index: 1;
+  color: var(--primary);
+  font-family: Manrope, Inter, Arial, sans-serif;
+  font-size: 18px;
+  font-weight: 800;
+}
+
+.ai-analysis-panel {
+  padding: 18px;
+  background: var(--surface-low);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+}
+
+.analysis-panel-title {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.analysis-panel-title .material-symbols-outlined {
+  color: var(--primary);
+  font-size: 21px;
+}
+
+.analysis-panel-title h4 {
+  margin: 0;
+  flex: 1;
+  font-family: Manrope, Inter, Arial, sans-serif;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.application-state {
+  color: var(--primary-dark);
+  background: var(--primary-soft);
+}
+
+.application-state.pending {
+  color: var(--plum);
+  background: var(--plum-soft);
+}
+
+.analysis-card-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.analysis-column p,
+.recommendation-strip p {
+  margin: 0 0 10px;
+  color: var(--primary-dark);
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.friction-column p {
+  color: var(--danger);
+}
+
+.icon-list {
+  display: grid;
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.icon-list li {
+  display: grid;
+  grid-template-columns: 20px 1fr;
+  gap: 8px;
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+.icon-list .material-symbols-outlined {
+  margin-top: 1px;
+  color: var(--primary);
+  font-size: 18px;
+}
+
+.friction-column .material-symbols-outlined {
+  color: var(--danger);
+}
+
+.recommendation-strip {
+  margin-top: 18px;
+  padding-top: 16px;
+  border-top: 1px solid var(--line);
+}
+
+.insight-pill-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.insight-pill-list span {
+  color: var(--teal);
+  background: var(--teal-soft);
+}
+
+.learning-strip {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+  margin-top: 14px;
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.learning-strip strong {
+  color: var(--ink);
+}
+
+.job-card-footer {
+  display: flex;
+  gap: 16px;
+  align-items: flex-end;
+  justify-content: space-between;
+}
+
+.job-card-footer .tag-row {
+  margin-top: 0;
+}
+
+.job-card-actions {
+  display: flex;
+  flex: 0 0 auto;
+  gap: 10px;
+  align-items: center;
+  justify-content: flex-end;
+  text-align: right;
+}
+
+.job-card-actions .button .material-symbols-outlined {
+  font-size: 18px;
+}
+
+.market-insight-card {
+  align-content: start;
+  color: #ffffff;
+  background: var(--nav);
+  border-color: rgba(255, 255, 255, 0.08);
+}
+
+.market-insight-card .eyebrow {
+  margin: 0;
+  color: #b7f4cf;
+}
+
+.market-insight-card h3 {
+  margin: 0;
+  font-family: Manrope, Inter, Arial, sans-serif;
+  font-size: 26px;
+  line-height: 1.18;
+}
+
+.market-insight-card p {
+  margin: 0;
+  color: rgba(255, 255, 255, 0.78);
+  line-height: 1.65;
+}
+
+.market-insight-card > div:first-child {
+  display: flex;
+  gap: 9px;
+  align-items: center;
+}
+
+.live-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #8bf0b9;
+  box-shadow: 0 0 0 5px rgba(139, 240, 185, 0.12);
+}
+
+.market-insight-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.market-insight-actions span {
+  color: #dff5e8;
+  background: rgba(255, 255, 255, 0.09);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+.market-insight-card .button.secondary {
+  color: var(--primary-dark);
+  border: 0;
+}
+
 .approval-dialog {
   width: min(980px, calc(100vw - 32px));
   padding: 0;
@@ -1577,6 +1928,241 @@ body[data-current-page="landing"] .top-appbar {
   line-height: 1.55;
 }
 
+.tailoring-workspace {
+  max-width: 1240px;
+  display: grid;
+  gap: 22px;
+  margin: 0 auto 28px;
+  padding-bottom: 108px;
+}
+
+.application-dossier-header {
+  display: flex;
+  gap: 24px;
+  align-items: flex-end;
+  justify-content: space-between;
+  padding: 26px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-soft);
+}
+
+.dossier-kicker {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.dossier-kicker > span:first-child {
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.dossier-badge {
+  color: var(--primary-dark);
+  background: var(--primary-soft);
+}
+
+.application-dossier-header h2 {
+  margin: 0;
+  font-family: Manrope, Inter, Arial, sans-serif;
+  font-size: clamp(32px, 4vw, 48px);
+  line-height: 1.05;
+  letter-spacing: -0.03em;
+}
+
+.application-dossier-header h2 span {
+  color: var(--primary);
+}
+
+.application-dossier-header p {
+  max-width: 760px;
+  margin: 14px 0 0;
+  color: var(--muted);
+  line-height: 1.65;
+}
+
+.tailoring-score-card {
+  width: min(310px, 100%);
+  display: grid;
+  grid-template-columns: 82px 1fr;
+  gap: 16px;
+  align-items: center;
+  padding: 16px;
+  background: var(--surface-low);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+}
+
+.tailoring-score-card strong {
+  display: block;
+  font-family: Manrope, Inter, Arial, sans-serif;
+}
+
+.tailoring-score-card p {
+  margin: 5px 0 0;
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.tailoring-studio {
+  min-height: auto;
+  margin-bottom: 0;
+}
+
+.studio-metrics article {
+  min-height: 118px;
+}
+
+.studio-metrics strong,
+.reasoning-panel strong {
+  color: var(--primary);
+}
+
+.optimized-paper p {
+  background: var(--primary-soft);
+  border-left-color: var(--primary);
+}
+
+.optimized-resume-panel header {
+  background: #ffffff;
+}
+
+.optimized-resume-panel h3 {
+  color: var(--primary);
+}
+
+.original-resume-panel .resume-paper {
+  position: relative;
+}
+
+.original-resume-panel .resume-paper::after {
+  content: "BASELINE";
+  position: absolute;
+  inset: 48% auto auto 50%;
+  color: rgba(16, 22, 20, 0.05);
+  font-family: Manrope, Inter, Arial, sans-serif;
+  font-size: 56px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  transform: translate(-50%, -50%) rotate(-12deg);
+  pointer-events: none;
+}
+
+.rewrite-label {
+  width: fit-content;
+  margin-bottom: 10px;
+  color: var(--teal);
+  background: var(--teal-soft);
+  text-transform: uppercase;
+}
+
+.reasoning-hero {
+  background: var(--nav);
+}
+
+.reasoning-panel article {
+  border-left-color: var(--primary);
+}
+
+.confidence-card {
+  display: grid;
+  justify-items: center;
+  gap: 8px;
+  padding: 22px;
+  background: var(--surface-low);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-soft);
+  text-align: center;
+}
+
+.confidence-card p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.confidence-card strong {
+  color: var(--primary);
+  font-family: Manrope, Inter, Arial, sans-serif;
+  font-size: 42px;
+}
+
+.confidence-card span {
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.approval-action-bar {
+  position: sticky;
+  bottom: 18px;
+  z-index: 15;
+  display: flex;
+  gap: 18px;
+  align-items: center;
+  justify-content: space-between;
+  padding: 18px;
+  background: rgba(255, 255, 255, 0.9);
+  border: 1px solid rgba(215, 224, 223, 0.9);
+  border-radius: var(--radius);
+  box-shadow: 0 18px 44px rgba(23, 36, 32, 0.14);
+  backdrop-filter: blur(18px);
+}
+
+.approval-action-bar > div:first-child {
+  display: flex;
+  gap: 14px;
+  align-items: center;
+}
+
+.approval-action-bar .material-symbols-outlined {
+  width: 42px;
+  height: 42px;
+  flex: 0 0 auto;
+  display: grid;
+  place-items: center;
+  color: var(--primary);
+  background: var(--primary-soft);
+  border-radius: var(--radius);
+}
+
+.approval-action-bar strong {
+  display: block;
+  font-family: Manrope, Inter, Arial, sans-serif;
+}
+
+.approval-action-bar p {
+  margin: 4px 0 0;
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.approval-action-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  justify-content: flex-end;
+}
+
+.approval-action-buttons .button .material-symbols-outlined {
+  width: auto;
+  height: auto;
+  color: currentColor;
+  background: transparent;
+  font-size: 18px;
+}
+
 .empty-note {
   margin: 0;
   padding: 18px;
@@ -1630,9 +2216,15 @@ body[data-current-page="landing"] .top-appbar {
   .workflow-grid,
   .analysis-grid,
   .approval-content,
+  .match-board,
   .tailoring-studio,
   .resume-diff {
     grid-template-columns: 1fr;
+  }
+
+  .application-dossier-header {
+    align-items: flex-start;
+    flex-direction: column;
   }
 
   .dashboard-grid .dashboard-panel:nth-last-child(1) {
@@ -1711,6 +2303,8 @@ body[data-current-page="landing"] .top-appbar {
   .intelligence-grid,
   .match-insights,
   .job-card,
+  .job-match-header,
+  .analysis-card-grid,
   .activity-card,
   .queue-card,
   .adapter-grid,
@@ -1718,8 +2312,31 @@ body[data-current-page="landing"] .top-appbar {
     grid-template-columns: 1fr;
   }
 
-  .job-card-actions {
+  .job-card-footer,
+  .approval-action-bar {
+    display: grid;
+    align-items: start;
+  }
+
+  .job-card-actions,
+  .approval-action-buttons {
+    justify-content: flex-start;
     text-align: left;
+  }
+
+  .application-dossier-header,
+  .job-match-card,
+  .market-insight-card {
+    padding: 18px;
+  }
+
+  .resume-paper {
+    min-height: auto;
+    padding: 24px;
+  }
+
+  .original-resume-panel .resume-paper::after {
+    font-size: 36px;
   }
 
   .pipeline-image {
