@@ -249,7 +249,8 @@ document.addEventListener("DOMContentLoaded", () => {
   bindEvents();
   renderTimeline();
   renderAdapterPlan();
-  navigateToPage("intake");
+  renderDashboard();
+  navigateToPage("dashboard");
 });
 
 function hydrateElements() {
@@ -266,6 +267,10 @@ function hydrateElements() {
     "approvalContent",
     "activityList",
     "adapterGrid",
+    "dashboardStats",
+    "dashboardProfile",
+    "dashboardSourceStatus",
+    "dashboardRecommendation",
     "queueList",
     "queueBadge",
     "calendarBadge",
@@ -376,6 +381,7 @@ async function runAutopilotSearch() {
     state.resumeProfile = buildProfile(state.resumeFile, resumeText, preferences);
   }
   renderProfile(state.resumeProfile);
+  renderDashboard();
 
   renderTimeline("search");
   try {
@@ -397,8 +403,129 @@ async function runAutopilotSearch() {
   renderTimeline("done");
   renderJobs();
   renderApprovalQueue();
+  renderDashboard();
   navigateToPage("jobs");
   elements.connectorStatus.textContent = `${state.matches.length} matches ready for approval`;
+}
+
+function renderDashboard() {
+  if (!elements.dashboardStats) {
+    return;
+  }
+
+  const pendingCount = state.matches.filter((job) => !isJobApplied(job.id)).length;
+  const approvedCount = state.approvedApplications.length;
+  const topMatch = state.matches[0];
+  const liveSources = state.searchDiagnostics.filter((item) => item.status === "ok").length;
+
+  elements.dashboardStats.innerHTML = [
+    {
+      label: "Resume",
+      value: state.resumeProfile ? "Ready" : "Needed",
+      detail: state.resumeProfile ? state.resumeProfile.fileName : "Upload resume",
+    },
+    {
+      label: "Live matches",
+      value: String(state.matches.length),
+      detail: topMatch ? `${topMatch.match}% top fit` : "Run job search",
+    },
+    {
+      label: "Approvals",
+      value: String(pendingCount),
+      detail: pendingCount === 1 ? "Waiting review" : "Waiting reviews",
+    },
+    {
+      label: "Applied",
+      value: String(approvedCount),
+      detail: "After user approval",
+    },
+  ]
+    .map(
+      (item) => `
+        <article class="dashboard-stat">
+          <span>${escapeHtml(item.label)}</span>
+          <strong>${escapeHtml(item.value)}</strong>
+          <small>${escapeHtml(item.detail)}</small>
+        </article>
+      `
+    )
+    .join("");
+
+  elements.dashboardProfile.innerHTML = state.resumeProfile
+    ? `
+      <article class="profile-card">
+        <h3>${escapeHtml(state.resumeProfile.headline)}</h3>
+        <p>${escapeHtml(state.resumeProfile.summary)}</p>
+        <div class="tag-row">
+          ${state.resumeProfile.skills
+            .slice(0, 10)
+            .map((skill) => `<span class="tag">${escapeHtml(skill)}</span>`)
+            .join("")}
+        </div>
+      </article>
+    `
+    : `<p class="empty-note">Upload a resume to build the profile.</p>`;
+
+  elements.dashboardSourceStatus.innerHTML = state.searchDiagnostics.length
+    ? `
+      <div class="mini-source-list">
+        ${state.searchDiagnostics
+          .map(
+            (item) => `
+              <div class="mini-source-row">
+                <strong>${escapeHtml(item.source)}</strong>
+                <span>${escapeHtml(item.status)}</span>
+                <small>${escapeHtml(item.message || `${item.count || 0} jobs returned`)}</small>
+              </div>
+            `
+          )
+          .join("")}
+      </div>
+    `
+    : `<p class="empty-note">Run intake to search live sources.</p>`;
+
+  elements.dashboardRecommendation.innerHTML = buildDashboardRecommendation(topMatch, pendingCount, liveSources);
+  bindDashboardActionButtons();
+}
+
+function buildDashboardRecommendation(topMatch, pendingCount, liveSources) {
+  if (!state.resumeProfile) {
+    return `
+      <div class="recommendation-card">
+        <h3>Start with resume intake</h3>
+        <p>Upload the resume and job preferences so ApplyPilot can analyze fit and search live sources.</p>
+        <button class="button primary" type="button" data-dashboard-target="intake">Start intake</button>
+      </div>
+    `;
+  }
+
+  if (!state.matches.length) {
+    return `
+      <div class="recommendation-card">
+        <h3>Broaden the search</h3>
+        <p>No suited jobs are ready yet. Lower the approval threshold or keep Greenhouse, Lever, Ashby, and Remotive selected.</p>
+        <button class="button primary" type="button" data-dashboard-target="intake">Adjust intake</button>
+      </div>
+    `;
+  }
+
+  return `
+    <div class="recommendation-card">
+      <h3>Review ${escapeHtml(topMatch.role)} at ${escapeHtml(topMatch.company)}</h3>
+      <p>${escapeHtml(topMatch.match)}% match from ${escapeHtml(
+    topMatch.source
+  )}. ${pendingCount} jobs are waiting for approval across ${liveSources} live sources.</p>
+      <button class="button primary" type="button" data-dashboard-target="jobs">View suited jobs</button>
+    </div>
+  `;
+}
+
+function bindDashboardActionButtons() {
+  document.querySelectorAll("[data-dashboard-target]").forEach((button) => {
+    button.addEventListener("click", () => {
+      navigateToPage(button.dataset.dashboardTarget);
+    });
+  });
 }
 
 function renderTimeline(activeStage) {
@@ -495,6 +622,13 @@ function renderJobs() {
           ? job.matchReasons
           : [`Matched skills: ${job.matchedSkills.join(", ") || "Review job description"}`];
         const gapText = job.gaps?.length ? ` Skill gaps: ${job.gaps.join(", ")}.` : "";
+        const whyNot = job.whyNotMatch?.length ? job.whyNotMatch : ["No major blocker detected"];
+        const improvements = job.suggestedImprovements?.length
+          ? job.suggestedImprovements
+          : ["Review the description and tailor the summary before approval"];
+        const learning = job.learningSignals?.length
+          ? job.learningSignals
+          : ["Track approval behavior to improve future recommendations"];
         return `
       <article class="job-card">
         <div>
@@ -510,7 +644,12 @@ function renderJobs() {
           <p class="job-details">${escapeHtml(job.friction)}. Matching skills: ${job.matchedSkills
         .map(escapeHtml)
         .join(", ")}.${escapeHtml(gapText)}</p>
-          <p class="job-details"><strong>Why this score:</strong> ${escapeHtml(reasons.join(" "))}</p>
+          <div class="match-insights">
+            ${renderInsightList("Why match", reasons)}
+            ${renderInsightList("Why not match", whyNot)}
+            ${renderInsightList("Improve chances", improvements)}
+            ${renderInsightList("Track results and learn", learning)}
+          </div>
           <div class="tag-row">
             ${job.skills.slice(0, 5).map((skill) => `<span class="tag neutral">${escapeHtml(skill)}</span>`).join("")}
           </div>
@@ -540,6 +679,18 @@ function renderJobs() {
   });
 
   renderSearchDiagnostics();
+}
+
+function renderInsightList(title, items) {
+  const safeItems = items?.length ? items : ["Review this role before approval"];
+  return `
+    <section class="insight-block">
+      <h4>${escapeHtml(title)}</h4>
+      <ul>
+        ${safeItems.map((item) => `<li>${escapeHtml(item)}</li>`).join("")}
+      </ul>
+    </section>
+  `;
 }
 
 function renderSearchDiagnostics() {
@@ -617,6 +768,12 @@ function renderApproval(job, tailoredResume, calendar) {
         <div class="tag-row">
           ${job.matchedSkills.map((skill) => `<span class="tag">${escapeHtml(skill)}</span>`).join("")}
           ${job.gaps.map((gap) => `<span class="tag warning">Gap: ${escapeHtml(gap)}</span>`).join("")}
+        </div>
+        <div class="match-insights approval-insights">
+          ${renderInsightList("Why match", job.matchReasons || [])}
+          ${renderInsightList("Why not match", job.whyNotMatch || [])}
+          ${renderInsightList("Improve chances", job.suggestedImprovements || [])}
+          ${renderInsightList("Track results and learn", job.learningSignals || [])}
         </div>
 
         <h3>Tailored resume before applying</h3>
@@ -697,6 +854,7 @@ async function approveAndApply(job) {
   renderJobs();
   renderApprovalQueue();
   renderActivity();
+  renderDashboard();
   elements.approvalDialog.close();
   navigateToPage("queue");
   elements.connectorStatus.textContent = "Application submitted after approval";
@@ -842,6 +1000,9 @@ function normalizeBackendJobs(jobs) {
     matchedSkills: job.matchedSkills || [],
     gaps: job.gaps || [],
     matchReasons: job.matchReasons || [],
+    whyNotMatch: job.whyNotMatch || [],
+    suggestedImprovements: job.suggestedImprovements || [],
+    learningSignals: job.learningSignals || [],
     match: job.matchScore || job.match || 70,
     matchScore: job.matchScore || job.match || 70,
     description: job.description || "",
@@ -911,10 +1072,22 @@ function scoreJobs(profile, selectedSources) {
         modeBoost,
         gaps: job.gaps,
       });
+      const whyNotMatch = buildBrowserMismatchReasons({
+        matchedSkills,
+        roleBoost,
+        locationBoost,
+        typeBoost,
+        modeBoost,
+        gaps: job.gaps,
+      });
+      const suggestedImprovements = buildBrowserImprovements(job.gaps, matchedSkills);
       return {
         ...job,
         matchedSkills,
         matchReasons,
+        whyNotMatch,
+        suggestedImprovements,
+        learningSignals: buildBrowserLearningSignals(job),
         match,
       };
     })
@@ -933,6 +1106,34 @@ function buildBrowserMatchReasons({ matchedSkills, roleBoost, locationBoost, typ
   if (modeBoost) reasons.push("Work mode matches the user's preference");
   if (gaps?.length) reasons.push(`Skill gaps to improve: ${gaps.join(", ")}`);
   return reasons.length ? reasons : ["Review the job description before approval"];
+}
+
+function buildBrowserMismatchReasons({ matchedSkills, roleBoost, locationBoost, typeBoost, modeBoost, gaps }) {
+  const reasons = [];
+  if (!matchedSkills.length) reasons.push("Few direct resume skill overlaps were found");
+  if (!roleBoost) reasons.push("The title is not a direct target-role match");
+  if (!locationBoost) reasons.push("The location does not clearly match the preferred cities");
+  if (!typeBoost) reasons.push("The job type does not exactly match the intake preference");
+  if (!modeBoost) reasons.push("The work mode is not clearly aligned");
+  if (gaps?.length) reasons.push(`Missing or weakly evidenced skills: ${gaps.join(", ")}`);
+  return reasons.length ? reasons : ["No major blocker detected"];
+}
+
+function buildBrowserImprovements(gaps, matchedSkills) {
+  const improvements = [];
+  if (gaps?.length) improvements.push(`Add proof for ${gaps.slice(0, 2).join(" and ")}`);
+  if (matchedSkills.length) improvements.push(`Emphasize ${matchedSkills.slice(0, 3).join(", ")} in the tailored resume`);
+  improvements.push("Use approval and rejection feedback to improve future recommendations");
+  return improvements;
+}
+
+function buildBrowserLearningSignals(job) {
+  return [
+    `Track approval, rejection, or ignored status for this ${job.source} role`,
+    "Learn from user behavior across approvals and rejected roles",
+    "Raise similar jobs when the user approves",
+    "Lower similar jobs when the user rejects to improve future recommendations",
+  ];
 }
 
 function buildTailoredResume(profile, job) {
@@ -1070,7 +1271,8 @@ function resetState() {
   elements.sourceMeter.textContent = "No sources searched yet";
   elements.connectorStatus.textContent = "Automation connectors ready for backend keys";
   renderTimeline();
-  navigateToPage("intake");
+  renderDashboard();
+  navigateToPage("dashboard");
   showToast("Intake reset", "Upload a resume to start again.");
 }
 

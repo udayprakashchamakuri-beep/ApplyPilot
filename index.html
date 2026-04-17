@@ -24,22 +24,29 @@
         </div>
 
         <nav class="step-rail" id="stepRail">
-          <button class="step-item is-active" type="button" data-page-target="intake">
+          <button class="step-item is-active" type="button" data-page-target="dashboard">
             <span class="step-index">01</span>
+            <span>
+              <strong>Dashboard</strong>
+              <small>Status and recommendations</small>
+            </span>
+          </button>
+          <button class="step-item" type="button" data-page-target="intake">
+            <span class="step-index">02</span>
             <span>
               <strong>Intake</strong>
               <small>Resume and job goals</small>
             </span>
           </button>
           <button class="step-item" type="button" data-page-target="jobs">
-            <span class="step-index">02</span>
+            <span class="step-index">03</span>
             <span>
               <strong>Suited jobs</strong>
               <small>Matches and scores</small>
             </span>
           </button>
           <button class="step-item" type="button" data-page-target="queue">
-            <span class="step-index">03</span>
+            <span class="step-index">04</span>
             <span>
               <strong>Approval queue</strong>
               <small>Pending and applied jobs</small>
@@ -77,7 +84,53 @@
           </div>
         </header>
 
-        <section class="page is-active" id="intakePage" data-page="intake">
+        <section class="page is-active" id="dashboardPage" data-page="dashboard">
+          <div class="dashboard-grid">
+            <section class="dashboard-panel dashboard-hero-panel">
+              <div class="section-heading">
+                <p class="eyebrow">User dashboard</p>
+                <h2>Live application workspace</h2>
+                <p>
+                  Track resume readiness, live source health, matched jobs, and approval progress
+                  from one place.
+                </p>
+              </div>
+              <div class="dashboard-stats" id="dashboardStats"></div>
+            </section>
+
+            <section class="dashboard-panel">
+              <div class="section-heading compact-heading">
+                <p class="eyebrow">Resume profile</p>
+                <h2>Candidate signals</h2>
+              </div>
+              <div id="dashboardProfile">
+                <p class="empty-note">Upload a resume to build the profile.</p>
+              </div>
+            </section>
+
+            <section class="dashboard-panel">
+              <div class="section-heading compact-heading">
+                <p class="eyebrow">Live sources</p>
+                <h2>Backend feed status</h2>
+              </div>
+              <div id="dashboardSourceStatus">
+                <p class="empty-note">Run intake to search live sources.</p>
+              </div>
+            </section>
+
+            <section class="dashboard-panel">
+              <div class="section-heading compact-heading">
+                <p class="eyebrow">Next action</p>
+                <h2>Recommendation</h2>
+              </div>
+              <div id="dashboardRecommendation">
+                <p class="empty-note">Start with resume intake to generate suited jobs.</p>
+              </div>
+            </section>
+          </div>
+        </section>
+
+        <section class="page" id="intakePage" data-page="intake">
           <div class="workflow-grid" id="upload">
             <div class="upload-panel">
             <div class="section-heading">

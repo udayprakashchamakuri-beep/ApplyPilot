@@ -18,15 +18,23 @@ function createApp(options = {}) {
     limits: { fileSize: 10 * 1024 * 1024 },
   });
 
-  const allowedOrigins = String(process.env.CORS_ORIGIN || "")
-    .split(",")
-    .map((origin) => origin.trim())
-    .filter(Boolean);
+  const allowedOrigins = uniqueList(
+    String(process.env.CORS_ORIGIN || "")
+      .split(",")
+      .map((origin) => origin.trim())
+      .filter(Boolean)
+      .concat([
+        "http://localhost:8787",
+        "http://127.0.0.1:8787",
+        "https://applypilot-rose.vercel.app",
+        "https://udayprakashchamakuri-beep.github.io",
+      ])
+  );
 
   app.use(
     cors({
       origin(origin, callback) {
-        if (!origin || !allowedOrigins.length || allowedOrigins.includes(origin)) {
+        if (!origin || allowedOrigins.includes(origin) || isVercelPreviewOrigin(origin)) {
           callback(null, true);
           return;
         }
@@ -143,9 +151,22 @@ function hasJsonItems(value) {
   }
 }
 
+function isVercelPreviewOrigin(origin) {
+  try {
+    return new URL(origin).hostname.endsWith(".vercel.app");
+  } catch {
+    return false;
+  }
+}
+
+function uniqueList(items) {
+  return Array.from(new Set(items));
+}
+
 module.exports = {
   createApp,
   parsePreferences,
   parseSources,
   hasJsonItems,
+  isVercelPreviewOrigin,
 };
