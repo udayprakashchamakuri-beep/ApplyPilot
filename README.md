@@ -1,6 +1,6 @@
-# ApplyAI Autopilot Frontend
+# ApplyPilot Frontend
 
-This folder turns the six exported ApplyAI screens into one interactive browser app.
+This folder turns the six exported prototype screens into one interactive ApplyPilot browser app.
 
 ## Live site
 
@@ -23,10 +23,12 @@ No install step is required.
 ## What works in the browser demo
 
 - Resume upload intake for PDF, DOCX, DOC, and TXT.
+- Job-seeking intake for target roles, locations, salary, experience level, job type, work mode, notice period, and skills to emphasize.
 - Text resume parsing for TXT files.
 - Mock resume analysis for document files.
-- Job search across LinkedIn, Naukri.com, Indeed, and company career sites.
+- A suited-jobs page with jobs from LinkedIn, Naukri.com, Indeed, and company career sites.
 - Match scoring by role, skills, location, salary, and approval threshold.
+- An approval queue page for jobs waiting on user approval.
 - Tailored resume preview before applying.
 - User approval gate.
 - Calendar availability check.

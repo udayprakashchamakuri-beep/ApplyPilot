@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>ApplyAI Autopilot</title>
+    <title>ApplyPilot</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
@@ -18,38 +18,31 @@
         <div class="brand-block">
           <div class="brand-mark">A</div>
           <div>
-            <p class="brand-name">ApplyAI</p>
+            <p class="brand-name">ApplyPilot</p>
             <p class="brand-subtitle">Job application control room</p>
           </div>
         </div>
 
         <nav class="step-rail" id="stepRail">
-          <button class="step-item is-active" type="button" data-step-target="upload">
+          <button class="step-item is-active" type="button" data-page-target="intake">
             <span class="step-index">01</span>
             <span>
-              <strong>Resume</strong>
-              <small>Upload and analyze</small>
+              <strong>Intake</strong>
+              <small>Resume and job goals</small>
             </span>
           </button>
-          <button class="step-item" type="button" data-step-target="matches">
+          <button class="step-item" type="button" data-page-target="jobs">
             <span class="step-index">02</span>
             <span>
-              <strong>Matches</strong>
-              <small>LinkedIn, Naukri, Indeed, company sites</small>
+              <strong>Suited jobs</strong>
+              <small>Matches and scores</small>
             </span>
           </button>
-          <button class="step-item" type="button" data-step-target="approval">
+          <button class="step-item" type="button" data-page-target="queue">
             <span class="step-index">03</span>
             <span>
-              <strong>Approval</strong>
-              <small>Tailor resume before apply</small>
-            </span>
-          </button>
-          <button class="step-item" type="button" data-step-target="calendar">
-            <span class="step-index">04</span>
-            <span>
-              <strong>Calendar</strong>
-              <small>Check availability and schedule</small>
+              <strong>Approval queue</strong>
+              <small>Pending and applied jobs</small>
             </span>
           </button>
         </nav>
@@ -64,26 +57,27 @@
         <header class="workspace-header">
           <div>
             <p class="eyebrow">Approved application automation</p>
-            <h1>Upload a resume. Review each match. Approve once.</h1>
+            <h1>Tell ApplyPilot what job you want. Approve the right applications.</h1>
             <p class="intro-copy">
-              The app analyzes the resume, searches job sources, prepares a tailored resume,
-              checks the interview or exam date, creates a calendar event, and submits after approval.
+              Upload a resume, enter the job you are seeking, review the suited roles with scores,
+              and manage every application from the approval queue.
             </p>
           </div>
           <div class="header-actions">
             <button class="button secondary" id="resetDemo" type="button">Reset demo</button>
-            <a class="button primary" href="#upload">Start with resume</a>
+            <button class="button primary" type="button" data-page-target="intake">Start intake</button>
           </div>
         </header>
 
-        <section class="workflow-grid" id="upload">
-          <div class="upload-panel">
+        <section class="page is-active" id="intakePage" data-page="intake">
+          <div class="workflow-grid" id="upload">
+            <div class="upload-panel">
             <div class="section-heading">
               <p class="eyebrow">Step 01</p>
-              <h2>Resume intake</h2>
+              <h2>Resume and job-seeking details</h2>
               <p>
-                Upload a PDF, DOCX, or TXT resume. The browser demo reads text files directly
-                and sends document files through the mock analysis connector.
+                Upload the resume and tell ApplyPilot what kind of job, location, work mode,
+                salary, and schedule the user is looking for.
               </p>
             </div>
 
@@ -121,7 +115,45 @@
                   Approval threshold
                   <input id="approvalThreshold" type="number" min="60" max="99" value="85" />
                 </label>
+                <label>
+                  Experience level
+                  <select id="experienceLevel">
+                    <option>Internship</option>
+                    <option>Entry level</option>
+                    <option selected>Mid-senior</option>
+                    <option>Senior</option>
+                    <option>Lead or manager</option>
+                  </select>
+                </label>
+                <label>
+                  Job type
+                  <select id="jobType">
+                    <option selected>Full time</option>
+                    <option>Internship</option>
+                    <option>Contract</option>
+                    <option>Part time</option>
+                    <option>Freelance</option>
+                  </select>
+                </label>
+                <label>
+                  Work mode
+                  <select id="workMode">
+                    <option selected>Remote or hybrid</option>
+                    <option>Remote only</option>
+                    <option>Hybrid</option>
+                    <option>On-site</option>
+                  </select>
+                </label>
+                <label>
+                  Notice period
+                  <input id="noticePeriod" type="text" value="Immediate to 30 days" />
+                </label>
               </div>
+
+              <label class="full-field">
+                Skills or domains to emphasize
+                <textarea id="focusSkills" rows="3">React, TypeScript, APIs, automation, product engineering</textarea>
+              </label>
 
               <fieldset class="source-selector">
                 <legend>Search sources</legend>
@@ -137,12 +169,12 @@
                 Analyze resume and find jobs
               </button>
             </form>
-          </div>
+            </div>
 
-          <aside class="preview-panel" aria-label="Approval preview">
+            <aside class="preview-panel" aria-label="Approval preview">
             <img
               src="./assets/approval-screen.png"
-              alt="ApplyAI job approval screen preview"
+              alt="ApplyPilot job approval screen preview"
               class="pipeline-image"
             />
             <div class="preview-caption">
@@ -152,30 +184,32 @@
                 date check, and calendar action.
               </p>
             </div>
-          </aside>
-        </section>
-
-        <section class="analysis-section" id="analysis" aria-live="polite">
-          <div class="section-heading">
-            <p class="eyebrow">Resume analysis</p>
-            <h2>Extraction and search pipeline</h2>
+            </aside>
           </div>
-          <div class="analysis-grid">
-            <div class="analysis-timeline" id="analysisTimeline"></div>
-            <div class="profile-summary" id="profileSummary">
-              <p class="empty-note">Upload a resume to generate the candidate profile.</p>
+
+          <div class="analysis-section" id="analysis" aria-live="polite">
+            <div class="section-heading">
+              <p class="eyebrow">Resume analysis</p>
+              <h2>Extraction and search pipeline</h2>
+            </div>
+            <div class="analysis-grid">
+              <div class="analysis-timeline" id="analysisTimeline"></div>
+              <div class="profile-summary" id="profileSummary">
+                <p class="empty-note">Upload a resume to generate the candidate profile.</p>
+              </div>
             </div>
           </div>
         </section>
 
-        <section class="matches-section" id="matches">
+        <section class="page" id="jobsPage" data-page="jobs">
+          <div class="matches-section" id="matches">
           <div class="section-heading split-heading">
             <div>
               <p class="eyebrow">Step 02</p>
-              <h2>Matched jobs</h2>
+              <h2>Jobs the user is suited for</h2>
               <p>
                 Results are ranked by resume skills, role preference, location, compensation,
-                and application friction.
+                application friction, and the details entered on the intake page.
               </p>
             </div>
             <div class="source-meter" id="sourceMeter">No sources searched yet</div>
@@ -183,13 +217,32 @@
           <div class="job-list" id="jobList">
             <p class="empty-note">Resume analysis will populate matching roles here.</p>
           </div>
+          </div>
         </section>
 
-        <section class="activity-section" id="calendar">
+        <section class="page" id="queuePage" data-page="queue">
+          <div class="activity-section" id="approvalQueue">
+            <div class="section-heading split-heading">
+              <div>
+                <p class="eyebrow">Step 03</p>
+                <h2>Approval queue</h2>
+                <p>
+                  Jobs wait here until the user approves the tailored resume, calendar slot,
+                  and final application submission.
+                </p>
+              </div>
+              <span class="calendar-badge" id="queueBadge">No queue yet</span>
+            </div>
+            <div class="activity-list" id="queueList">
+              <p class="empty-note">Analyze a resume to build the approval queue.</p>
+            </div>
+          </div>
+
+          <div class="activity-section" id="calendar">
           <div class="section-heading split-heading">
             <div>
-              <p class="eyebrow">Step 04</p>
-              <h2>Applications and calendar</h2>
+              <p class="eyebrow">Applied jobs</p>
+              <h2>Submitted applications and calendar</h2>
               <p>
                 Approved jobs appear here after the app creates the calendar event and submits
                 the application connector.
@@ -199,6 +252,7 @@
           </div>
           <div class="activity-list" id="activityList">
             <p class="empty-note">No approved applications yet.</p>
+          </div>
           </div>
         </section>
       </main>

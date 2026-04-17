@@ -149,6 +149,7 @@ document.addEventListener("DOMContentLoaded", () => {
   hydrateElements();
   bindEvents();
   renderTimeline();
+  navigateToPage("intake");
 });
 
 function hydrateElements() {
@@ -164,6 +165,8 @@ function hydrateElements() {
     "approvalDialog",
     "approvalContent",
     "activityList",
+    "queueList",
+    "queueBadge",
     "calendarBadge",
     "connectorStatus",
     "resetDemo",
@@ -171,6 +174,11 @@ function hydrateElements() {
     "targetLocations",
     "minimumSalary",
     "approvalThreshold",
+    "experienceLevel",
+    "jobType",
+    "workMode",
+    "noticePeriod",
+    "focusSkills",
   ].forEach((id) => {
     elements[id] = document.getElementById(id);
   });
@@ -206,14 +214,9 @@ function bindEvents() {
     resetState();
   });
 
-  document.querySelectorAll("[data-step-target]").forEach((button) => {
+  document.querySelectorAll("[data-page-target]").forEach((button) => {
     button.addEventListener("click", () => {
-      const target = button.dataset.stepTarget;
-      const destination = document.getElementById(target);
-      if (destination) {
-        destination.scrollIntoView({ behavior: "smooth", block: "start" });
-      }
-      setActiveStep(target);
+      navigateToPage(button.dataset.pageTarget);
     });
   });
 }
@@ -242,7 +245,7 @@ async function runAutopilotSearch() {
     return;
   }
 
-  setActiveStep("upload");
+  navigateToPage("intake");
   elements.connectorStatus.textContent = "Analyzing resume and searching sources";
   renderTimeline("read");
   elements.profileSummary.innerHTML = `<p class="empty-note">Reading ${escapeHtml(
@@ -258,6 +261,11 @@ async function runAutopilotSearch() {
     locations: splitInput(elements.targetLocations.value),
     minimumSalary: elements.minimumSalary.value.trim(),
     threshold: Number(elements.approvalThreshold.value || 85),
+    experienceLevel: elements.experienceLevel.value,
+    jobType: elements.jobType.value,
+    workMode: elements.workMode.value,
+    noticePeriod: elements.noticePeriod.value.trim(),
+    focusSkills: splitInput(elements.focusSkills.value),
   };
 
   state.resumeProfile = await connectors.analyzeResume(state.resumeFile, resumeText, preferences);
@@ -270,9 +278,9 @@ async function runAutopilotSearch() {
   await wait(250);
   renderTimeline("done");
   renderJobs();
-  setActiveStep("matches");
+  renderApprovalQueue();
+  navigateToPage("jobs");
   elements.connectorStatus.textContent = `${state.matches.length} matches ready for approval`;
-  document.getElementById("matches").scrollIntoView({ behavior: "smooth", block: "start" });
 }
 
 function renderTimeline(activeStage) {
@@ -343,6 +351,10 @@ function renderProfile(profile) {
       <p>Roles: ${escapeHtml(profile.preferences.roles.join(", "))}</p>
       <p>Locations: ${escapeHtml(profile.preferences.locations.join(", "))}</p>
       <p>Minimum salary: ${escapeHtml(profile.preferences.minimumSalary)}</p>
+      <p>Experience level: ${escapeHtml(profile.preferences.experienceLevel)}</p>
+      <p>Job type: ${escapeHtml(profile.preferences.jobType)}</p>
+      <p>Work mode: ${escapeHtml(profile.preferences.workMode)}</p>
+      <p>Notice period: ${escapeHtml(profile.preferences.noticePeriod)}</p>
       <p>Approval threshold: ${profile.preferences.threshold}%</p>
     </article>
   `;
@@ -358,13 +370,16 @@ function renderJobs() {
 
   elements.jobList.innerHTML = state.matches
     .map(
-      (job) => `
+      (job) => {
+        const applied = isJobApplied(job.id);
+        return `
       <article class="job-card">
         <div>
           <div class="job-title-row">
             <h3>${escapeHtml(job.role)}</h3>
             <span class="tag neutral">${escapeHtml(job.source)}</span>
             <span class="tag">${job.match}% match</span>
+            ${applied ? `<span class="tag">Applied</span>` : `<span class="tag warning">Needs approval</span>`}
           </div>
           <p class="job-meta">${escapeHtml(job.company)} - ${escapeHtml(job.location)} - ${escapeHtml(
         job.salary
@@ -381,12 +396,15 @@ function renderJobs() {
             <div class="score">${job.match}%</div>
             <small>Resume fit</small>
           </div>
-          <button class="button primary" type="button" data-review-job="${job.id}">
-            Review and approve
-          </button>
+          ${
+            applied
+              ? `<button class="button secondary" type="button" disabled>Already applied</button>`
+              : `<button class="button primary" type="button" data-review-job="${job.id}">Review and approve</button>`
+          }
         </div>
       </article>
-    `
+    `;
+      }
     )
     .join("");
 
@@ -400,7 +418,7 @@ function renderJobs() {
 
 async function openApproval(job) {
   state.selectedJob = job;
-  setActiveStep("approval");
+  navigateToPage("queue");
   elements.approvalContent.innerHTML = `<div class="approval-main"><p class="empty-note">Preparing tailored resume and calendar check.</p></div>`;
   elements.approvalDialog.showModal();
 
@@ -505,15 +523,66 @@ async function approveAndApply(job) {
     application: applicationResult,
   };
   state.approvedApplications.unshift(application);
+  renderJobs();
+  renderApprovalQueue();
   renderActivity();
   elements.approvalDialog.close();
-  setActiveStep("calendar");
+  navigateToPage("queue");
   elements.connectorStatus.textContent = "Application submitted after approval";
   showToast(
     "Application submitted",
     `${job.company} received the tailored application. Calendar event ${calendarResult.eventId} is ready.`
   );
-  document.getElementById("calendar").scrollIntoView({ behavior: "smooth", block: "start" });
+}
+
+function renderApprovalQueue() {
+  const pendingJobs = state.matches.filter((job) => !isJobApplied(job.id));
+  elements.queueBadge.textContent = `${pendingJobs.length} waiting for approval`;
+
+  if (!state.matches.length) {
+    elements.queueList.innerHTML = `<p class="empty-note">Analyze a resume to build the approval queue.</p>`;
+    return;
+  }
+
+  if (!pendingJobs.length) {
+    elements.queueList.innerHTML = `<p class="empty-note">Every matched job has been approved or submitted.</p>`;
+    return;
+  }
+
+  elements.queueList.innerHTML = pendingJobs
+    .map((job) => {
+      const interviewDate = new Date(job.interviewDate);
+      return `
+        <article class="queue-card">
+          <div>
+            <div class="job-title-row">
+              <h3>${escapeHtml(job.role)}</h3>
+              <span class="tag">${job.match}% match</span>
+              <span class="tag neutral">${escapeHtml(job.source)}</span>
+            </div>
+            <p>${escapeHtml(job.company)} - ${escapeHtml(job.location)} - ${escapeHtml(job.salary)}</p>
+            <p>Suggested interview or exam slot: ${formatDateTime(interviewDate)}.</p>
+            <div class="tag-row">
+              ${job.matchedSkills.map((skill) => `<span class="tag">${escapeHtml(skill)}</span>`).join("")}
+              ${job.gaps.map((gap) => `<span class="tag warning">Gap: ${escapeHtml(gap)}</span>`).join("")}
+            </div>
+          </div>
+          <div class="queue-actions">
+            <button class="button primary" type="button" data-review-job="${job.id}">
+              Review approval
+            </button>
+          </div>
+        </article>
+      `;
+    })
+    .join("");
+
+  elements.queueList.querySelectorAll("[data-review-job]").forEach((button) => {
+    button.addEventListener("click", async () => {
+      const job = state.matches.find((candidate) => candidate.id === button.dataset.reviewJob);
+      await openApproval(job);
+    });
+  });
 }
 
 function renderActivity() {
@@ -564,9 +633,12 @@ function buildProfile(file, text, preferences) {
 
   const normalized = `${file.name} ${text}`.toLowerCase();
   const detectedSkills = knownSkills.filter((skill) => normalized.includes(skill.toLowerCase()));
-  const skills = detectedSkills.length
-    ? detectedSkills
-    : ["React", "TypeScript", "Node.js", "REST APIs", "Tailwind CSS", "Testing"];
+  const intakeSkills = preferences.focusSkills.filter(Boolean);
+  const skills = uniqueList(
+    detectedSkills.length
+      ? [...detectedSkills, ...intakeSkills]
+      : ["React", "TypeScript", "Node.js", "REST APIs", "Tailwind CSS", "Testing", ...intakeSkills]
+  );
 
   const yearsMatch = normalized.match(/(\d+)\+?\s*(years|yrs)/);
   const years = yearsMatch ? Number(yearsMatch[1]) : Math.max(3, Math.min(8, skills.length));
@@ -575,8 +647,9 @@ function buildProfile(file, text, preferences) {
   return {
     fileName: file.name,
     headline: `${seniority} software candidate with ${years}+ years of relevant experience`,
-    summary:
-      "Strong fit for product engineering roles that need frontend delivery, API integration, testing discipline, and maintainable user interfaces.",
+    summary: `Seeking ${preferences.jobType.toLowerCase()} ${preferences.roles.join(
+      " or "
+    )} roles with ${preferences.workMode.toLowerCase()} flexibility, ${preferences.minimumSalary} minimum compensation, and ${preferences.noticePeriod.toLowerCase()} availability.`,
     skills,
     years,
     preferences,
@@ -601,7 +674,15 @@ function scoreJobs(profile, selectedSources) {
       )
         ? 5
         : 0;
-      const baseScore = 68 + matchedSkills.length * 5 + roleBoost + locationBoost;
+      const typeBoost = job.type.toLowerCase() === profile.preferences.jobType.toLowerCase() ? 4 : 0;
+      const modePreference = profile.preferences.workMode.toLowerCase();
+      const modeBoost =
+        modePreference.includes("remote") && job.location.toLowerCase().includes("remote")
+          ? 5
+          : modePreference.includes("hybrid") && job.location.toLowerCase().includes("hybrid")
+          ? 4
+          : 0;
+      const baseScore = 68 + matchedSkills.length * 5 + roleBoost + locationBoost + typeBoost + modeBoost;
       const match = Math.min(98, Math.max(62, baseScore));
       return {
         ...job,
@@ -653,7 +734,7 @@ function buildCalendarUrl(job) {
     action: "TEMPLATE",
     text: `${job.company} ${job.role} interview or exam`,
     dates: `${format(start)}/${format(end)}`,
-    details: `Application submitted by ApplyAI after user approval. Source: ${job.source}.`,
+    details: `Application submitted by ApplyPilot after user approval. Source: ${job.source}.`,
     location: job.location,
   });
   return `https://calendar.google.com/calendar/render?${params.toString()}`;
@@ -673,10 +754,16 @@ function splitInput(value) {
     .filter(Boolean);
 }
 
-function setActiveStep(stepName) {
-  document.querySelectorAll("[data-step-target]").forEach((button) => {
-    button.classList.toggle("is-active", button.dataset.stepTarget === stepName);
+function navigateToPage(pageName) {
+  document.querySelectorAll("[data-page]").forEach((page) => {
+    page.classList.toggle("is-active", page.dataset.page === pageName);
   });
+
+  document.querySelectorAll("[data-page-target]").forEach((button) => {
+    button.classList.toggle("is-active", button.dataset.pageTarget === pageName);
+  });
+
+  window.scrollTo({ top: 0, behavior: "smooth" });
 }
 
 function resetState() {
@@ -690,14 +777,21 @@ function resetState() {
   elements.targetLocations.value = "Bengaluru, Hyderabad, Remote";
   elements.minimumSalary.value = "INR 18 LPA";
   elements.approvalThreshold.value = "85";
+  elements.experienceLevel.value = "Mid-senior";
+  elements.jobType.value = "Full time";
+  elements.workMode.value = "Remote or hybrid";
+  elements.noticePeriod.value = "Immediate to 30 days";
+  elements.focusSkills.value = "React, TypeScript, APIs, automation, product engineering";
   elements.resumeFileLabel.textContent = "Drop resume here or browse";
   elements.profileSummary.innerHTML = `<p class="empty-note">Upload a resume to generate the candidate profile.</p>`;
   elements.jobList.innerHTML = `<p class="empty-note">Resume analysis will populate matching roles here.</p>`;
+  elements.queueList.innerHTML = `<p class="empty-note">Analyze a resume to build the approval queue.</p>`;
   elements.activityList.innerHTML = `<p class="empty-note">No approved applications yet.</p>`;
+  elements.queueBadge.textContent = "No queue yet";
   elements.sourceMeter.textContent = "No sources searched yet";
   elements.connectorStatus.textContent = "Automation connectors ready for backend keys";
   renderTimeline();
-  setActiveStep("upload");
+  navigateToPage("intake");
   showToast("Demo reset", "Upload a resume to start again.");
 }
 
@@ -728,6 +822,22 @@ function showToast(title, body) {
   toast.innerHTML = `<strong>${escapeHtml(title)}</strong><p>${escapeHtml(body)}</p>`;
   document.body.appendChild(toast);
   window.setTimeout(() => toast.remove(), 4200);
+}
+
+function isJobApplied(jobId) {
+  return state.approvedApplications.some(({ job }) => job.id === jobId);
+}
+
+function uniqueList(items) {
+  const seen = new Set();
+  return items.filter((item) => {
+    const key = item.toLowerCase();
+    if (seen.has(key)) {
+      return false;
+    }
+    seen.add(key);
+    return true;
+  });
 }
 
 function wait(ms) {
