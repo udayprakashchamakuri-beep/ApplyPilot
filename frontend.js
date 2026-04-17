@@ -626,15 +626,15 @@ function getStrategyMeta(strategy) {
     },
     strict: {
       label: "Strict Fit",
-      description: "Prioritizes high-confidence matches and filters weaker roles.",
+      description: "Shows only high-confidence roles with fewer risk gaps.",
     },
     growth: {
       label: "Growth",
-      description: "Surfaces stretch roles where targeted improvements can boost chances.",
+      description: "Surfaces stretch roles where targeted improvements can increase shortlist odds.",
     },
     location: {
       label: "Location First",
-      description: "Prioritizes roles matching preferred locations and work mode.",
+      description: "Prioritizes jobs aligned with your preferred locations and remote mode.",
     },
   };
   return meta[strategy] || meta.balanced;
@@ -650,7 +650,11 @@ function cycleStrategy() {
 }
 
 function applyStrategyToJobs(jobs, profile, strategy) {
-  const preferredLocations = safeList(profile?.preferences?.locations, [])
+  const savedSettings = readJson(SETTINGS_KEY) || {};
+  const preferredLocations = [
+    ...safeList(profile?.preferences?.locations, []),
+    ...safeList(savedSettings.locations, []),
+  ]
     .map((item) => String(item || "").toLowerCase())
     .filter(Boolean);
 
@@ -659,29 +663,39 @@ function applyStrategyToJobs(jobs, profile, strategy) {
     const gapCount = safeList(job.whyNotMatch, []).length;
     const improvementCount = safeList(job.suggestedImprovements, []).length;
     const locationText = `${job.location || ""} ${job.remoteType || ""}`.toLowerCase();
-    const locationMatch =
-      !preferredLocations.length || preferredLocations.some((location) => locationText.includes(location.toLowerCase()));
+    const locationMatch = preferredLocations.some((location) => locationText.includes(location.toLowerCase()));
+    const remoteFriendly = /remote|hybrid/.test(locationText);
 
     let score = base;
-    if (strategy === "strict") {
-      score = base + (base >= 85 ? 8 : 0) - gapCount * 2;
+    if (strategy === "balanced") {
+      score = base + Math.min(6, safeList(job.matchReasons, []).length * 1.5) - Math.min(4, gapCount);
+    } else if (strategy === "strict") {
+      score = base + (base >= 85 ? 12 : 0) - gapCount * 4;
     } else if (strategy === "growth") {
-      score = base + Math.min(10, improvementCount * 2) + (base < 80 ? 4 : 0);
+      score = base + Math.min(16, improvementCount * 3) + (base < 78 ? 8 : 0) - Math.max(0, base - 88);
     } else if (strategy === "location") {
-      score = base + (locationMatch ? 16 : -8);
+      score = base + (locationMatch ? 22 : 0) + (remoteFriendly ? 8 : -10);
     }
 
-    return { ...job, strategyScore: score, locationMatch };
+    return { ...job, strategyScore: score, locationMatch, remoteFriendly, baseScore: base, gapCount, improvementCount };
   });
 
-  const filtered =
-    strategy === "strict"
-      ? scored.filter((job) => Number(job.matchScore || job.match || 0) >= 75)
-      : strategy === "growth"
-      ? scored.filter((job) => Number(job.matchScore || job.match || 0) >= 60)
-      : scored;
+  let filtered = scored;
+  if (strategy === "strict") {
+    filtered = scored.filter((job) => job.baseScore >= 80 && job.gapCount <= 2);
+  } else if (strategy === "growth") {
+    filtered = scored.filter((job) => job.baseScore >= 55 && job.baseScore <= 88);
+  } else if (strategy === "location") {
+    filtered = preferredLocations.length
+      ? scored.filter((job) => job.locationMatch || job.remoteFriendly)
+      : scored.filter((job) => job.remoteFriendly);
+  }
 
-  return filtered.sort((a, b) => b.strategyScore - a.strategyScore || Number(b.matchScore || 0) - Number(a.matchScore || 0));
+  if (!filtered.length) {
+    filtered = scored;
+  }
+
+  return filtered.sort((a, b) => b.strategyScore - a.strategyScore || b.baseScore - a.baseScore);
 }
 
 async function setupTailoringPage() {
