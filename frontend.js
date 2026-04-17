@@ -12,6 +12,7 @@ const LEGACY_ROUTE_PAGES = {
   dashboard: "insights.html",
   resume: "resume.html",
   "suited-jobs": "dashboard.html",
+  "saved-jobs": "dashboard.html",
   applications: "tailoring.html",
   queue: "tailoring.html",
   calendar: "calendar.html",
@@ -68,6 +69,7 @@ function refreshSpaRoute(route) {
   if (route === "resume") setupResumePage();
   if (route === "dashboard") setupInsightsPage();
   if (route === "suited-jobs") setupDashboardPage();
+  if (route === "saved-jobs") renderSavedJobsPage();
   if (route === "applications") setupTailoringPage();
   if (route === "queue") renderApplicationsQueue();
   if (route === "calendar") setupCalendarPage();
@@ -511,21 +513,19 @@ function setupDashboardPage() {
   if (!intake?.jobs?.length) {
     setDashboardStatus("Upload a resume from the landing page to replace these sample cards with live jobs.");
     grid.innerHTML = renderEmptyJobsState();
-    if (updatePortfolioButton && updatePortfolioButton.dataset.bound !== "true") {
-      updatePortfolioButton.dataset.bound = "true";
-      updatePortfolioButton.addEventListener("click", () => {
+    if (updatePortfolioButton) {
+      updatePortfolioButton.onclick = () => {
         navigateTo("resume");
-      });
+      };
     }
-    if (adjustStrategyTopButton && adjustStrategyTopButton.dataset.bound !== "true") {
-      adjustStrategyTopButton.dataset.bound = "true";
-      adjustStrategyTopButton.addEventListener("click", () => {
+    if (adjustStrategyTopButton) {
+      adjustStrategyTopButton.onclick = () => {
         const next = cycleStrategy();
         const meta = getStrategyMeta(next);
         if (strategyLabel) strategyLabel.textContent = meta.label;
         if (strategyDescription) strategyDescription.textContent = meta.description;
-        showToast("Strategy updated", `${meta.label} strategy is active.`);
-      });
+        showToast("Strategy updated", `${meta.label} strategy is active. Upload intake to apply this mode to job ranking.`);
+      };
     }
     return;
   }
@@ -548,12 +548,12 @@ function setupDashboardPage() {
     });
 
     if (!filteredJobs.length) {
-      setDashboardStatus("No jobs matched your current search. Clear search to see all matched jobs.");
+      setDashboardStatus(`No jobs matched your current search in ${strategyMeta.label} mode. Clear search or switch strategy.`);
       grid.innerHTML = renderNoFilterResultCard();
       return;
     }
 
-    setDashboardStatus(`${filteredJobs.length} jobs ready in ${strategyMeta.label} mode.`);
+    setDashboardStatus(`${filteredJobs.length} of ${allJobs.length} jobs shown in ${strategyMeta.label} mode.`);
     grid.innerHTML = filteredJobs.slice(0, 8).map((job) => renderJobCard(job, savedIds.has(getJobId(job)))).join("") + renderMarketCard(intake);
     grid.querySelectorAll("[data-select-job]").forEach((button) => {
       button.addEventListener("click", () => {
@@ -593,21 +593,19 @@ function setupDashboardPage() {
     });
   }
 
-  if (updatePortfolioButton && updatePortfolioButton.dataset.bound !== "true") {
-    updatePortfolioButton.dataset.bound = "true";
-    updatePortfolioButton.addEventListener("click", () => {
+  if (updatePortfolioButton) {
+    updatePortfolioButton.onclick = () => {
       navigateTo("resume");
-    });
+    };
   }
 
-  if (adjustStrategyTopButton && adjustStrategyTopButton.dataset.bound !== "true") {
-    adjustStrategyTopButton.dataset.bound = "true";
-    adjustStrategyTopButton.addEventListener("click", () => {
+  if (adjustStrategyTopButton) {
+    adjustStrategyTopButton.onclick = () => {
       const next = cycleStrategy();
       const meta = getStrategyMeta(next);
       showToast("Strategy updated", `${meta.label} strategy applied to suited jobs.`);
       rerender();
-    });
+    };
   }
 
   rerender();
@@ -864,6 +862,63 @@ function renderApplicationsQueue() {
     .join("");
 }
 
+function renderSavedJobsPage() {
+  const list = document.querySelector("[data-saved-jobs-list]");
+  const status = document.querySelector("[data-saved-jobs-status]");
+  if (!list) return;
+
+  const savedJobs = readJson(SAVED_JOBS_KEY) || [];
+  if (status) {
+    status.textContent = `${savedJobs.length} saved job${savedJobs.length === 1 ? "" : "s"}`;
+  }
+
+  if (!savedJobs.length) {
+    list.innerHTML = `
+      <article class="bg-white border border-slate-200 rounded-xl p-4 text-sm text-slate-600">
+        You have no saved jobs yet. In Suited Jobs, click the bookmark button next to <strong>Review & Apply</strong>.
+      </article>
+    `;
+    return;
+  }
+
+  list.innerHTML = savedJobs
+    .slice(0, 20)
+    .map((job) => {
+      const jobId = getJobId(job);
+      return `
+        <article class="bg-white border border-slate-200 rounded-xl p-4 flex flex-col gap-2">
+          <h4 class="font-semibold text-slate-900">${escapeHtml(job.title || job.role || "Role")} at ${escapeHtml(job.company || "Company")}</h4>
+          <p class="text-xs text-slate-600">Match: ${escapeHtml(String(job.matchScore || job.match || "NA"))}% | Source: ${escapeHtml(job.source || "Unknown")}</p>
+          <p class="text-xs text-slate-500">${escapeHtml(job.location || "Location not specified")}</p>
+          <div class="flex gap-2 pt-1">
+            <button data-open-saved-job="${escapeHtml(jobId)}" class="px-3 py-2 rounded-lg bg-indigo-600 text-white text-xs font-semibold">Review & Apply</button>
+            <button data-remove-saved-job="${escapeHtml(jobId)}" class="px-3 py-2 rounded-lg bg-slate-100 text-slate-700 text-xs font-semibold">Remove</button>
+          </div>
+        </article>
+      `;
+    })
+    .join("");
+
+  list.querySelectorAll("[data-open-saved-job]").forEach((button) => {
+    button.addEventListener("click", () => {
+      const job = savedJobs.find((candidate) => getJobId(candidate) === button.dataset.openSavedJob);
+      if (!job) return;
+      localStorage.setItem(SELECTED_JOB_KEY, JSON.stringify(job));
+      navigateTo("applications");
+    });
+  });
+
+  list.querySelectorAll("[data-remove-saved-job]").forEach((button) => {
+    button.addEventListener("click", () => {
+      const nextSaved = savedJobs.filter((candidate) => getJobId(candidate) !== button.dataset.removeSavedJob);
+      localStorage.setItem(SAVED_JOBS_KEY, JSON.stringify(nextSaved));
+      showToast("Saved job removed", "The job was removed from your saved list.");
+      renderSavedJobsPage();
+      setupInsightsPage();
+    });
+  });
+}
+
 function renderJobCard(job, isSaved = false) {
   const score = Number(job.matchScore || job.match || 70);
   const offset = 213.6 - (score / 100) * 213.6;
@@ -923,7 +978,7 @@ function renderJobCard(job, isSaved = false) {
         </div>
       </div>
       <div class="mt-8 flex gap-4">
-        <button data-select-job="${escapeHtml(id)}" class="flex-1 py-3 bg-primary text-on-primary font-headline font-bold rounded-lg hover:opacity-90 transition-all flex items-center justify-center gap-2">
+        <button data-select-job="${escapeHtml(id)}" class="flex-1 py-3 bg-indigo-600 text-white font-headline font-bold rounded-lg hover:bg-indigo-700 transition-all flex items-center justify-center gap-2">
           Review & Apply
           <span class="material-symbols-outlined text-sm">open_in_new</span>
         </button>

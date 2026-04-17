@@ -42,6 +42,9 @@
           <a href="#suited-jobs" data-route-link="suited-jobs" data-route-nav="true" data-route-label="Suited Jobs" class="flex items-center gap-2 px-3 py-2 rounded-lg text-slate-600 hover:bg-slate-100">
             <span class="material-symbols-outlined text-[18px]">work</span>Suited Jobs
           </a>
+          <a href="#saved-jobs" data-route-link="saved-jobs" data-route-nav="true" data-route-label="Saved Jobs" class="flex items-center gap-2 px-3 py-2 rounded-lg text-slate-600 hover:bg-slate-100">
+            <span class="material-symbols-outlined text-[18px]">bookmark</span>Saved Jobs
+          </a>
           <a href="#applications" data-route-link="applications" data-route-nav="true" data-route-label="Applications" class="flex items-center gap-2 px-3 py-2 rounded-lg text-slate-600 hover:bg-slate-100">
             <span class="material-symbols-outlined text-[18px]">send</span>Applications
           </a>
@@ -71,11 +74,32 @@
           <section data-route-view="home" class="space-y-6">
             <article class="bg-white border border-slate-200 rounded-xl p-6">
               <h3 class="font-headline text-3xl font-black">Welcome to APPLYPILOT</h3>
-              <p class="text-slate-600 mt-2">Use one control center for intake, suited jobs, approvals, queued applications, and interview tracking.</p>
+              <p class="text-slate-600 mt-2">APPLYPILOT is an AI job-search copilot that analyzes your resume, finds best-fit live jobs, explains every match score, and applies only after your approval.</p>
+              <div class="mt-4 grid md:grid-cols-2 gap-4 text-sm text-slate-700">
+                <div class="bg-slate-50 rounded-lg p-4 border border-slate-200">
+                  <p class="font-semibold">What it does</p>
+                  <ul class="list-disc pl-5 mt-2 space-y-1">
+                    <li>Explainable AI-based job matching</li>
+                    <li>Personalized role recommendations</li>
+                    <li>Skill-gap analysis and improvements</li>
+                    <li>Resume tailoring per role before apply</li>
+                  </ul>
+                </div>
+                <div class="bg-slate-50 rounded-lg p-4 border border-slate-200">
+                  <p class="font-semibold">How it works</p>
+                  <ol class="list-decimal pl-5 mt-2 space-y-1">
+                    <li>Upload resume in Intake</li>
+                    <li>Review Suited Jobs and strategy modes</li>
+                    <li>Approve in Applications</li>
+                    <li>Track queue and interviews</li>
+                  </ol>
+                </div>
+              </div>
               <div class="mt-5 flex flex-wrap gap-3">
                 <button data-route-link="intake" data-route-label="Intake" class="px-5 py-3 rounded-lg bg-indigo-600 text-white font-semibold">Start Intake</button>
                 <button data-route-link="dashboard" data-route-label="Dashboard" class="px-5 py-3 rounded-lg bg-slate-100 text-slate-700 font-semibold">Open Dashboard</button>
                 <button data-route-link="suited-jobs" data-route-label="Suited Jobs" class="px-5 py-3 rounded-lg bg-slate-100 text-slate-700 font-semibold">See Suited Jobs</button>
+                <button data-route-link="saved-jobs" data-route-label="Saved Jobs" class="px-5 py-3 rounded-lg bg-slate-100 text-slate-700 font-semibold">Open Saved Jobs</button>
                 <button data-route-link="queue" data-route-label="Queued Applications" class="px-5 py-3 rounded-lg bg-slate-100 text-slate-700 font-semibold">View Queue</button>
               </div>
             </article>
@@ -153,6 +177,7 @@
                 </div>
                 <div class="flex gap-2">
                   <button data-route-link="dashboard" data-route-label="Dashboard" class="px-4 py-2 rounded-lg bg-slate-100 text-slate-700 text-sm font-semibold">Open Dashboard</button>
+                  <button data-route-link="saved-jobs" data-route-label="Saved Jobs" class="px-4 py-2 rounded-lg bg-slate-100 text-slate-700 text-sm font-semibold">Open Saved Jobs</button>
                   <button data-adjust-strategy-top class="px-4 py-2 rounded-lg bg-slate-100 text-slate-700 text-sm font-semibold">Adjust Strategy</button>
                   <button data-update-portfolio class="px-4 py-2 rounded-lg bg-indigo-600 text-white text-sm font-semibold">Update Portfolio</button>
                 </div>
@@ -163,6 +188,22 @@
               </div>
             </article>
             <div data-job-grid class="grid grid-cols-1 lg:grid-cols-2 gap-6"></div>
+          </section>
+
+          <section data-route-view="saved-jobs" class="hidden space-y-6">
+            <article class="bg-white border border-slate-200 rounded-xl p-6">
+              <h3 class="font-headline text-3xl font-black">Saved Jobs</h3>
+              <p class="text-slate-600 mt-1">Roles you bookmarked from Suited Jobs appear here.</p>
+            </article>
+            <article class="bg-white border border-slate-200 rounded-xl p-5">
+              <div class="flex items-center justify-between gap-3">
+                <h4 class="font-headline text-xl font-bold">Saved List</h4>
+                <span data-saved-jobs-status class="text-xs font-semibold text-slate-500 uppercase tracking-widest">0 saved jobs</span>
+              </div>
+              <div data-saved-jobs-list class="mt-4 grid md:grid-cols-2 gap-3">
+                <article class="bg-white border border-slate-200 rounded-xl p-4 text-sm text-slate-600">No saved jobs yet.</article>
+              </div>
+            </article>
           </section>
 
           <section data-route-view="applications" class="hidden space-y-6">
