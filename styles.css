@@ -1,9 +1,9 @@
 :root {
   color-scheme: light;
-  --background: #f7f7f3;
+  --background: #f5f7f8;
   --surface: #ffffff;
-  --surface-low: #eeeeea;
-  --surface-high: #deded8;
+  --surface-low: #edf1f2;
+  --surface-high: #dce4e5;
   --ink: #171a18;
   --muted: #5f6660;
   --soft: #8a918c;
@@ -200,6 +200,27 @@ a {
   color: var(--muted);
   font-size: 17px;
   line-height: 1.65;
+}
+
+.capability-strip {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  max-width: 860px;
+  margin-top: 20px;
+}
+
+.capability-strip span {
+  min-height: 34px;
+  display: inline-flex;
+  align-items: center;
+  padding: 0 12px;
+  color: var(--primary-dark);
+  background: var(--primary-soft);
+  border: 1px solid #c9e4d2;
+  border-radius: var(--radius);
+  font-size: 13px;
+  font-weight: 800;
 }
 
 .eyebrow {
@@ -444,6 +465,15 @@ a {
 .source-selector legend {
   grid-column: 1 / -1;
   margin-bottom: 2px;
+}
+
+.source-note {
+  grid-column: 1 / -1;
+  margin: 0;
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.5;
+  font-weight: 500;
 }
 
 .source-selector label {

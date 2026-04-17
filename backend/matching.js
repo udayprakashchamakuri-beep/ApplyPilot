@@ -4,13 +4,15 @@ function rankJobs(profile, jobs) {
     const roleBoost = includesAny(job.title, profile.preferences?.roles) ? 12 : 0;
     const locationBoost = includesAny(job.location, profile.preferences?.locations) ? 7 : 0;
     const remoteBoost = matchesRemotePreference(job, profile.preferences?.workMode) ? 6 : 0;
+    const gaps = inferGaps(profile.skills || [], job.description || "");
     const skillScore = Math.min(38, matchedSkills.length * 6);
     const score = clamp(52 + skillScore + roleBoost + locationBoost + remoteBoost, 0, 98);
 
     return {
       ...job,
       matchedSkills,
-      gaps: inferGaps(profile.skills || [], job.description || ""),
+      gaps,
+      matchReasons: explainMatch({ matchedSkills, roleBoost, locationBoost, remoteBoost, gaps }),
       matchScore: score,
       match: score,
     };
@@ -20,6 +22,29 @@ function rankJobs(profile, jobs) {
   return ranked
     .filter((job) => job.matchScore >= threshold - 10)
     .sort((a, b) => b.matchScore - a.matchScore);
+}
+
+function explainMatch({ matchedSkills, roleBoost, locationBoost, remoteBoost, gaps }) {
+  const reasons = [];
+  if (matchedSkills.length) {
+    reasons.push(`Matched resume skills: ${matchedSkills.slice(0, 5).join(", ")}`);
+  }
+  if (roleBoost) {
+    reasons.push("Role title aligns with the user's target roles");
+  }
+  if (locationBoost) {
+    reasons.push("Location matches the user's preference");
+  }
+  if (remoteBoost) {
+    reasons.push("Work mode matches the user's preference");
+  }
+  if (gaps.length) {
+    reasons.push(`Skill gaps to improve: ${gaps.join(", ")}`);
+  }
+  if (!reasons.length) {
+    reasons.push("Limited direct evidence, review the job description before approval");
+  }
+  return reasons;
 }
 
 function matchSkills(profileSkills, text) {
@@ -56,5 +81,6 @@ function clamp(value, min, max) {
 }
 
 module.exports = {
+  explainMatch,
   rankJobs,
 };

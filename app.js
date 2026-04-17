@@ -4,7 +4,7 @@ const state = {
   matches: [],
   approvedApplications: [],
   selectedJob: null,
-  selectedSources: ["Greenhouse", "Lever", "Ashby", "SmartRecruiters", "Remotive", "Firecrawl"],
+  selectedSources: ["Greenhouse", "Lever", "Ashby", "Remotive"],
   searchDiagnostics: [],
 };
 
@@ -34,8 +34,8 @@ const adapterPlan = [
     priority: 4,
     name: "SmartRecruiters",
     endpoint: "api.smartrecruiters.com",
-    auth: "Public search API",
-    role: "Broad indexed job search",
+    auth: "API key",
+    role: "Credentialed SmartRecruiters search",
   },
   {
     priority: 5,
@@ -211,8 +211,8 @@ const connectors = {
     await wait(650);
     state.searchDiagnostics = sources.map((source) => ({
       source,
-      status: "demo",
-      message: "Using browser demo data. Configure backend API for live search.",
+      status: "offline sample",
+      message: "No backend API is configured for this browser session.",
     }));
     return scoreJobs(profile, sources);
   },
@@ -372,7 +372,7 @@ async function runAutopilotSearch() {
   try {
     state.resumeProfile = await connectors.analyzeResume(state.resumeFile, resumeText, preferences);
   } catch (error) {
-    showToast("Backend analysis failed", `${error.message}. Falling back to browser demo analysis.`);
+    showToast("Backend analysis failed", `${error.message}. Falling back to browser-side analysis.`);
     state.resumeProfile = buildProfile(state.resumeFile, resumeText, preferences);
   }
   renderProfile(state.resumeProfile);
@@ -381,9 +381,15 @@ async function runAutopilotSearch() {
   try {
     state.matches = await connectors.searchJobs(state.resumeProfile, state.selectedSources);
   } catch (error) {
-    showToast("Backend job search failed", `${error.message}. Showing demo matches instead.`);
-    state.searchDiagnostics = [];
-    state.matches = scoreJobs(state.resumeProfile, state.selectedSources);
+    showToast("Live job search failed", `${error.message}. Check the backend deployment and source keys.`);
+    state.searchDiagnostics = [
+      {
+        source: "Backend",
+        status: "failed",
+        message: error.message,
+      },
+    ];
+    state.matches = getApiBaseUrl() ? [] : scoreJobs(state.resumeProfile, state.selectedSources);
   }
 
   renderTimeline("rank");
@@ -405,17 +411,17 @@ function renderTimeline(activeStage) {
     {
       id: "analyze",
       title: "Resume analyzed",
-      body: "Skills, years, seniority, target roles, and likely strengths are extracted from the resume.",
+      body: "Skills, seniority, target roles, strengths, and likely skill gaps are extracted from the resume.",
     },
     {
       id: "search",
       title: "Job sources searched",
-      body: "Greenhouse, Lever, Ashby, SmartRecruiters, and company fallback adapters are queried through source connectors.",
+      body: "Live public ATS feeds are searched first, with credentialed sources and company crawlers available as backend connectors.",
     },
     {
       id: "rank",
       title: "Matches ranked",
-      body: "Jobs are ranked by skills, location, salary, application friction, and approval threshold.",
+      body: "Each score is explained with matched skills, role fit, work mode, location, and gaps to improve.",
     },
     {
       id: "done",
@@ -485,6 +491,10 @@ function renderJobs() {
     .map(
       (job) => {
         const applied = isJobApplied(job.id);
+        const reasons = job.matchReasons?.length
+          ? job.matchReasons
+          : [`Matched skills: ${job.matchedSkills.join(", ") || "Review job description"}`];
+        const gapText = job.gaps?.length ? ` Skill gaps: ${job.gaps.join(", ")}.` : "";
         return `
       <article class="job-card">
         <div>
@@ -499,7 +509,8 @@ function renderJobs() {
       )}</p>
           <p class="job-details">${escapeHtml(job.friction)}. Matching skills: ${job.matchedSkills
         .map(escapeHtml)
-        .join(", ")}.</p>
+        .join(", ")}.${escapeHtml(gapText)}</p>
+          <p class="job-details"><strong>Why this score:</strong> ${escapeHtml(reasons.join(" "))}</p>
           <div class="tag-row">
             ${job.skills.slice(0, 5).map((skill) => `<span class="tag neutral">${escapeHtml(skill)}</span>`).join("")}
           </div>
@@ -830,6 +841,7 @@ function normalizeBackendJobs(jobs) {
     skills: job.matchedSkills?.length ? job.matchedSkills : job.skills || [],
     matchedSkills: job.matchedSkills || [],
     gaps: job.gaps || [],
+    matchReasons: job.matchReasons || [],
     match: job.matchScore || job.match || 70,
     matchScore: job.matchScore || job.match || 70,
     description: job.description || "",
@@ -891,14 +903,36 @@ function scoreJobs(profile, selectedSources) {
           : 0;
       const baseScore = 68 + matchedSkills.length * 5 + roleBoost + locationBoost + typeBoost + modeBoost;
       const match = Math.min(98, Math.max(62, baseScore));
+      const matchReasons = buildBrowserMatchReasons({
+        matchedSkills,
+        roleBoost,
+        locationBoost,
+        typeBoost,
+        modeBoost,
+        gaps: job.gaps,
+      });
       return {
         ...job,
         matchedSkills,
+        matchReasons,
         match,
       };
     })
     .filter((job) => job.match >= threshold - 6)
     .sort((a, b) => b.match - a.match);
+}
+
+function buildBrowserMatchReasons({ matchedSkills, roleBoost, locationBoost, typeBoost, modeBoost, gaps }) {
+  const reasons = [];
+  if (matchedSkills.length) {
+    reasons.push(`Matched resume skills: ${matchedSkills.slice(0, 5).join(", ")}`);
+  }
+  if (roleBoost) reasons.push("Role title aligns with the user's target roles");
+  if (locationBoost) reasons.push("Location matches the user's preference");
+  if (typeBoost) reasons.push("Job type matches the user's preference");
+  if (modeBoost) reasons.push("Work mode matches the user's preference");
+  if (gaps?.length) reasons.push(`Skill gaps to improve: ${gaps.join(", ")}`);
+  return reasons.length ? reasons : ["Review the job description before approval"];
 }
 
 function buildTailoredResume(profile, job) {
@@ -1037,7 +1071,7 @@ function resetState() {
   elements.connectorStatus.textContent = "Automation connectors ready for backend keys";
   renderTimeline();
   navigateToPage("intake");
-  showToast("Demo reset", "Upload a resume to start again.");
+  showToast("Intake reset", "Upload a resume to start again.");
 }
 
 function formatDateTime(date) {

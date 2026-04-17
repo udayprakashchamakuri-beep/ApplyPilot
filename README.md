@@ -1,6 +1,8 @@
-# ApplyPilot Frontend
+# ApplyPilot
 
-This folder turns the six exported prototype screens into one interactive ApplyPilot browser app.
+ApplyPilot is a resume-first job matching and approval workflow. It analyzes a resume, searches
+live job sources, explains why each role fits, flags skill gaps, prepares a tailored resume preview,
+and keeps the final apply action behind user approval.
 
 ## Live site
 
@@ -29,6 +31,8 @@ No install step is required.
 ## Run with the backend API
 
 The public GitHub Pages site cannot store private API keys, so real job search runs through the backend.
+Greenhouse, Lever, Ashby, and Remotive can return live jobs without secrets because the backend includes
+a small default set of public company boards. Add your own board lists in `.env` or Vercel to expand coverage.
 
 ```powershell
 copy .env.example .env
@@ -60,6 +64,7 @@ For Vercel deployments, add secrets in the Vercel project settings:
 ```text
 FEATHERLESS_API_KEY
 FIRECRAWL_API_KEY
+SMARTRECRUITERS_API_KEY
 GREENHOUSE_BOARDS
 LEVER_ACCOUNTS
 ASHBY_BOARDS
@@ -79,21 +84,29 @@ Backend endpoints:
 - `POST /api/intake`: multipart form upload that analyzes the resume and searches jobs in one request.
 - `GET /api/health`: confirms backend and source configuration.
 
-## What works in the browser demo
+## What works now
 
 - Resume upload intake for PDF, DOCX, DOC, and TXT.
 - Job-seeking intake for target roles, locations, salary, experience level, job type, work mode, notice period, and skills to emphasize.
-- Text resume parsing for TXT files.
-- Mock resume analysis for document files.
-- A suited-jobs page with jobs from LinkedIn, Naukri.com, Indeed, and company career sites.
-- Match scoring by role, skills, location, salary, and approval threshold.
+- Server-side resume parsing for TXT, PDF, and DOCX through the backend API.
+- Live job search from public Greenhouse, Lever, Ashby, and Remotive sources.
+- A suited-jobs page with explainable match scores and skill gaps.
+- Match scoring by role, skills, location, work mode, and approval threshold.
 - An approval queue page for jobs waiting on user approval.
 - Source adapter plan for Greenhouse, Lever, Ashby, SmartRecruiters, USAJOBS, Adzuna, Remotive, Firecrawl, Bright Data, and Apify.
 - Tailored resume preview before applying.
 - User approval gate.
 - Calendar availability check.
 - Google Calendar event preview link.
-- Mock application submission after approval.
+- Local approved-application tracking after approval.
+
+## Needs production credentials before it can truly apply
+
+- SmartRecruiters search needs `SMARTRECRUITERS_API_KEY`.
+- Firecrawl fallback needs `FIRECRAWL_API_KEY` and `COMPANY_CAREER_URLS`.
+- USAJOBS and Adzuna need their own API keys.
+- Real application submission needs source-specific application credentials, user consent, and form handling.
+- Google Calendar event creation needs Google OAuth. The current app gives a preview link until OAuth is wired.
 
 ## Production connector points
 

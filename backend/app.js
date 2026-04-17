@@ -3,7 +3,12 @@ const cors = require("cors");
 const express = require("express");
 const multer = require("multer");
 const { parseResumeFile, analyzeResumeText } = require("./resume-parser");
-const { searchAllSources } = require("./source-adapters");
+const {
+  DEFAULT_ASHBY_BOARDS,
+  DEFAULT_GREENHOUSE_BOARDS,
+  DEFAULT_LEVER_ACCOUNTS,
+  searchAllSources,
+} = require("./source-adapters");
 const { rankJobs } = require("./matching");
 
 function createApp(options = {}) {
@@ -41,8 +46,12 @@ function createApp(options = {}) {
       service: "ApplyPilot backend",
       sources: {
         greenhouseConfigured: hasJsonItems(process.env.GREENHOUSE_BOARDS),
+        greenhouseDefaultBoards: DEFAULT_GREENHOUSE_BOARDS.length,
         leverConfigured: hasJsonItems(process.env.LEVER_ACCOUNTS),
+        leverDefaultAccounts: DEFAULT_LEVER_ACCOUNTS.length,
         ashbyConfigured: hasJsonItems(process.env.ASHBY_BOARDS),
+        ashbyDefaultBoards: DEFAULT_ASHBY_BOARDS.length,
+        smartRecruitersConfigured: Boolean(process.env.SMARTRECRUITERS_API_KEY),
         firecrawlConfigured: Boolean(process.env.FIRECRAWL_API_KEY && hasJsonItems(process.env.COMPANY_CAREER_URLS)),
         usajobsConfigured: Boolean(process.env.USAJOBS_API_KEY && process.env.USAJOBS_USER_AGENT),
         adzunaConfigured: Boolean(process.env.ADZUNA_APP_ID && process.env.ADZUNA_APP_KEY),

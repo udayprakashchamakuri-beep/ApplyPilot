@@ -57,14 +57,22 @@
         <header class="workspace-header">
           <div>
             <p class="eyebrow">Approved application automation</p>
-            <h1>Tell ApplyPilot what job you want. Approve the right applications.</h1>
+            <h1>Understand your best-fit jobs before ApplyPilot applies.</h1>
             <p class="intro-copy">
-              Upload a resume, enter the job you are seeking, review the suited roles with scores,
-              and manage every application from the approval queue.
+              Upload a resume and job goals. ApplyPilot searches live sources, explains every
+              match score, shows skill gaps, tailors the resume for each role, and waits for your
+              approval before any application step.
             </p>
+            <div class="capability-strip" aria-label="ApplyPilot advantages">
+              <span>Explainable AI matching</span>
+              <span>Personalized role recommendations</span>
+              <span>Skill-gap analysis</span>
+              <span>Resume tailoring per role</span>
+              <span>Learns from approvals</span>
+            </div>
           </div>
           <div class="header-actions">
-            <button class="button secondary" id="resetDemo" type="button">Reset demo</button>
+            <button class="button secondary" id="resetDemo" type="button">Reset intake</button>
             <button class="button primary" type="button" data-page-target="intake">Start intake</button>
           </div>
         </header>
@@ -76,8 +84,8 @@
               <p class="eyebrow">Step 01</p>
               <h2>Resume and job-seeking details</h2>
               <p>
-                Upload the resume and tell ApplyPilot what kind of job, location, work mode,
-                salary, and schedule the user is looking for.
+                Upload the resume and tell ApplyPilot what role, location, work mode,
+                salary, timeline, and strengths the user wants to target.
               </p>
             </div>
 
@@ -91,7 +99,7 @@
                 />
                 <span class="upload-icon">UP</span>
                 <strong id="resumeFileLabel">Drop resume here or browse</strong>
-                <small>PDF, DOCX, DOC, or TXT. Max 10MB for this demo.</small>
+                <small>PDF, DOCX, DOC, or TXT. Max 10MB.</small>
               </label>
 
               <div class="preference-grid">
@@ -157,11 +165,15 @@
 
               <fieldset class="source-selector">
                 <legend>Search sources</legend>
+                <p class="source-note">
+                  Greenhouse, Lever, Ashby, and Remotive return live jobs now. Credentialed sources
+                  stay behind the backend.
+                </p>
                 <label><input type="checkbox" name="source" value="Greenhouse" checked /> Greenhouse</label>
                 <label><input type="checkbox" name="source" value="Lever" checked /> Lever</label>
                 <label><input type="checkbox" name="source" value="Ashby" checked /> Ashby</label>
                 <label>
-                  <input type="checkbox" name="source" value="SmartRecruiters" checked /> SmartRecruiters
+                  <input type="checkbox" name="source" value="SmartRecruiters" /> SmartRecruiters key
                 </label>
                 <label>
                   <input type="checkbox" name="source" value="USAJOBS" /> USAJOBS
@@ -170,12 +182,12 @@
                   <input type="checkbox" name="source" value="Remotive" checked /> Remotive
                 </label>
                 <label>
-                  <input type="checkbox" name="source" value="Firecrawl" checked /> Company fallback
+                  <input type="checkbox" name="source" value="Firecrawl" /> Company fallback
                 </label>
               </fieldset>
 
               <button class="button primary wide" type="submit" id="analyzeButton">
-                Analyze resume and find jobs
+                Analyze resume and search live jobs
               </button>
             </form>
             </div>
@@ -187,11 +199,11 @@
               class="pipeline-image"
             />
             <div class="preview-caption">
-              <h3>Approval stays with the user</h3>
-              <p>
-                Every application waits at the approval gate with a tailored resume, match reasons,
-                date check, and calendar action.
-              </p>
+            <h3>Approval stays with the user</h3>
+            <p>
+                Every application waits at the approval gate with match reasons, skill gaps,
+                a tailored resume, date check, and calendar action.
+            </p>
             </div>
             </aside>
           </div>
@@ -200,6 +212,10 @@
             <div class="section-heading">
               <p class="eyebrow">Resume analysis</p>
               <h2>Extraction and search pipeline</h2>
+              <p>
+                The resume becomes a structured profile for role recommendations, skill-gap
+                analysis, and tailored applications.
+              </p>
             </div>
             <div class="analysis-grid">
               <div class="analysis-timeline" id="analysisTimeline"></div>
@@ -217,8 +233,8 @@
               <p class="eyebrow">Step 02</p>
               <h2>Jobs the user is suited for</h2>
               <p>
-                Results are ranked by resume skills, role preference, location, compensation,
-                application friction, and the details entered on the intake page.
+                Results are ranked by resume skills, role preference, location, work mode,
+                source quality, and the details entered on the intake page.
               </p>
             </div>
             <div class="source-meter" id="sourceMeter">No sources searched yet</div>
@@ -232,7 +248,7 @@
               <h2>Public feeds first, crawling as fallback</h2>
               <p>
                 ApplyPilot searches public ATS feeds before using crawlers for company careers pages.
-                API keys stay on a backend and never ship inside this public GitHub Pages site.
+                API keys stay on the backend and never ship inside this public GitHub Pages site.
               </p>
             </div>
             <div class="adapter-grid" id="adapterGrid"></div>
@@ -248,7 +264,8 @@
                 <h2>Approval queue</h2>
                 <p>
                   Jobs wait here until the user approves the tailored resume, calendar slot,
-                  and final application submission.
+                  and final application submission. Each approval becomes feedback for better
+                  recommendations.
                 </p>
               </div>
               <span class="calendar-badge" id="queueBadge">No queue yet</span>

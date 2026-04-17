@@ -2,23 +2,42 @@ const ADAPTERS = [
   { name: "Greenhouse", priority: 1, auth: "none" },
   { name: "Lever", priority: 2, auth: "none" },
   { name: "Ashby", priority: 3, auth: "none" },
-  { name: "SmartRecruiters", priority: 4, auth: "none" },
+  { name: "SmartRecruiters", priority: 4, auth: "SMARTRECRUITERS_API_KEY" },
   { name: "USAJOBS", priority: 5, auth: "USAJOBS_API_KEY" },
   { name: "Adzuna", priority: 6, auth: "ADZUNA_APP_ID + ADZUNA_APP_KEY" },
   { name: "Remotive", priority: 7, auth: "none" },
   { name: "Firecrawl", priority: 8, auth: "FIRECRAWL_API_KEY" },
 ];
 
+const DEFAULT_GREENHOUSE_BOARDS = [
+  { boardToken: "airbnb", company: "Airbnb" },
+  { boardToken: "figma", company: "Figma" },
+  { boardToken: "discord", company: "Discord" },
+];
+
+const DEFAULT_LEVER_ACCOUNTS = [
+  { account: "plaid", company: "Plaid" },
+  { account: "spotify", company: "Spotify" },
+  { account: "benchsci", company: "BenchSci" },
+];
+
+const DEFAULT_ASHBY_BOARDS = [
+  { boardName: "linear", company: "Linear" },
+  { boardName: "cursor", company: "Cursor" },
+  { boardName: "supabase", company: "Supabase" },
+  { boardName: "replit", company: "Replit" },
+];
+
 async function searchAllSources({ profile, sources, env = process.env, limit = 25 }) {
-  const selected = new Set(sources?.length ? sources : ["SmartRecruiters"]);
+  const selected = new Set(sources?.length ? sources : ["Greenhouse", "Lever", "Ashby", "Remotive"]);
   const query = buildQuery(profile);
   const remoteQuery = buildRemoteQuery(profile, query);
   const searches = [];
 
-  if (selected.has("Greenhouse")) searches.push(guarded("Greenhouse", searchGreenhouse(env, limit)));
-  if (selected.has("Lever")) searches.push(guarded("Lever", searchLever(env, limit)));
-  if (selected.has("Ashby")) searches.push(guarded("Ashby", searchAshby(env, limit)));
-  if (selected.has("SmartRecruiters")) searches.push(guarded("SmartRecruiters", searchSmartRecruiters(query, limit)));
+  if (selected.has("Greenhouse")) searches.push(guarded("Greenhouse", searchGreenhouse(env, query, limit)));
+  if (selected.has("Lever")) searches.push(guarded("Lever", searchLever(env, query, limit)));
+  if (selected.has("Ashby")) searches.push(guarded("Ashby", searchAshby(env, query, limit)));
+  if (selected.has("SmartRecruiters")) searches.push(guarded("SmartRecruiters", searchSmartRecruiters(query, env, limit)));
   if (selected.has("USAJOBS")) searches.push(guarded("USAJOBS", searchUSAJOBS(query, profile, env, limit)));
   if (selected.has("Adzuna")) searches.push(guarded("Adzuna", searchAdzuna(query, env, limit)));
   if (selected.has("Remotive")) searches.push(guarded("Remotive", searchRemotive(remoteQuery, limit)));
@@ -45,39 +64,61 @@ async function guarded(source, promise) {
   }
 }
 
-async function searchGreenhouse(env, limit) {
-  const boards = parseJsonEnv(env.GREENHOUSE_BOARDS, []);
-  if (!boards.length) return skipped("Greenhouse", "No GREENHOUSE_BOARDS configured.");
+async function searchGreenhouse(env, query, limit) {
+  const { items: boards, usingDefault } = configuredList(env.GREENHOUSE_BOARDS, DEFAULT_GREENHOUSE_BOARDS);
 
   const results = [];
   for (const board of boards) {
-    const url = `https://boards-api.greenhouse.io/v1/boards/${encodeURIComponent(board.boardToken)}/jobs?content=true`;
-    const json = await getJson(url);
-    results.push(
-      ...(json.jobs || []).map((job) => normalizeGreenhouse(job, board)).filter((job) => job.applyUrl).slice(0, limit)
+    const baseUrl = `https://boards-api.greenhouse.io/v1/boards/${encodeURIComponent(board.boardToken)}`;
+    const json = await getJson(`${baseUrl}/jobs`);
+    const candidates = prioritizeSourceJobs(
+      (json.jobs || []).map((job) => normalizeGreenhouse(job, board)).filter((job) => job.applyUrl),
+      query,
+      limit
     );
+    const details = await Promise.all(
+      candidates.map(async (job) => {
+        try {
+          const detail = await getJson(`${baseUrl}/jobs/${encodeURIComponent(job.sourceJobId)}`);
+          return normalizeGreenhouse(detail, board);
+        } catch {
+          return job;
+        }
+      })
+    );
+    results.push(...details);
   }
 
-  return ok("Greenhouse", results);
+  return ok(
+    "Greenhouse",
+    prioritizeSourceJobs(results, query, limit),
+    usingDefault
+      ? `Using live default boards: ${boards.map((board) => board.company || board.boardToken).join(", ")}.`
+      : `${boards.length} configured boards searched.`
+  );
 }
 
-async function searchLever(env, limit) {
-  const accounts = parseJsonEnv(env.LEVER_ACCOUNTS, []);
-  if (!accounts.length) return skipped("Lever", "No LEVER_ACCOUNTS configured.");
+async function searchLever(env, query, limit) {
+  const { items: accounts, usingDefault } = configuredList(env.LEVER_ACCOUNTS, DEFAULT_LEVER_ACCOUNTS);
 
   const results = [];
   for (const account of accounts) {
     const url = `https://api.lever.co/v0/postings/${encodeURIComponent(account.account)}`;
     const json = await getJson(url);
-    results.push(...json.map((job) => normalizeLever(job, account)).filter((job) => job.applyUrl).slice(0, limit));
+    results.push(...json.map((job) => normalizeLever(job, account)).filter((job) => job.applyUrl));
   }
 
-  return ok("Lever", results);
+  return ok(
+    "Lever",
+    prioritizeSourceJobs(results, query, limit),
+    usingDefault
+      ? `Using live default accounts: ${accounts.map((account) => account.company || account.account).join(", ")}.`
+      : `${accounts.length} configured accounts searched.`
+  );
 }
 
-async function searchAshby(env, limit) {
-  const boards = parseJsonEnv(env.ASHBY_BOARDS, []);
-  if (!boards.length) return skipped("Ashby", "No ASHBY_BOARDS configured.");
+async function searchAshby(env, query, limit) {
+  const { items: boards, usingDefault } = configuredList(env.ASHBY_BOARDS, DEFAULT_ASHBY_BOARDS);
 
   const results = [];
   for (const board of boards) {
@@ -86,15 +127,24 @@ async function searchAshby(env, limit) {
     )}?includeCompensation=true`;
     const json = await getJson(url);
     const jobs = Array.isArray(json.jobs) ? json.jobs : [];
-    results.push(...jobs.map((job) => normalizeAshby(job, board)).filter((job) => job.applyUrl).slice(0, limit));
+    results.push(...jobs.map((job) => normalizeAshby(job, board)).filter((job) => job.applyUrl));
   }
 
-  return ok("Ashby", results);
+  return ok(
+    "Ashby",
+    prioritizeSourceJobs(results, query, limit),
+    usingDefault
+      ? `Using live default boards: ${boards.map((board) => board.company || board.boardName).join(", ")}.`
+      : `${boards.length} configured boards searched.`
+  );
 }
 
-async function searchSmartRecruiters(query, limit) {
+async function searchSmartRecruiters(query, env, limit) {
+  if (!env.SMARTRECRUITERS_API_KEY) {
+    return skipped("SmartRecruiters", "SMARTRECRUITERS_API_KEY is required for this source.");
+  }
   const url = `https://api.smartrecruiters.com/jobs?q=${encodeURIComponent(query)}&limit=${limit}`;
-  const json = await getJson(url);
+  const json = await getJson(url, { "x-smarttoken": env.SMARTRECRUITERS_API_KEY });
   const jobs = Array.isArray(json.content) ? json.content : Array.isArray(json.jobs) ? json.jobs : [];
   return ok("SmartRecruiters", jobs.map(normalizeSmartRecruiters).filter((job) => job.applyUrl));
 }
@@ -331,10 +381,40 @@ function parseJsonEnv(value, fallback) {
   }
 }
 
-function ok(source, jobs) {
+function configuredList(value, defaults) {
+  const parsed = parseJsonEnv(value, []);
+  if (Array.isArray(parsed) && parsed.length) {
+    return { items: parsed, usingDefault: false };
+  }
+  return { items: defaults, usingDefault: true };
+}
+
+function prioritizeSourceJobs(jobs, query, limit) {
+  const tokens = String(query || "")
+    .toLowerCase()
+    .split(/[^a-z0-9+#.]+/)
+    .filter((token) => token.length > 1);
+
+  return jobs
+    .map((job, index) => {
+      const title = String(job.title || "").toLowerCase();
+      const description = String(job.description || "").toLowerCase();
+      const score = tokens.reduce((total, token) => {
+        if (title.includes(token)) return total + 4;
+        if (description.includes(token)) return total + 1;
+        return total;
+      }, 0);
+      return { job, index, score };
+    })
+    .sort((a, b) => b.score - a.score || a.index - b.index)
+    .slice(0, limit)
+    .map((item) => item.job);
+}
+
+function ok(source, jobs, message) {
   return {
     jobs,
-    diagnostic: { source, status: "ok", count: jobs.length },
+    diagnostic: { source, status: "ok", count: jobs.length, message: message || `${jobs.length} jobs returned` },
   };
 }
 
@@ -364,6 +444,8 @@ function normalizeLocation(location) {
 function normalizeCompensation(compensation) {
   if (!compensation) return null;
   if (typeof compensation === "string") return compensation;
+  if (compensation.compensationTierSummary) return compensation.compensationTierSummary;
+  if (compensation.scrapeableCompensationSalarySummary) return compensation.scrapeableCompensationSalarySummary;
   const min = compensation.minValue || compensation.minimum;
   const max = compensation.maxValue || compensation.maximum;
   const currency = compensation.currencyCode || compensation.currency || "";
@@ -388,6 +470,9 @@ function safeHostname(url) {
 
 module.exports = {
   ADAPTERS,
+  DEFAULT_GREENHOUSE_BOARDS,
+  DEFAULT_LEVER_ACCOUNTS,
+  DEFAULT_ASHBY_BOARDS,
   searchAllSources,
   dedupeJobs,
 };
