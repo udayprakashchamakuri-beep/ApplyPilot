@@ -1,0 +1,218 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>ApplyAI Autopilot</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="app-shell">
+      <aside class="sidebar" aria-label="Application progress">
+        <div class="brand-block">
+          <div class="brand-mark">A</div>
+          <div>
+            <p class="brand-name">ApplyAI</p>
+            <p class="brand-subtitle">Job application control room</p>
+          </div>
+        </div>
+
+        <nav class="step-rail" id="stepRail">
+          <button class="step-item is-active" type="button" data-step-target="upload">
+            <span class="step-index">01</span>
+            <span>
+              <strong>Resume</strong>
+              <small>Upload and analyze</small>
+            </span>
+          </button>
+          <button class="step-item" type="button" data-step-target="matches">
+            <span class="step-index">02</span>
+            <span>
+              <strong>Matches</strong>
+              <small>LinkedIn, Naukri, Indeed, company sites</small>
+            </span>
+          </button>
+          <button class="step-item" type="button" data-step-target="approval">
+            <span class="step-index">03</span>
+            <span>
+              <strong>Approval</strong>
+              <small>Tailor resume before apply</small>
+            </span>
+          </button>
+          <button class="step-item" type="button" data-step-target="calendar">
+            <span class="step-index">04</span>
+            <span>
+              <strong>Calendar</strong>
+              <small>Check availability and schedule</small>
+            </span>
+          </button>
+        </nav>
+
+        <div class="sidebar-status">
+          <span class="status-dot"></span>
+          <span id="connectorStatus">Automation connectors ready for backend keys</span>
+        </div>
+      </aside>
+
+      <main class="workspace">
+        <header class="workspace-header">
+          <div>
+            <p class="eyebrow">Approved application automation</p>
+            <h1>Upload a resume. Review each match. Approve once.</h1>
+            <p class="intro-copy">
+              The app analyzes the resume, searches job sources, prepares a tailored resume,
+              checks the interview or exam date, creates a calendar event, and submits after approval.
+            </p>
+          </div>
+          <div class="header-actions">
+            <button class="button secondary" id="resetDemo" type="button">Reset demo</button>
+            <a class="button primary" href="#upload">Start with resume</a>
+          </div>
+        </header>
+
+        <section class="workflow-grid" id="upload">
+          <div class="upload-panel">
+            <div class="section-heading">
+              <p class="eyebrow">Step 01</p>
+              <h2>Resume intake</h2>
+              <p>
+                Upload a PDF, DOCX, or TXT resume. The browser demo reads text files directly
+                and sends document files through the mock analysis connector.
+              </p>
+            </div>
+
+            <form class="resume-form" id="resumeForm">
+              <label class="drop-zone" id="dropZone" for="resumeFile">
+                <input
+                  id="resumeFile"
+                  name="resumeFile"
+                  type="file"
+                  accept=".pdf,.doc,.docx,.txt"
+                />
+                <span class="upload-icon">UP</span>
+                <strong id="resumeFileLabel">Drop resume here or browse</strong>
+                <small>PDF, DOCX, DOC, or TXT. Max 10MB for this demo.</small>
+              </label>
+
+              <div class="preference-grid">
+                <label>
+                  Target roles
+                  <input
+                    id="targetRoles"
+                    type="text"
+                    value="Frontend Engineer, Product Engineer, Full Stack Developer"
+                  />
+                </label>
+                <label>
+                  Preferred locations
+                  <input id="targetLocations" type="text" value="Bengaluru, Hyderabad, Remote" />
+                </label>
+                <label>
+                  Minimum salary
+                  <input id="minimumSalary" type="text" value="INR 18 LPA" />
+                </label>
+                <label>
+                  Approval threshold
+                  <input id="approvalThreshold" type="number" min="60" max="99" value="85" />
+                </label>
+              </div>
+
+              <fieldset class="source-selector">
+                <legend>Search sources</legend>
+                <label><input type="checkbox" name="source" value="LinkedIn" checked /> LinkedIn</label>
+                <label><input type="checkbox" name="source" value="Naukri" checked /> Naukri.com</label>
+                <label><input type="checkbox" name="source" value="Indeed" checked /> Indeed</label>
+                <label>
+                  <input type="checkbox" name="source" value="Company" checked /> Official company sites
+                </label>
+              </fieldset>
+
+              <button class="button primary wide" type="submit" id="analyzeButton">
+                Analyze resume and find jobs
+              </button>
+            </form>
+          </div>
+
+          <aside class="preview-panel" aria-label="Approval preview">
+            <img
+              src="./assets/approval-screen.png"
+              alt="ApplyAI job approval screen preview"
+              class="pipeline-image"
+            />
+            <div class="preview-caption">
+              <h3>Approval stays with the user</h3>
+              <p>
+                Every application waits at the approval gate with a tailored resume, match reasons,
+                date check, and calendar action.
+              </p>
+            </div>
+          </aside>
+        </section>
+
+        <section class="analysis-section" id="analysis" aria-live="polite">
+          <div class="section-heading">
+            <p class="eyebrow">Resume analysis</p>
+            <h2>Extraction and search pipeline</h2>
+          </div>
+          <div class="analysis-grid">
+            <div class="analysis-timeline" id="analysisTimeline"></div>
+            <div class="profile-summary" id="profileSummary">
+              <p class="empty-note">Upload a resume to generate the candidate profile.</p>
+            </div>
+          </div>
+        </section>
+
+        <section class="matches-section" id="matches">
+          <div class="section-heading split-heading">
+            <div>
+              <p class="eyebrow">Step 02</p>
+              <h2>Matched jobs</h2>
+              <p>
+                Results are ranked by resume skills, role preference, location, compensation,
+                and application friction.
+              </p>
+            </div>
+            <div class="source-meter" id="sourceMeter">No sources searched yet</div>
+          </div>
+          <div class="job-list" id="jobList">
+            <p class="empty-note">Resume analysis will populate matching roles here.</p>
+          </div>
+        </section>
+
+        <section class="activity-section" id="calendar">
+          <div class="section-heading split-heading">
+            <div>
+              <p class="eyebrow">Step 04</p>
+              <h2>Applications and calendar</h2>
+              <p>
+                Approved jobs appear here after the app creates the calendar event and submits
+                the application connector.
+              </p>
+            </div>
+            <span class="calendar-badge" id="calendarBadge">Google Calendar connected</span>
+          </div>
+          <div class="activity-list" id="activityList">
+            <p class="empty-note">No approved applications yet.</p>
+          </div>
+        </section>
+      </main>
+    </div>
+
+    <dialog class="approval-dialog" id="approvalDialog">
+      <form method="dialog" class="dialog-shell">
+        <button class="icon-button close-dialog" value="close" aria-label="Close approval dialog">
+          X
+        </button>
+        <div id="approvalContent"></div>
+      </form>
+    </dialog>
+
+    <script src="./app.js" defer></script>
+  </body>
+</html>
