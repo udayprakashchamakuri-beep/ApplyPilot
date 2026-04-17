@@ -50,21 +50,24 @@ async function runIntake(file) {
   setLandingStatus(`Analyzing ${file.name} and searching live sources...`);
   const settings = readJson(SETTINGS_KEY) || {};
   const sources = normalizeSources(settings.sources);
-
-  const formData = new FormData();
-  formData.append("resume", file);
-  formData.append("preferences", JSON.stringify(buildDefaultPreferences()));
-  formData.append("sources", JSON.stringify(sources));
-  formData.append("limit", String(settings.limit || 24));
+  const preferences = buildDefaultPreferences();
+  const limit = Number(settings.limit || 24);
 
   try {
-    const data = await postForm("/api/intake", formData);
+    const data = await requestIntakeWithFallback({ file, preferences, sources, limit });
     localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
     localStorage.removeItem(SELECTED_JOB_KEY);
     setLandingStatus(`${data.jobs?.length || 0} live matches found. Opening resume view...`);
     showToast("Resume analyzed", "Your resume is parsed and ready.");
     window.location.href = "resume.html";
   } catch (error) {
+    const cached = readJson(STORAGE_KEY);
+    if (cached?.profile) {
+      setLandingStatus("Live backend is currently unavailable. Loaded your last successful intake.");
+      showToast("Using cached intake", "Backend is temporarily unavailable. Loaded your previous data.");
+      window.location.href = "resume.html";
+      return;
+    }
     setLandingStatus(`Backend failed: ${error.message}`);
     showToast("Intake failed", error.message, "error");
   }
@@ -80,6 +83,12 @@ function setupResumePage() {
   const skills = document.querySelector("[data-resume-skills]");
   const meta = document.querySelector("[data-resume-meta]");
   const action = document.querySelector("[data-resume-action]");
+  const editToggle = document.querySelector("[data-resume-edit-toggle]");
+  const editPanel = document.querySelector("[data-resume-edit-panel]");
+  const editForm = document.querySelector("[data-resume-edit-form]");
+  const editHeadline = document.querySelector("[data-edit-headline]");
+  const editSummary = document.querySelector("[data-edit-summary]");
+  const editSkills = document.querySelector("[data-edit-skills]");
 
   if (!intake?.profile) {
     if (headline) headline.textContent = "No resume uploaded yet";
@@ -89,29 +98,61 @@ function setupResumePage() {
     action?.addEventListener("click", () => {
       window.location.href = "index.html";
     });
+    editToggle?.setAttribute("disabled", "true");
     return;
   }
 
-  if (headline) headline.textContent = intake.profile.headline || intake.profile.fileName || "Resume profile";
-  if (summary) summary.textContent = intake.profile.summary || "Profile generated from uploaded resume.";
-  if (skills) {
-    skills.innerHTML = safeList(intake.profile.skills, ["Skills pending extraction"])
-      .slice(0, 16)
-      .map(
-        (skill) =>
-          `<span class="px-3 py-1 rounded-full bg-indigo-50 text-indigo-700 text-xs font-semibold">${escapeHtml(
-            skill
-          )}</span>`
-      )
-      .join("");
-  }
-  if (meta) {
-    const count = intake.jobs?.length || 0;
-    meta.textContent = `${escapeHtml(intake.profile.fileName || "resume")} analyzed. ${count} suited jobs are ready.`;
-  }
+  renderResumeProfile(intake.profile, intake.jobs?.length || 0);
+
+  if (editHeadline) editHeadline.value = intake.profile.headline || "";
+  if (editSummary) editSummary.value = intake.profile.summary || "";
+  if (editSkills) editSkills.value = safeList(intake.profile.skills, []).join(", ");
+
+  editToggle?.addEventListener("click", () => {
+    if (!editPanel) return;
+    editPanel.classList.toggle("hidden");
+    editToggle.textContent = editPanel.classList.contains("hidden") ? "Edit Details" : "Close Editor";
+  });
+
+  editForm?.addEventListener("submit", (event) => {
+    event.preventDefault();
+    const nextIntake = readJson(STORAGE_KEY) || intake;
+    const nextProfile = {
+      ...nextIntake.profile,
+      headline: (editHeadline?.value || "").trim() || nextIntake.profile.headline,
+      summary: (editSummary?.value || "").trim() || nextIntake.profile.summary,
+      skills: csvToList(editSkills?.value || "").length
+        ? csvToList(editSkills?.value || "")
+        : safeList(nextIntake.profile.skills, []),
+    };
+    nextIntake.profile = nextProfile;
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(nextIntake));
+    renderResumeProfile(nextProfile, nextIntake.jobs?.length || 0);
+    showToast("Resume details updated", "Your profile details were updated locally.");
+  });
+
   action?.addEventListener("click", () => {
     window.location.href = "dashboard.html";
   });
+
+  function renderResumeProfile(profile, jobCount) {
+    if (headline) headline.textContent = profile.headline || profile.fileName || "Resume profile";
+    if (summary) summary.textContent = profile.summary || "Profile generated from uploaded resume.";
+    if (skills) {
+      skills.innerHTML = safeList(profile.skills, ["Skills pending extraction"])
+        .slice(0, 16)
+        .map(
+          (skill) =>
+            `<span class="px-3 py-1 rounded-full bg-indigo-50 text-indigo-700 text-xs font-semibold">${escapeHtml(
+              skill
+            )}</span>`
+        )
+        .join("");
+    }
+    if (meta) {
+      meta.textContent = `${escapeHtml(profile.fileName || "resume")} analyzed. ${jobCount} suited jobs are ready.`;
+    }
+  }
 }
 
 function setupCalendarPage() {
@@ -200,9 +241,9 @@ function setupSettingsPage() {
     };
     localStorage.setItem(SETTINGS_KEY, JSON.stringify(nextSettings));
     if (status) {
-      status.textContent = "Settings saved. New intake runs will use these values.";
+      status.textContent = "Preferences saved. New intake runs will use these values.";
     }
-    showToast("Settings saved", "Your next resume intake will use the updated preferences.");
+    showToast("Preferences saved", "Your next resume intake will use the updated preferences.");
   });
 }
 
@@ -221,10 +262,8 @@ function setupDashboardPage() {
 
   const intake = readJson(STORAGE_KEY);
   const searchInput = document.querySelector("[data-dashboard-search]");
-  const filterButton = document.querySelector("[data-dashboard-filter]");
   const updatePortfolioButton = document.querySelector("[data-update-portfolio]");
   let query = "";
-  let minScore = 0;
 
   updatePortfolioButton?.addEventListener("click", () => {
     window.location.href = "resume.html";
@@ -240,15 +279,14 @@ function setupDashboardPage() {
 
   const rerender = () => {
     const filteredJobs = allJobs.filter((job) => {
-      const score = Number(job.matchScore || job.match || 0);
       const roleText = `${job.title || job.role || ""} ${job.company || ""} ${job.location || ""}`.toLowerCase();
       const skillText = safeList(job.matchedSkills, []).join(" ").toLowerCase();
       const matchesQuery = !query || roleText.includes(query) || skillText.includes(query);
-      return score >= minScore && matchesQuery;
+      return matchesQuery;
     });
 
     if (!filteredJobs.length) {
-      setDashboardStatus("No jobs matched your current search or filter. Clear search or disable high-score filter.");
+      setDashboardStatus("No jobs matched your current search. Clear search to see all matched jobs.");
       grid.innerHTML = renderNoFilterResultCard();
       return;
     }
@@ -266,12 +304,6 @@ function setupDashboardPage() {
 
   searchInput?.addEventListener("input", (event) => {
     query = String(event.target.value || "").trim().toLowerCase();
-    rerender();
-  });
-
-  filterButton?.addEventListener("click", () => {
-    minScore = minScore ? 0 : 80;
-    filterButton.textContent = minScore ? "Filters (80%+)" : "Filters";
     rerender();
   });
 
@@ -408,7 +440,7 @@ function renderJobCard(job) {
           </div>
         </div>
         <div class="relative w-20 h-20 flex items-center justify-center">
-          <svg class="w-full h-full -rotate-90">
+          <svg viewBox="0 0 80 80" preserveAspectRatio="xMidYMid meet" class="w-full h-full aspect-square -rotate-90">
             <circle class="text-surface-container-highest" cx="40" cy="40" fill="transparent" r="34" stroke="currentColor" stroke-width="6"></circle>
             <circle class="text-primary" cx="40" cy="40" fill="transparent" r="34" stroke="currentColor" stroke-dasharray="213.6" stroke-dashoffset="${offset}" stroke-width="6"></circle>
           </svg>
@@ -547,8 +579,8 @@ function renderEmptyJobsState() {
 function renderNoFilterResultCard() {
   return `
     <article class="bg-white rounded-xl border border-slate-200 p-8">
-      <h3 class="text-2xl font-bold mb-2">No matches for current filter</h3>
-      <p class="text-slate-600">Clear the search box or disable the high-score filter to see more jobs.</p>
+      <h3 class="text-2xl font-bold mb-2">No matches for current search</h3>
+      <p class="text-slate-600">Clear the search box to see more jobs.</p>
     </article>
   `;
 }
@@ -579,24 +611,86 @@ function apiUrl(path) {
   return `${base}${path}`;
 }
 
+async function requestIntakeWithFallback({ file, preferences, sources, limit }) {
+  try {
+    return await postForm("/api/intake", createIntakeFormData(file, preferences, sources, limit));
+  } catch (intakeError) {
+    const profileResult = await postForm("/api/analyze-resume", createAnalyzeFormData(file, preferences));
+    const jobsResult = await postJson("/api/search-jobs", {
+      profile: profileResult.profile,
+      sources,
+      limit,
+    });
+    return {
+      profile: profileResult.profile,
+      jobs: jobsResult.jobs || [],
+      diagnostics: jobsResult.diagnostics || [],
+      fallbackReason: intakeError.message,
+    };
+  }
+}
+
+function createIntakeFormData(file, preferences, sources, limit) {
+  const formData = new FormData();
+  formData.append("resume", file);
+  formData.append("preferences", JSON.stringify(preferences));
+  formData.append("sources", JSON.stringify(sources));
+  formData.append("limit", String(limit || 24));
+  return formData;
+}
+
+function createAnalyzeFormData(file, preferences) {
+  const formData = new FormData();
+  formData.append("resume", file);
+  formData.append("preferences", JSON.stringify(preferences));
+  return formData;
+}
+
 async function postForm(path, formData) {
-  const response = await fetch(apiUrl(path), { method: "POST", body: formData });
-  return parseResponse(response);
+  return requestWithFallback(path, { method: "POST", body: formData });
 }
 
 async function postJson(path, payload) {
-  const response = await fetch(apiUrl(path), {
+  return requestWithFallback(path, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(payload),
   });
-  return parseResponse(response);
 }
 
-async function parseResponse(response) {
-  const data = await response.json().catch(() => ({}));
-  if (!response.ok) throw new Error(data.error || `Request failed with ${response.status}`);
-  return data;
+async function requestWithFallback(path, init) {
+  const candidates = getApiBaseCandidates();
+  const errors = [];
+
+  for (const base of candidates) {
+    const url = `${base}${path}`;
+    for (let attempt = 1; attempt <= 2; attempt += 1) {
+      try {
+        const response = await fetch(url, init);
+        const data = await response.json().catch(() => ({}));
+        if (response.ok) return data;
+
+        const message = data.error || `Request failed with ${response.status}`;
+        if (response.status >= 400 && response.status < 500 && response.status !== 408 && response.status !== 429) {
+          throw new Error(message);
+        }
+        errors.push(`${url} (attempt ${attempt}): ${message}`);
+      } catch (error) {
+        errors.push(`${url} (attempt ${attempt}): ${error.message}`);
+      }
+      if (attempt < 2) await wait(350);
+    }
+  }
+
+  throw new Error("Could not reach backend services right now. Please try again in a moment.");
+}
+
+function getApiBaseCandidates() {
+  const configured = String(window.APPLYPILOT_API_BASE_URL || "").replace(/\/$/, "");
+  const current = String(window.location.origin || "").replace(/\/$/, "");
+  const vercel = "https://applypilot-rose.vercel.app";
+  const candidates = [configured, current, vercel].filter(Boolean);
+  return Array.from(new Set(candidates));
 }
 
 function readJson(key) {
@@ -718,6 +812,10 @@ function clampNumber(value, min, max, fallback) {
   const number = Number(value);
   if (Number.isNaN(number)) return fallback;
   return Math.max(min, Math.min(max, number));
+}
+
+function wait(ms) {
+  return new Promise((resolve) => window.setTimeout(resolve, ms));
 }
 
 function escapeHtml(value) {
