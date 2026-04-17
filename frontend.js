@@ -2,10 +2,12 @@ const STORAGE_KEY = "applypilot:intake";
 const SELECTED_JOB_KEY = "applypilot:selected-job";
 const APPLICATIONS_KEY = "applypilot:applications";
 const SETTINGS_KEY = "applypilot:settings";
+const SAVED_JOBS_KEY = "applypilot:saved-jobs";
 
 document.addEventListener("DOMContentLoaded", () => {
   setupLandingPage();
   setupResumePage();
+  setupInsightsPage();
   setupDashboardPage();
   setupTailoringPage();
   setupCalendarPage();
@@ -155,6 +157,76 @@ function setupResumePage() {
   }
 }
 
+function setupInsightsPage() {
+  const page = document.querySelector("[data-control-page]");
+  if (!page) return;
+
+  const intake = readJson(STORAGE_KEY) || {};
+  const jobs = Array.isArray(intake.jobs) ? intake.jobs : [];
+  const applications = readJson(APPLICATIONS_KEY) || [];
+  const savedJobs = readJson(SAVED_JOBS_KEY) || [];
+  const profile = intake.profile || {};
+
+  const recommendedCount = jobs.length;
+  const savedCount = savedJobs.length;
+  const appliedCount = applications.length;
+  const interviewCount = applications.filter((entry) => entry?.result?.calendar?.start || entry?.job?.interviewDate).length;
+
+  setText("[data-kpi-recommended]", String(recommendedCount));
+  setText("[data-kpi-saved]", String(savedCount));
+  setText("[data-kpi-applied]", String(appliedCount));
+  setText("[data-kpi-interview]", String(interviewCount));
+
+  const profileStrength = computeProfileStrength(profile, jobs, applications);
+  setText("[data-profile-strength]", `${profileStrength}%`);
+
+  const missingSkills = collectMissingSkills(jobs);
+  setList(
+    "[data-top-missing-skills]",
+    missingSkills.length ? missingSkills.slice(0, 6) : ["No major gap detected from current matches"]
+  );
+
+  const categories = collectTopCategories(jobs);
+  setList(
+    "[data-suitable-categories]",
+    categories.length ? categories.slice(0, 6) : ["Upload resume and run intake to generate categories"]
+  );
+
+  const guidance = buildGuidance(profile, jobs, missingSkills, applications);
+  setList("[data-guidance-list]", guidance);
+
+  const recommendationRows = jobs.slice(0, 4).map((job) => {
+    const role = `${job.title || job.role || "Role"} at ${job.company || "Company"}`;
+    return `${role}: ${safeList(job.matchReasons, ["Strong overlap"]).slice(0, 1)[0]}`;
+  });
+  setList(
+    "[data-recommendation-list]",
+    recommendationRows.length ? recommendationRows : ["No recommendations yet. Complete intake to generate recommendations."]
+  );
+
+  const shortlistRows = jobs.slice(0, 4).map((job) => {
+    const role = `${job.title || job.role || "Role"} at ${job.company || "Company"}`;
+    const reason = safeList(job.whyNotMatch, ["No major blocker reported"]).slice(0, 1)[0];
+    const change = safeList(job.suggestedImprovements, ["Tailor your resume before applying"]).slice(0, 1)[0];
+    return `${role}: WHY NOT shortlisted -> ${reason}. Exact change -> ${change}.`;
+  });
+  setList(
+    "[data-shortlist-reasons]",
+    shortlistRows.length ? shortlistRows : ["No shortlist analysis yet. Add intake data first."]
+  );
+
+  const resultRows = applications.slice(0, 8).map((entry) => {
+    const role = `${entry?.job?.title || entry?.job?.role || "Role"} at ${entry?.job?.company || "Company"}`;
+    const confirmation = entry?.result?.application?.confirmationId || "Pending confirmation";
+    const stage = entry?.result?.calendar?.start || entry?.job?.interviewDate ? "Interview stage possible" : "Applied";
+    return `${role}: ${stage} (${confirmation})`;
+  });
+  setList(
+    "[data-results-list]",
+    resultRows.length ? resultRows : ["No applied jobs yet. Approve a role from Applications to start tracking results."]
+  );
+}
+
 function setupCalendarPage() {
   const list = document.querySelector("[data-calendar-list]");
   if (!list) return;
@@ -278,6 +350,7 @@ function setupDashboardPage() {
   const allJobs = intake.jobs;
 
   const rerender = () => {
+    const savedIds = new Set((readJson(SAVED_JOBS_KEY) || []).map((job) => getJobId(job)));
     const filteredJobs = allJobs.filter((job) => {
       const roleText = `${job.title || job.role || ""} ${job.company || ""} ${job.location || ""}`.toLowerCase();
       const skillText = safeList(job.matchedSkills, []).join(" ").toLowerCase();
@@ -291,13 +364,25 @@ function setupDashboardPage() {
       return;
     }
 
-    setDashboardStatus(`${filteredJobs.length} live jobs ready. Search and filters are active.`);
-    grid.innerHTML = filteredJobs.slice(0, 8).map((job) => renderJobCard(job)).join("") + renderMarketCard(intake);
+    setDashboardStatus(`${filteredJobs.length} live jobs ready. Search is active.`);
+    grid.innerHTML = filteredJobs.slice(0, 8).map((job) => renderJobCard(job, savedIds.has(getJobId(job)))).join("") + renderMarketCard(intake);
     grid.querySelectorAll("[data-select-job]").forEach((button) => {
       button.addEventListener("click", () => {
         const job = allJobs.find((candidate) => getJobId(candidate) === button.dataset.selectJob);
         localStorage.setItem(SELECTED_JOB_KEY, JSON.stringify(job));
         window.location.href = "tailoring.html";
+      });
+    });
+    grid.querySelectorAll("[data-save-job]").forEach((button) => {
+      button.addEventListener("click", () => {
+        const job = allJobs.find((candidate) => getJobId(candidate) === button.dataset.saveJob);
+        if (!job) return;
+        const saved = readJson(SAVED_JOBS_KEY) || [];
+        const exists = saved.some((item) => getJobId(item) === getJobId(job));
+        const nextSaved = exists ? saved.filter((item) => getJobId(item) !== getJobId(job)) : [job, ...saved];
+        localStorage.setItem(SAVED_JOBS_KEY, JSON.stringify(nextSaved.slice(0, 100)));
+        showToast(exists ? "Removed from saved jobs" : "Saved job", `${job.title || job.role || "Role"} at ${job.company || "Company"}`);
+        rerender();
       });
     });
   };
@@ -316,6 +401,7 @@ async function setupTailoringPage() {
 
   bindTailoringSearch();
   bindManualEditButton();
+  renderApplicationsQueue();
 
   const intake = readJson(STORAGE_KEY);
   const selectedJob = readJson(SELECTED_JOB_KEY) || intake?.jobs?.[0];
@@ -324,7 +410,7 @@ async function setupTailoringPage() {
   if (!intake?.profile || !selectedJob) {
     setTailoringStatus("Upload a resume and choose a matched job to generate a tailored application.");
     approveButton?.addEventListener("click", () => {
-      showToast("No selected job", "Pick a suited role from dashboard first.");
+      showToast("No selected job", "Pick a suited role from Suited Jobs first.");
       window.location.href = "dashboard.html";
     });
     return;
@@ -356,11 +442,19 @@ async function setupTailoringPage() {
         tailoredResume,
       });
       const applications = readJson(APPLICATIONS_KEY) || [];
-      applications.unshift({ job: selectedJob, result, createdAt: new Date().toISOString() });
+      applications.unshift({
+        id: `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+        job: selectedJob,
+        result,
+        stage: result?.calendar?.start ? "Interview stage possible" : "Applied",
+        status: "queued",
+        createdAt: new Date().toISOString(),
+      });
       localStorage.setItem(APPLICATIONS_KEY, JSON.stringify(applications));
       setTailoringStatus(`Application approved. Confirmation ${result.application.confirmationId}.`);
       approveButton.textContent = "APPLIED";
-      showToast("Application queued", "Approved application was recorded and added to Interview Calendar.");
+      showToast("Application queued", "Approved application is now visible in the queue below and in Interview Calendar.");
+      renderApplicationsQueue();
     } catch (error) {
       approveButton.disabled = false;
       approveButton.textContent = "APPROVE & AI APPLY";
@@ -415,7 +509,52 @@ function bindManualEditButton() {
   });
 }
 
-function renderJobCard(job) {
+function renderApplicationsQueue() {
+  const list = document.querySelector("[data-application-queue-list]");
+  const status = document.querySelector("[data-application-queue-status]");
+  if (!list) return;
+
+  const applications = readJson(APPLICATIONS_KEY) || [];
+  if (status) {
+    status.textContent = `${applications.length} queued/applied item${applications.length === 1 ? "" : "s"}`;
+  }
+
+  if (!applications.length) {
+    list.innerHTML = `
+      <article class="bg-white border border-slate-200 rounded-xl p-4 text-sm text-slate-600">
+        No queued applications yet. Click <strong>Approve & AI Apply</strong> and it will appear here instantly.
+      </article>
+    `;
+    return;
+  }
+
+  list.innerHTML = applications
+    .slice(0, 10)
+    .map((entry) => {
+      const job = entry.job || {};
+      const result = entry.result || {};
+      const confirmation = result?.application?.confirmationId || "Pending";
+      const stage = entry.stage || "Applied";
+      const calendarLink = result?.calendar?.link || buildCalendarLinkFromJob(job);
+      return `
+        <article class="bg-white border border-slate-200 rounded-xl p-4 flex flex-col gap-2">
+          <div class="flex items-center justify-between gap-3">
+            <h4 class="font-semibold text-slate-900">${escapeHtml(job.title || job.role || "Role")} at ${escapeHtml(job.company || "Company")}</h4>
+            <span class="text-xs font-semibold px-2 py-1 rounded-full bg-indigo-50 text-indigo-700">${escapeHtml(stage)}</span>
+          </div>
+          <p class="text-xs text-slate-600">Confirmation: ${escapeHtml(confirmation)} | Source: ${escapeHtml(job.source || "Unknown")}</p>
+          <p class="text-xs text-slate-500">Queued on ${escapeHtml(formatDateTime(entry.createdAt || new Date().toISOString()))}</p>
+          <div class="flex gap-2 pt-1">
+            <a href="${escapeHtml(calendarLink)}" target="_blank" rel="noreferrer" class="px-3 py-2 rounded-lg bg-slate-100 text-slate-700 text-xs font-semibold">Calendar</a>
+            <a href="${escapeHtml(job.applyUrl || "#")}" target="_blank" rel="noreferrer" class="px-3 py-2 rounded-lg bg-slate-100 text-slate-700 text-xs font-semibold">Job Post</a>
+          </div>
+        </article>
+      `;
+    })
+    .join("");
+}
+
+function renderJobCard(job, isSaved = false) {
   const score = Number(job.matchScore || job.match || 70);
   const offset = 213.6 - (score / 100) * 213.6;
   const reasons = safeList(job.matchReasons, ["Strong resume and role overlap"]);
@@ -478,9 +617,9 @@ function renderJobCard(job) {
           Review & Apply
           <span class="material-symbols-outlined text-sm">open_in_new</span>
         </button>
-        <a href="${escapeHtml(job.applyUrl || "#")}" target="_blank" rel="noreferrer" class="px-4 py-3 bg-slate-50 text-slate-400 rounded-lg hover:text-error transition-colors">
-          <span class="material-symbols-outlined">open_in_new</span>
-        </a>
+        <button data-save-job="${escapeHtml(id)}" class="px-4 py-3 bg-slate-50 ${isSaved ? "text-indigo-700" : "text-slate-500"} rounded-lg hover:text-indigo-700 transition-colors" title="${isSaved ? "Remove from saved jobs" : "Save job"}">
+          <span class="material-symbols-outlined" style="${isSaved ? "font-variation-settings: 'FILL' 1;" : ""}">bookmark</span>
+        </button>
       </div>
     </article>
   `;
@@ -691,6 +830,105 @@ function getApiBaseCandidates() {
   const vercel = "https://applypilot-rose.vercel.app";
   const candidates = [configured, current, vercel].filter(Boolean);
   return Array.from(new Set(candidates));
+}
+
+function computeProfileStrength(profile, jobs, applications) {
+  const skillScore = Math.min(35, safeList(profile.skills, []).length * 3);
+  const summaryScore = Math.min(20, Math.floor(String(profile.summary || "").length / 10));
+  const matchScore = jobs.length
+    ? Math.min(
+        30,
+        Math.round(
+          jobs
+            .slice(0, 10)
+            .reduce((sum, job) => sum + Number(job.matchScore || job.match || 0), 0) / Math.min(jobs.length, 10) / 3.4
+        )
+      )
+    : 0;
+  const activityScore = Math.min(15, applications.length * 3);
+  return clampNumber(skillScore + summaryScore + matchScore + activityScore, 20, 99, 55);
+}
+
+function collectMissingSkills(jobs) {
+  const tally = new Map();
+  jobs.forEach((job) => {
+    safeList(job.suggestedImprovements, []).forEach((item) => {
+      const key = String(item || "").trim();
+      if (!key) return;
+      tally.set(key, (tally.get(key) || 0) + 1);
+    });
+  });
+  return Array.from(tally.entries())
+    .sort((a, b) => b[1] - a[1])
+    .map(([label]) => label);
+}
+
+function collectTopCategories(jobs) {
+  const tally = new Map();
+  jobs.forEach((job) => {
+    const title = String(job.title || job.role || "").toLowerCase();
+    const category =
+      title.includes("frontend")
+        ? "Frontend Engineering"
+        : title.includes("full stack")
+        ? "Full Stack Engineering"
+        : title.includes("product")
+        ? "Product Engineering"
+        : title.includes("backend")
+        ? "Backend Engineering"
+        : title.includes("data")
+        ? "Data / Analytics"
+        : title.includes("devops") || title.includes("platform") || title.includes("infra")
+        ? "Platform / DevOps"
+        : "General Software Engineering";
+    tally.set(category, (tally.get(category) || 0) + 1);
+  });
+  return Array.from(tally.entries())
+    .sort((a, b) => b[1] - a[1])
+    .map(([label]) => label);
+}
+
+function buildGuidance(profile, jobs, missingSkills, applications) {
+  const topJobs = jobs.filter((job) => Number(job.matchScore || job.match || 0) >= 80);
+  const guidance = [];
+
+  if (!topJobs.length && jobs.length) {
+    guidance.push("You are targeting the wrong roles for your current profile strength. Shift to closer-fit roles first.");
+  } else {
+    guidance.push("Your strongest target roles are the ones with 80%+ match. Prioritize those first to improve shortlist rate.");
+  }
+
+  if (String(profile.summary || "").length < 120) {
+    guidance.push("Your resume is too generic. Add quantified impact, ownership, and scale details in the summary.");
+  } else {
+    guidance.push("Your resume summary is strong, but it needs tighter role-specific wording for each application.");
+  }
+
+  if (missingSkills.length) {
+    guidance.push(`Your projects are not aligned enough yet. Add proof for: ${missingSkills.slice(0, 2).join(", ")}.`);
+    guidance.push(`Build ${missingSkills[0]} and ${missingSkills[1] || "a second project skill"} projects first, then apply.`);
+  } else {
+    guidance.push("Projects are mostly aligned. Keep tailoring bullets for each job before approval.");
+  }
+
+  guidance.push(
+    applications.length
+      ? "Track results by stage and keep approving similar roles that convert to interviews."
+      : "Start with 3-5 approvals to generate enough behavior data for interaction-based learning."
+  );
+
+  return guidance;
+}
+
+function setText(selector, value) {
+  const target = document.querySelector(selector);
+  if (target) target.textContent = value;
+}
+
+function setList(selector, items) {
+  const target = document.querySelector(selector);
+  if (!target) return;
+  target.innerHTML = items.map((item) => `<li>${escapeHtml(item)}</li>`).join("");
 }
 
 function readJson(key) {

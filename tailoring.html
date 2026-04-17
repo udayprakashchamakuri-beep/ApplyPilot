@@ -107,13 +107,17 @@
         </div>
       </div>
       <nav class="flex-1 space-y-1">
-        <a class="flex items-center gap-3 px-3 py-3 rounded-xl transition-colors text-slate-500 dark:text-slate-400 hover:bg-slate-200/50 dark:hover:bg-slate-800/50" href="dashboard.html">
-          <span class="material-symbols-outlined">dashboard</span>
+        <a class="flex items-center gap-3 px-3 py-3 rounded-xl transition-colors text-slate-500 dark:text-slate-400 hover:bg-slate-200/50 dark:hover:bg-slate-800/50" href="insights.html">
+          <span class="material-symbols-outlined">space_dashboard</span>
           <span class="font-['Manrope'] font-medium">Dashboard</span>
         </a>
         <a class="flex items-center gap-3 px-3 py-3 rounded-xl transition-colors text-slate-500 dark:text-slate-400 hover:bg-slate-200/50 dark:hover:bg-slate-800/50" href="resume.html">
           <span class="material-symbols-outlined">description</span>
           <span class="font-['Manrope'] font-medium">My Resume</span>
+        </a>
+        <a class="flex items-center gap-3 px-3 py-3 rounded-xl transition-colors text-slate-500 dark:text-slate-400 hover:bg-slate-200/50 dark:hover:bg-slate-800/50" href="dashboard.html">
+          <span class="material-symbols-outlined">work</span>
+          <span class="font-['Manrope'] font-medium">Suited Jobs</span>
         </a>
         <a class="flex items-center gap-3 px-3 py-3 rounded-xl bg-slate-100/50 dark:bg-slate-800/50 text-indigo-700 dark:text-indigo-400 font-bold border-r-2 border-indigo-700" href="tailoring.html">
           <span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">send</span>
@@ -124,7 +128,7 @@
           <span class="font-['Manrope'] font-medium">Interview Calendar</span>
         </a>
         <a class="flex items-center gap-3 px-3 py-3 rounded-xl transition-colors text-slate-500 dark:text-slate-400 hover:bg-slate-200/50 dark:hover:bg-slate-800/50" href="settings.html">
-          <span class="material-symbols-outlined">settings</span>
+          <span class="material-symbols-outlined">tune</span>
           <span class="font-['Manrope'] font-medium">Preferences</span>
         </a>
       </nav>
@@ -271,6 +275,16 @@
             </div>
           </div>
         </div>
+        <section class="bg-white border border-slate-200 rounded-xl p-5" id="application-queue">
+          <div class="flex items-center justify-between gap-3">
+            <h3 class="font-headline text-xl font-bold">Queued Applications</h3>
+            <span data-application-queue-status class="text-xs font-semibold text-slate-500 uppercase tracking-widest">0 queued/applied items</span>
+          </div>
+          <p class="text-sm text-slate-600 mt-1">Every approved role appears here with status, confirmation id, and quick links.</p>
+          <div data-application-queue-list class="mt-4 grid md:grid-cols-2 gap-3">
+            <article class="bg-white border border-slate-200 rounded-xl p-4 text-sm text-slate-600">Loading queue...</article>
+          </div>
+        </section>
       </section>
       <section class="fixed bottom-0 right-0 w-[calc(100%-16rem)] bg-white/70 backdrop-blur-2xl px-10 py-6 border-t border-outline-variant/10 z-50">
         <div class="max-w-6xl mx-auto flex items-center justify-between">
