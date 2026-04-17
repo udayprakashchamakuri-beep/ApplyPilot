@@ -4,7 +4,18 @@ const APPLICATIONS_KEY = "applypilot:applications";
 const SETTINGS_KEY = "applypilot:settings";
 const SAVED_JOBS_KEY = "applypilot:saved-jobs";
 
+const LEGACY_ROUTE_PAGES = {
+  intake: "index.html",
+  dashboard: "insights.html",
+  resume: "resume.html",
+  "suited-jobs": "dashboard.html",
+  applications: "tailoring.html",
+  calendar: "calendar.html",
+  preferences: "settings.html",
+};
+
 document.addEventListener("DOMContentLoaded", () => {
+  setupSpaNavigation();
   setupLandingPage();
   setupResumePage();
   setupInsightsPage();
@@ -15,9 +26,107 @@ document.addEventListener("DOMContentLoaded", () => {
   setupGlobalActions();
 });
 
+function setupSpaNavigation() {
+  if (!isSpaApp()) return;
+
+  const links = document.querySelectorAll("[data-route-link]");
+  links.forEach((link) => {
+    link.addEventListener("click", (event) => {
+      const route = link.dataset.routeLink;
+      if (!route) return;
+      event.preventDefault();
+      navigateTo(route);
+    });
+  });
+
+  window.addEventListener("hashchange", () => {
+    renderSpaRoute();
+    refreshSpaRoute();
+  });
+
+  if (!window.location.hash) {
+    navigateTo("intake", { replace: true });
+    return;
+  }
+
+  renderSpaRoute();
+  refreshSpaRoute();
+}
+
+function refreshSpaRoute() {
+  if (!isSpaApp()) return;
+
+  const route = normalizeRoute((window.location.hash || "").replace(/^#/, ""));
+  if (route === "resume") setupResumePage();
+  if (route === "dashboard") setupInsightsPage();
+  if (route === "suited-jobs") setupDashboardPage();
+  if (route === "applications") setupTailoringPage();
+  if (route === "calendar") setupCalendarPage();
+  if (route === "preferences") setupSettingsPage();
+}
+
+function renderSpaRoute() {
+  if (!isSpaApp()) return;
+
+  const route = normalizeRoute((window.location.hash || "").replace(/^#/, ""));
+  document.querySelectorAll("[data-route-view]").forEach((section) => {
+    section.classList.toggle("hidden", section.dataset.routeView !== route);
+  });
+
+  document.querySelectorAll("[data-route-link][data-route-nav]").forEach((link) => {
+    const active = link.dataset.routeLink === route;
+    link.classList.toggle("bg-indigo-50", active);
+    link.classList.toggle("text-indigo-700", active);
+    link.classList.toggle("font-semibold", active);
+    link.classList.toggle("text-slate-600", !active);
+  });
+
+  const title = document.querySelector("[data-route-title]");
+  if (title) {
+    const label = document.querySelector(`[data-route-link="${route}"]`)?.dataset.routeLabel || route;
+    title.textContent = label;
+  }
+}
+
+function navigateTo(route, options = {}) {
+  const normalized = normalizeRoute(route);
+  if (isSpaApp()) {
+    const hash = `#${normalized}`;
+    if (options.replace) {
+      window.history.replaceState(null, "", hash);
+      renderSpaRoute();
+    } else if (window.location.hash !== hash) {
+      window.location.hash = hash;
+    } else {
+      renderSpaRoute();
+      refreshSpaRoute();
+    }
+    return;
+  }
+
+  window.location.href = LEGACY_ROUTE_PAGES[normalized] || LEGACY_ROUTE_PAGES.intake;
+}
+
+function routeHref(route) {
+  const normalized = normalizeRoute(route);
+  return isSpaApp() ? `#${normalized}` : LEGACY_ROUTE_PAGES[normalized] || LEGACY_ROUTE_PAGES.intake;
+}
+
+function isSpaApp() {
+  return Boolean(document.querySelector("[data-spa-app]"));
+}
+
+function normalizeRoute(route) {
+  const cleaned = String(route || "").trim().toLowerCase();
+  if (LEGACY_ROUTE_PAGES[cleaned]) return cleaned;
+  return "intake";
+}
+
 function setupLandingPage() {
   const uploadZone = document.querySelector("[data-upload-zone]");
   if (!uploadZone) return;
+  if (uploadZone.dataset.bound === "true") return;
+  uploadZone.dataset.bound = "true";
 
   const existingIntake = readJson(STORAGE_KEY);
   if (existingIntake?.profile) {
@@ -61,13 +170,15 @@ async function runIntake(file) {
     localStorage.removeItem(SELECTED_JOB_KEY);
     setLandingStatus(`${data.jobs?.length || 0} live matches found. Opening resume view...`);
     showToast("Resume analyzed", "Your resume is parsed and ready.");
-    window.location.href = "resume.html";
+    setupResumePage();
+    navigateTo("resume");
   } catch (error) {
     const cached = readJson(STORAGE_KEY);
     if (cached?.profile) {
       setLandingStatus("Live backend is currently unavailable. Loaded your last successful intake.");
       showToast("Using cached intake", "Backend is temporarily unavailable. Loaded your previous data.");
-      window.location.href = "resume.html";
+      setupResumePage();
+      navigateTo("resume");
       return;
     }
     setLandingStatus(`Backend failed: ${error.message}`);
@@ -97,9 +208,9 @@ function setupResumePage() {
     if (summary) summary.textContent = "Upload your resume from the landing page to generate your profile.";
     if (skills) skills.innerHTML = `<span class="px-3 py-1 rounded-full bg-slate-100 text-slate-500 text-xs font-semibold">Waiting for resume</span>`;
     if (meta) meta.textContent = "Use Start intake on the landing page.";
-    action?.addEventListener("click", () => {
-      window.location.href = "index.html";
-    });
+    if (action) action.onclick = () => {
+      navigateTo("intake");
+    };
     editToggle?.setAttribute("disabled", "true");
     return;
   }
@@ -110,32 +221,36 @@ function setupResumePage() {
   if (editSummary) editSummary.value = intake.profile.summary || "";
   if (editSkills) editSkills.value = safeList(intake.profile.skills, []).join(", ");
 
-  editToggle?.addEventListener("click", () => {
-    if (!editPanel) return;
-    editPanel.classList.toggle("hidden");
-    editToggle.textContent = editPanel.classList.contains("hidden") ? "Edit Details" : "Close Editor";
-  });
+  if (container.dataset.bound !== "true") {
+    container.dataset.bound = "true";
 
-  editForm?.addEventListener("submit", (event) => {
-    event.preventDefault();
-    const nextIntake = readJson(STORAGE_KEY) || intake;
-    const nextProfile = {
-      ...nextIntake.profile,
-      headline: (editHeadline?.value || "").trim() || nextIntake.profile.headline,
-      summary: (editSummary?.value || "").trim() || nextIntake.profile.summary,
-      skills: csvToList(editSkills?.value || "").length
-        ? csvToList(editSkills?.value || "")
-        : safeList(nextIntake.profile.skills, []),
-    };
-    nextIntake.profile = nextProfile;
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(nextIntake));
-    renderResumeProfile(nextProfile, nextIntake.jobs?.length || 0);
-    showToast("Resume details updated", "Your profile details were updated locally.");
-  });
+    editToggle?.addEventListener("click", () => {
+      if (!editPanel) return;
+      editPanel.classList.toggle("hidden");
+      editToggle.textContent = editPanel.classList.contains("hidden") ? "Edit Details" : "Close Editor";
+    });
 
-  action?.addEventListener("click", () => {
-    window.location.href = "dashboard.html";
-  });
+    editForm?.addEventListener("submit", (event) => {
+      event.preventDefault();
+      const nextIntake = readJson(STORAGE_KEY) || intake;
+      const nextProfile = {
+        ...nextIntake.profile,
+        headline: (editHeadline?.value || "").trim() || nextIntake.profile.headline,
+        summary: (editSummary?.value || "").trim() || nextIntake.profile.summary,
+        skills: csvToList(editSkills?.value || "").length
+          ? csvToList(editSkills?.value || "")
+          : safeList(nextIntake.profile.skills, []),
+      };
+      nextIntake.profile = nextProfile;
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(nextIntake));
+      renderResumeProfile(nextProfile, nextIntake.jobs?.length || 0);
+      showToast("Resume details updated", "Your profile details were updated locally.");
+    });
+
+    action?.addEventListener("click", () => {
+      navigateTo("suited-jobs");
+    });
+  }
 
   function renderResumeProfile(profile, jobCount) {
     if (headline) headline.textContent = profile.headline || profile.fileName || "Resume profile";
@@ -252,7 +367,7 @@ function setupCalendarPage() {
               <a class="px-4 py-2 rounded-lg bg-indigo-600 text-white text-sm font-semibold" href="${escapeHtml(
                 link
               )}" target="_blank" rel="noreferrer">Open in Google Calendar</a>
-              <a class="px-4 py-2 rounded-lg bg-slate-100 text-slate-700 text-sm font-semibold" href="tailoring.html">Open Application</a>
+              <a class="px-4 py-2 rounded-lg bg-slate-100 text-slate-700 text-sm font-semibold" href="${escapeHtml(routeHref("applications"))}">Open Application</a>
             </div>
           </article>
         `;
@@ -275,7 +390,7 @@ function setupCalendarPage() {
         job.company || "Company"
       )}</h3>
           <p class="text-sm text-slate-600">Suggested slot: ${escapeHtml(formatDateTime(job.interviewDate || ""))}</p>
-          <a class="px-4 py-2 rounded-lg bg-slate-100 text-slate-700 text-sm font-semibold w-fit" href="tailoring.html">Approve to create event</a>
+          <a class="px-4 py-2 rounded-lg bg-slate-100 text-slate-700 text-sm font-semibold w-fit" href="${escapeHtml(routeHref("applications"))}">Approve to create event</a>
         </article>
       `
     )
@@ -302,28 +417,31 @@ function setupSettingsPage() {
   minSalary.value = saved.minimumSalary || defaults.minimumSalary;
   sources.value = toCsv(saved.sources || normalizeSources());
 
-  form.addEventListener("submit", (event) => {
-    event.preventDefault();
-    const nextSettings = {
-      roles: csvToList(roles.value),
-      locations: csvToList(locations.value),
-      threshold: clampNumber(threshold.value, 50, 99, 75),
-      minimumSalary: minSalary.value.trim() || defaults.minimumSalary,
-      sources: normalizeSources(csvToList(sources.value)),
-    };
-    localStorage.setItem(SETTINGS_KEY, JSON.stringify(nextSettings));
-    if (status) {
-      status.textContent = "Preferences saved. New intake runs will use these values.";
-    }
-    showToast("Preferences saved", "Your next resume intake will use the updated preferences.");
-  });
+  if (form.dataset.bound !== "true") {
+    form.dataset.bound = "true";
+    form.addEventListener("submit", (event) => {
+      event.preventDefault();
+      const nextSettings = {
+        roles: csvToList(roles.value),
+        locations: csvToList(locations.value),
+        threshold: clampNumber(threshold.value, 50, 99, 75),
+        minimumSalary: minSalary.value.trim() || defaults.minimumSalary,
+        sources: normalizeSources(csvToList(sources.value)),
+      };
+      localStorage.setItem(SETTINGS_KEY, JSON.stringify(nextSettings));
+      if (status) {
+        status.textContent = "Preferences saved. New intake runs will use these values.";
+      }
+      showToast("Preferences saved", "Your next resume intake will use the updated preferences.");
+    });
+  }
 }
 
 function setupGlobalActions() {
   document.querySelectorAll("[data-new-application]").forEach((element) => {
     element.addEventListener("click", (event) => {
       event.preventDefault();
-      window.location.href = "index.html";
+      navigateTo("intake");
     });
   });
 }
@@ -335,15 +453,17 @@ function setupDashboardPage() {
   const intake = readJson(STORAGE_KEY);
   const searchInput = document.querySelector("[data-dashboard-search]");
   const updatePortfolioButton = document.querySelector("[data-update-portfolio]");
-  let query = "";
-
-  updatePortfolioButton?.addEventListener("click", () => {
-    window.location.href = "resume.html";
-  });
+  let query = String(searchInput?.value || "").trim().toLowerCase();
 
   if (!intake?.jobs?.length) {
     setDashboardStatus("Upload a resume from the landing page to replace these sample cards with live jobs.");
     grid.innerHTML = renderEmptyJobsState();
+    if (updatePortfolioButton && updatePortfolioButton.dataset.bound !== "true") {
+      updatePortfolioButton.dataset.bound = "true";
+      updatePortfolioButton.addEventListener("click", () => {
+        navigateTo("resume");
+      });
+    }
     return;
   }
 
@@ -370,7 +490,8 @@ function setupDashboardPage() {
       button.addEventListener("click", () => {
         const job = allJobs.find((candidate) => getJobId(candidate) === button.dataset.selectJob);
         localStorage.setItem(SELECTED_JOB_KEY, JSON.stringify(job));
-        window.location.href = "tailoring.html";
+        setupTailoringPage();
+        navigateTo("applications");
       });
     });
     grid.querySelectorAll("[data-save-job]").forEach((button) => {
@@ -387,10 +508,20 @@ function setupDashboardPage() {
     });
   };
 
-  searchInput?.addEventListener("input", (event) => {
-    query = String(event.target.value || "").trim().toLowerCase();
-    rerender();
-  });
+  if (searchInput && searchInput.dataset.bound !== "true") {
+    searchInput.dataset.bound = "true";
+    searchInput.addEventListener("input", (event) => {
+      query = String(event.target.value || "").trim().toLowerCase();
+      rerender();
+    });
+  }
+
+  if (updatePortfolioButton && updatePortfolioButton.dataset.bound !== "true") {
+    updatePortfolioButton.dataset.bound = "true";
+    updatePortfolioButton.addEventListener("click", () => {
+      navigateTo("resume");
+    });
+  }
 
   rerender();
 }
@@ -409,10 +540,12 @@ async function setupTailoringPage() {
 
   if (!intake?.profile || !selectedJob) {
     setTailoringStatus("Upload a resume and choose a matched job to generate a tailored application.");
-    approveButton?.addEventListener("click", () => {
-      showToast("No selected job", "Pick a suited role from Suited Jobs first.");
-      window.location.href = "dashboard.html";
-    });
+    if (approveButton) {
+      approveButton.onclick = () => {
+        showToast("No selected job", "Pick a suited role from Suited Jobs first.");
+        navigateTo("suited-jobs");
+      };
+    }
     return;
   }
 
@@ -431,7 +564,8 @@ async function setupTailoringPage() {
     showToast("Tailoring failed", error.message, "error");
   }
 
-  approveButton?.addEventListener("click", async () => {
+  if (!approveButton) return;
+  approveButton.onclick = async () => {
     approveButton.disabled = true;
     approveButton.textContent = "APPLYING...";
     try {
@@ -454,6 +588,8 @@ async function setupTailoringPage() {
       setTailoringStatus(`Application approved. Confirmation ${result.application.confirmationId}.`);
       approveButton.textContent = "APPLIED";
       showToast("Application queued", "Approved application is now visible in the queue below and in Interview Calendar.");
+      setupInsightsPage();
+      setupCalendarPage();
       renderApplicationsQueue();
     } catch (error) {
       approveButton.disabled = false;
@@ -461,12 +597,13 @@ async function setupTailoringPage() {
       setTailoringStatus(`Apply failed: ${error.message}`);
       showToast("Apply failed", error.message, "error");
     }
-  });
+  };
 }
 
 function bindTailoringSearch() {
   const searchInput = document.querySelector("[data-tailoring-search]");
-  if (!searchInput) return;
+  if (!searchInput || searchInput.dataset.bound === "true") return;
+  searchInput.dataset.bound = "true";
   const original = document.querySelector("[data-original-resume]");
   const tailored = document.querySelector("[data-tailored-resume]");
   const panels = [original, tailored].filter(Boolean);
@@ -493,7 +630,8 @@ function bindTailoringSearch() {
 function bindManualEditButton() {
   const button = document.querySelector("[data-edit-manual]");
   const target = document.querySelector("[data-tailored-resume]");
-  if (!button || !target) return;
+  if (!button || !target || button.dataset.bound === "true") return;
+  button.dataset.bound = "true";
 
   button.addEventListener("click", () => {
     const currentlyEditable = target.getAttribute("contenteditable") === "true";
@@ -710,7 +848,7 @@ function renderEmptyJobsState() {
     <article class="bg-white rounded-xl border border-slate-200 p-8">
       <h3 class="text-2xl font-bold mb-2">No live jobs yet</h3>
       <p class="text-slate-600 mb-4">Upload your resume first so APPLYPILOT can fetch real jobs from backend sources.</p>
-      <a href="index.html" class="inline-flex px-4 py-2 rounded-lg bg-indigo-600 text-white font-semibold">Go to intake</a>
+      <a href="${escapeHtml(routeHref("intake"))}" class="inline-flex px-4 py-2 rounded-lg bg-indigo-600 text-white font-semibold">Go to intake</a>
     </article>
   `;
 }

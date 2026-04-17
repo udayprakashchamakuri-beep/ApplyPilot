@@ -1,304 +1,223 @@
 <!DOCTYPE html>
-<html class="light" lang="en">
+<html lang="en">
   <head>
     <meta charset="utf-8" />
-    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
-    <title>APPLYPILOT | Professional Job Automation</title>
-    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
-    <link
-      href="https://fonts.googleapis.com/css2?family=Manrope:wght@200..800&family=Inter:wght@100..900&display=swap"
-      rel="stylesheet"
-    />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap"
-      rel="stylesheet"
-    />
-    <script id="tailwind-config">
-      tailwind.config = {
-        darkMode: "class",
-        theme: {
-          extend: {
-            colors: {
-              "on-primary": "#ffffff",
-              "surface-container-lowest": "#ffffff",
-              "on-tertiary-fixed-variant": "#004c6e",
-              "on-tertiary": "#ffffff",
-              "secondary-container": "#d5e0f8",
-              "surface-container": "#eceef0",
-              background: "#f7f9fb",
-              "on-secondary-container": "#586377",
-              "inverse-primary": "#c3c0ff",
-              "surface-dim": "#d8dadc",
-              "surface-bright": "#f7f9fb",
-              "on-secondary-fixed-variant": "#3c475a",
-              "surface-tint": "#4d44e3",
-              tertiary: "#004d70",
-              "on-primary-container": "#dad7ff",
-              "surface-container-low": "#f2f4f6",
-              "on-tertiary-fixed": "#001e2f",
-              "on-surface": "#191c1e",
-              "primary-container": "#4f46e5",
-              "on-surface-variant": "#464555",
-              outline: "#777587",
-              primary: "#3525cd",
-              "secondary-fixed-dim": "#bcc7de",
-              "on-secondary": "#ffffff",
-              "on-error": "#ffffff",
-              "tertiary-container": "#006693",
-              "surface-container-high": "#e6e8ea",
-              "secondary-fixed": "#d8e3fb",
-              "on-primary-fixed-variant": "#3323cc",
-              "on-background": "#191c1e",
-              "inverse-surface": "#2d3133",
-              secondary: "#545f73",
-              "surface-variant": "#e0e3e5",
-              "tertiary-fixed": "#c9e6ff",
-              "primary-fixed": "#e2dfff",
-              "surface-container-highest": "#e0e3e5",
-              "on-primary-fixed": "#0f0069",
-              surface: "#f7f9fb",
-              "inverse-on-surface": "#eff1f3",
-              "on-tertiary-container": "#b8e0ff",
-              "tertiary-fixed-dim": "#89ceff",
-              "on-error-container": "#93000a",
-              "on-secondary-fixed": "#111c2d",
-              "outline-variant": "#c7c4d8",
-              "primary-fixed-dim": "#c3c0ff",
-              error: "#ba1a1a",
-              "error-container": "#ffdad6",
-            },
-            borderRadius: {
-              DEFAULT: "0.125rem",
-              lg: "0.25rem",
-              xl: "0.5rem",
-              full: "0.75rem",
-            },
-            fontFamily: {
-              headline: ["Manrope"],
-              body: ["Inter"],
-              label: ["Inter"],
-            },
-          },
-        },
-      };
-    </script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>APPLYPILOT</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet" />
     <style>
+      body {
+        font-family: Inter, sans-serif;
+      }
+      .font-headline {
+        font-family: Manrope, sans-serif;
+      }
       .material-symbols-outlined {
         font-variation-settings: "FILL" 0, "wght" 400, "GRAD" 0, "opsz" 24;
       }
-
-      .glass-panel {
-        background: rgba(255, 255, 255, 0.7);
-        backdrop-filter: blur(20px);
-        -webkit-backdrop-filter: blur(20px);
-      }
     </style>
   </head>
-  <body class="bg-background text-on-background font-body selection:bg-primary-fixed selection:text-on-primary-fixed">
-    <nav class="fixed top-0 right-0 w-full z-50 bg-white/70 backdrop-blur-xl flex items-center justify-between px-8 h-16">
-      <div class="flex items-center gap-2">
-        <span class="text-lg font-extrabold text-indigo-900 tracking-tight font-headline">APPLYPILOT</span>
-      </div>
-      <div class="hidden md:flex items-center gap-8">
-        <a class="font-label text-sm uppercase tracking-widest font-bold text-indigo-700" href="dashboard.html">Suited Jobs</a>
-        <a
-          class="font-label text-sm uppercase tracking-widest font-bold text-slate-400 hover:text-indigo-600 transition-all"
-          href="insights.html"
-          >Dashboard</a
-        >
-        <a
-          class="font-label text-sm uppercase tracking-widest font-bold text-slate-400 hover:text-indigo-600 transition-all"
-          href="tailoring.html"
-          >Enterprise</a
-        >
-      </div>
-      <div class="flex items-center gap-4">
-        <span class="material-symbols-outlined text-indigo-700 cursor-pointer p-2 hover:bg-slate-100 rounded-full transition-colors">notifications</span>
-        <span class="material-symbols-outlined text-indigo-700 cursor-pointer p-2 hover:bg-slate-100 rounded-full transition-colors">account_circle</span>
-      </div>
-    </nav>
-    <main class="pt-16">
-      <section class="relative min-h-[921px] flex flex-col items-center justify-center px-4 overflow-hidden">
-        <div class="absolute inset-0 z-0 bg-[radial-gradient(circle_at_50%_50%,_#e2dfff_0%,_transparent_50%)] opacity-30"></div>
-        <div class="relative z-10 max-w-5xl w-full text-center mb-16">
-          <span class="inline-block py-1 px-3 mb-6 rounded-full bg-secondary-fixed text-on-secondary-fixed text-xs font-bold font-label tracking-widest uppercase"
-            >Autonomous Career Intelligence</span
-          >
-          <h1 class="font-headline text-5xl md:text-7xl font-extrabold text-on-surface tracking-tight leading-[1.1] mb-6">
-            AI that finds and applies for your <span class="text-primary bg-clip-text">perfect job</span>.
-          </h1>
-          <p class="text-secondary text-lg md:text-xl max-w-2xl mx-auto mb-10 leading-relaxed">
-            Stop manually searching. APPLYPILOT analyzes your profile and executes applications across global platforms autonomously.
-          </p>
+  <body class="bg-slate-50 text-slate-900" data-spa-app>
+    <div class="min-h-screen grid grid-cols-1 lg:grid-cols-[260px_1fr]">
+      <aside class="bg-white border-r border-slate-200 p-6">
+        <div class="mb-8">
+          <h1 class="font-headline text-2xl font-black text-indigo-700">APPLYPILOT</h1>
+          <p class="text-xs uppercase tracking-widest text-slate-500 font-semibold">Career Intelligence</p>
         </div>
-        <div class="relative z-10 w-full max-w-4xl grid md:grid-cols-12 gap-8 items-start">
-          <div class="md:col-span-7">
-            <div class="bg-surface-container-lowest p-8 rounded-xl border border-outline-variant/15 shadow-sm">
-              <div class="flex items-center justify-between mb-8">
-                <h3 class="font-headline font-bold text-xl">Drop your Resume</h3>
-                <span class="text-xs text-outline font-medium">PDF, DOCX (Max 10MB)</span>
-              </div>
-              <div
-                class="border-2 border-dashed border-outline-variant rounded-lg p-12 text-center hover:border-primary transition-colors cursor-pointer bg-surface-container-low/30"
-                data-upload-zone
-              >
-                <span class="material-symbols-outlined text-5xl text-primary mb-4">cloud_upload</span>
-                <p class="font-headline font-bold text-on-surface">Drag & Drop or Click to Browse</p>
-                <p class="text-secondary text-sm mt-2" data-upload-status>Precision analysis starts immediately upon upload</p>
-              </div>
-              <div class="mt-8 flex items-center gap-6 opacity-60">
-                <span class="text-xs font-bold uppercase tracking-widest text-outline">Integrated with</span>
-                <div class="flex gap-4">
-                  <div class="w-8 h-8 rounded-md bg-slate-200 flex items-center justify-center">
-                    <span class="material-symbols-outlined text-sm">share</span>
-                  </div>
-                  <div class="w-8 h-8 rounded-md bg-slate-200 flex items-center justify-center">
-                    <span class="material-symbols-outlined text-sm">work</span>
-                  </div>
-                  <div class="w-8 h-8 rounded-md bg-slate-200 flex items-center justify-center">
-                    <span class="material-symbols-outlined text-sm">public</span>
-                  </div>
-                </div>
-              </div>
+        <nav class="space-y-2 text-sm">
+          <a href="#intake" data-route-link="intake" data-route-nav="true" data-route-label="Intake" class="flex items-center gap-2 px-3 py-2 rounded-lg text-slate-600 hover:bg-slate-100">
+            <span class="material-symbols-outlined text-[18px]">description</span>Intake
+          </a>
+          <a href="#dashboard" data-route-link="dashboard" data-route-nav="true" data-route-label="Dashboard" class="flex items-center gap-2 px-3 py-2 rounded-lg text-slate-600 hover:bg-slate-100">
+            <span class="material-symbols-outlined text-[18px]">space_dashboard</span>Dashboard
+          </a>
+          <a href="#resume" data-route-link="resume" data-route-nav="true" data-route-label="My Resume" class="flex items-center gap-2 px-3 py-2 rounded-lg text-slate-600 hover:bg-slate-100">
+            <span class="material-symbols-outlined text-[18px]">person</span>My Resume
+          </a>
+          <a href="#suited-jobs" data-route-link="suited-jobs" data-route-nav="true" data-route-label="Suited Jobs" class="flex items-center gap-2 px-3 py-2 rounded-lg text-slate-600 hover:bg-slate-100">
+            <span class="material-symbols-outlined text-[18px]">work</span>Suited Jobs
+          </a>
+          <a href="#applications" data-route-link="applications" data-route-nav="true" data-route-label="Applications" class="flex items-center gap-2 px-3 py-2 rounded-lg text-slate-600 hover:bg-slate-100">
+            <span class="material-symbols-outlined text-[18px]">send</span>Applications
+          </a>
+          <a href="#calendar" data-route-link="calendar" data-route-nav="true" data-route-label="Interview Calendar" class="flex items-center gap-2 px-3 py-2 rounded-lg text-slate-600 hover:bg-slate-100">
+            <span class="material-symbols-outlined text-[18px]">calendar_today</span>Interview Calendar
+          </a>
+          <a href="#preferences" data-route-link="preferences" data-route-nav="true" data-route-label="Preferences" class="flex items-center gap-2 px-3 py-2 rounded-lg text-slate-600 hover:bg-slate-100">
+            <span class="material-symbols-outlined text-[18px]">tune</span>Preferences
+          </a>
+        </nav>
+        <button data-new-application class="mt-8 w-full px-4 py-3 rounded-lg bg-indigo-600 text-white font-semibold">New Application</button>
+      </aside>
+
+      <main class="p-6 lg:p-10">
+        <div class="max-w-6xl mx-auto">
+          <header class="flex items-center justify-between mb-6">
+            <div>
+              <p class="text-xs uppercase tracking-widest text-slate-500 font-semibold">Single Website Mode</p>
+              <h2 data-route-title class="font-headline text-3xl font-black">Intake</h2>
             </div>
-          </div>
-          <div class="md:col-span-5 space-y-4">
-            <div class="glass-panel p-6 rounded-xl border border-outline-variant/15 shadow-xl">
-              <div class="flex items-center gap-4 mb-4">
-                <div class="w-10 h-10 rounded-full bg-primary flex items-center justify-center">
-                  <span class="material-symbols-outlined text-on-primary">analytics</span>
-                </div>
+            <div class="text-sm text-slate-500">All sections run in this one page</div>
+          </header>
+
+          <section data-route-view="intake" class="space-y-6">
+            <article class="bg-white border border-slate-200 rounded-xl p-6">
+              <h3 class="font-headline text-2xl font-bold">Upload Resume</h3>
+              <p class="text-slate-600 mt-1">Upload once, analyze once, then manage everything without leaving this page.</p>
+              <div data-upload-zone class="mt-6 border-2 border-dashed border-slate-300 rounded-xl p-10 text-center cursor-pointer hover:border-indigo-500 transition-colors">
+                <span class="material-symbols-outlined text-4xl text-indigo-600">cloud_upload</span>
+                <p class="font-semibold mt-2">Drag and drop or click to upload (PDF, DOCX, TXT)</p>
+                <p data-upload-status class="text-sm text-slate-500 mt-2">Precision analysis starts immediately upon upload.</p>
+              </div>
+            </article>
+          </section>
+
+          <section data-route-view="dashboard" data-control-page class="hidden space-y-6">
+            <article class="bg-white border border-slate-200 rounded-xl p-6">
+              <h3 class="font-headline text-2xl font-bold">Dashboard for Job Seeker</h3>
+              <p class="text-slate-600 mt-1">Track results and get personalized recommendations with explainable guidance.</p>
+            </article>
+            <div class="grid md:grid-cols-2 xl:grid-cols-4 gap-4">
+              <article class="bg-white rounded-xl border border-slate-200 p-4"><p class="text-xs uppercase tracking-widest text-slate-500 font-semibold">Recommended Jobs</p><p data-kpi-recommended class="text-3xl font-headline font-black mt-2">0</p></article>
+              <article class="bg-white rounded-xl border border-slate-200 p-4"><p class="text-xs uppercase tracking-widest text-slate-500 font-semibold">Saved Jobs</p><p data-kpi-saved class="text-3xl font-headline font-black mt-2">0</p></article>
+              <article class="bg-white rounded-xl border border-slate-200 p-4"><p class="text-xs uppercase tracking-widest text-slate-500 font-semibold">Applied Jobs</p><p data-kpi-applied class="text-3xl font-headline font-black mt-2">0</p></article>
+              <article class="bg-white rounded-xl border border-slate-200 p-4"><p class="text-xs uppercase tracking-widest text-slate-500 font-semibold">Interview Stage</p><p data-kpi-interview class="text-3xl font-headline font-black mt-2">0</p></article>
+            </div>
+            <div class="grid lg:grid-cols-3 gap-4">
+              <article class="bg-white rounded-xl border border-slate-200 p-5"><p class="text-xs uppercase tracking-widest text-slate-500 font-semibold">Profile Strength</p><p data-profile-strength class="text-4xl font-headline font-black mt-3">0%</p></article>
+              <article class="bg-white rounded-xl border border-slate-200 p-5 lg:col-span-2"><p class="text-xs uppercase tracking-widest text-slate-500 font-semibold mb-3">Most Suitable Job Categories</p><ul data-suitable-categories class="text-sm text-slate-700 space-y-2 list-disc pl-5"></ul></article>
+            </div>
+            <div class="grid lg:grid-cols-2 gap-4">
+              <article class="bg-white rounded-xl border border-slate-200 p-5"><h3 class="font-headline text-xl font-bold">Personalized Recommendations</h3><ul data-recommendation-list class="mt-4 text-sm text-slate-700 space-y-2 list-disc pl-5"></ul></article>
+              <article class="bg-white rounded-xl border border-slate-200 p-5"><h3 class="font-headline text-xl font-bold">Shortlist Intelligence</h3><ul data-shortlist-reasons class="mt-4 text-sm text-slate-700 space-y-2 list-disc pl-5"></ul></article>
+            </div>
+            <div class="grid lg:grid-cols-2 gap-4">
+              <article class="bg-white rounded-xl border border-slate-200 p-5"><h3 class="font-headline text-xl font-bold">Top Missing Skills</h3><ul data-top-missing-skills class="mt-4 text-sm text-slate-700 space-y-2 list-disc pl-5"></ul></article>
+              <article class="bg-white rounded-xl border border-slate-200 p-5"><h3 class="font-headline text-xl font-bold">Track Results</h3><ul data-results-list class="mt-4 text-sm text-slate-700 space-y-2 list-disc pl-5"></ul></article>
+            </div>
+            <article class="bg-white rounded-xl border border-slate-200 p-5"><h3 class="font-headline text-xl font-bold">Action Plan</h3><ul data-guidance-list class="mt-4 text-sm text-slate-700 space-y-2 list-disc pl-5"></ul></article>
+          </section>
+
+          <section data-route-view="resume" data-resume-page class="hidden space-y-6">
+            <article class="bg-white border border-slate-200 rounded-xl p-6">
+              <p class="text-xs uppercase tracking-widest text-slate-500 font-semibold">Resume Profile</p>
+              <h3 data-resume-headline class="font-headline text-3xl font-black mt-2">Loading resume...</h3>
+              <p data-resume-meta class="text-sm text-slate-600 mt-2">Checking local profile data.</p>
+            </article>
+            <article class="bg-white border border-slate-200 rounded-xl p-6"><h4 class="font-headline text-xl font-bold mb-3">Summary</h4><p data-resume-summary class="text-slate-700 leading-relaxed">Waiting for parsed summary.</p></article>
+            <article class="bg-white border border-slate-200 rounded-xl p-6"><h4 class="font-headline text-xl font-bold mb-4">Detected Skills</h4><div data-resume-skills class="flex flex-wrap gap-2"></div></article>
+            <div class="flex flex-wrap gap-3">
+              <button data-resume-action class="px-5 py-3 rounded-lg bg-indigo-600 text-white font-semibold">Open Suited Jobs</button>
+              <button type="button" data-resume-edit-toggle class="px-5 py-3 rounded-lg bg-slate-100 text-slate-700 font-semibold">Edit Details</button>
+              <button data-new-application class="px-5 py-3 rounded-lg bg-slate-100 text-slate-700 font-semibold">Upload New Resume</button>
+            </div>
+            <article data-resume-edit-panel class="hidden bg-white border border-slate-200 rounded-xl p-6">
+              <h4 class="font-headline text-xl font-bold mb-4">Edit Resume Details</h4>
+              <form data-resume-edit-form class="space-y-4">
+                <div><label class="block text-sm font-semibold mb-1">Headline</label><input data-edit-headline type="text" class="w-full rounded-lg border-slate-300" /></div>
+                <div><label class="block text-sm font-semibold mb-1">Summary</label><textarea data-edit-summary rows="4" class="w-full rounded-lg border-slate-300"></textarea></div>
+                <div><label class="block text-sm font-semibold mb-1">Skills (comma-separated)</label><input data-edit-skills type="text" class="w-full rounded-lg border-slate-300" /></div>
+                <button class="px-5 py-3 rounded-lg bg-indigo-600 text-white font-semibold" type="submit">Save Resume Details</button>
+              </form>
+            </article>
+          </section>
+
+          <section data-route-view="suited-jobs" class="hidden space-y-6">
+            <article class="bg-white border border-slate-200 rounded-xl p-6">
+              <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div>
-                  <h4 class="font-headline font-bold">Live Analysis</h4>
-                  <p class="text-xs text-secondary" data-upload-status>Matching active opportunities...</p>
+                  <h3 class="font-headline text-3xl font-black">Suited Jobs</h3>
+                  <p data-dashboard-status class="text-slate-600 mt-2">Real matched roles ranked by explainable AI score, fit risks, and exact improvement actions.</p>
+                </div>
+                <div class="flex gap-2">
+                  <button data-route-link="dashboard" data-route-label="Dashboard" class="px-4 py-2 rounded-lg bg-slate-100 text-slate-700 text-sm font-semibold">Open Dashboard</button>
+                  <button data-update-portfolio class="px-4 py-2 rounded-lg bg-indigo-600 text-white text-sm font-semibold">Update Portfolio</button>
                 </div>
               </div>
-              <div class="space-y-3">
-                <div class="h-2 w-full bg-surface-container-highest rounded-full overflow-hidden">
-                  <div class="h-full bg-primary w-[75%]"></div>
-                </div>
-                <div class="flex justify-between text-xs font-bold font-label">
-                  <span>MATCH SCORE</span>
-                  <span class="text-primary">89% Precision</span>
-                </div>
+              <div class="mt-4 relative max-w-md">
+                <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-lg">search</span>
+                <input data-dashboard-search class="w-full bg-slate-100 border-none rounded-full py-2 pl-10 pr-4 text-sm focus:ring-2 focus:ring-indigo-200" placeholder="Search matches, skills, companies..." type="text" />
               </div>
-            </div>
-            <div class="bg-surface-container-low p-6 rounded-xl flex items-center justify-between">
-              <div class="flex items-center gap-3">
-                <span class="material-symbols-outlined text-tertiary" style="font-variation-settings: 'FILL' 1;">verified</span>
-                <span class="font-headline font-bold text-sm">Applications Ready</span>
-              </div>
-              <span class="bg-primary text-on-primary px-3 py-1 rounded-full text-xs font-bold">14 New</span>
-            </div>
-          </div>
-        </div>
-      </section>
-      <section class="py-24 px-8 max-w-7xl mx-auto">
-        <div class="grid md:grid-cols-3 gap-12">
-          <div class="space-y-4">
-            <div class="w-12 h-12 bg-primary-fixed rounded-lg flex items-center justify-center">
-              <span class="material-symbols-outlined text-primary">upload_file</span>
-            </div>
-            <h3 class="font-headline font-bold text-2xl tracking-tight">Upload</h3>
-            <p class="text-secondary leading-relaxed">Our AI decodes your professional narrative, skills, and aspirations from any document format with 99.9% accuracy.</p>
-          </div>
-          <div class="space-y-4">
-            <div class="w-12 h-12 bg-primary-fixed rounded-lg flex items-center justify-center">
-              <span class="material-symbols-outlined text-primary">neurology</span>
-            </div>
-            <h3 class="font-headline font-bold text-2xl tracking-tight">Analyze</h3>
-            <p class="text-secondary leading-relaxed">Cross-referencing global job markets to find high-probability matches that align with your career trajectory.</p>
-          </div>
-          <div class="space-y-4">
-            <div class="w-12 h-12 bg-primary-fixed rounded-lg flex items-center justify-center">
-              <span class="material-symbols-outlined text-primary">task_alt</span>
-            </div>
-            <h3 class="font-headline font-bold text-2xl tracking-tight">Approve</h3>
-            <p class="text-secondary leading-relaxed">Review the matches and give the go-ahead. APPLYPILOT handles the forms, cover letters, and submission tracking.</p>
-          </div>
-        </div>
-      </section>
-      <section class="py-24 bg-surface-container-low">
-        <div class="max-w-7xl mx-auto px-8">
-          <div class="bg-surface-container-lowest rounded-2xl p-1 md:p-12 shadow-sm border border-outline-variant/10 overflow-hidden">
-            <div class="grid lg:grid-cols-2 gap-16 items-center">
-              <div>
-                <h2 class="font-headline text-4xl font-extrabold tracking-tight mb-6">Built for the modern applicant.</h2>
-                <ul class="space-y-6">
-                  <li class="flex items-start gap-4">
-                    <span class="material-symbols-outlined text-primary mt-1">security</span>
-                    <div>
-                      <p class="font-bold">Privacy Dossier Management</p>
-                      <p class="text-sm text-secondary">Your data is encrypted and only shared with verified employers you approve.</p>
-                    </div>
-                  </li>
-                  <li class="flex items-start gap-4">
-                    <span class="material-symbols-outlined text-primary mt-1">auto_awesome</span>
-                    <div>
-                      <p class="font-bold">Smart Tailoring</p>
-                      <p class="text-sm text-secondary">Automatically adjusts application details to highlight relevant skills for each specific role.</p>
-                    </div>
-                  </li>
-                  <li class="flex items-start gap-4">
-                    <span class="material-symbols-outlined text-primary mt-1">speed</span>
-                    <div>
-                      <p class="font-bold">Instant Notifications</p>
-                      <p class="text-sm text-secondary">Get real-time updates when employers view your profile or request an interview.</p>
-                    </div>
-                  </li>
-                </ul>
-                <div class="mt-10">
-                  <a href="dashboard.html" class="inline-flex bg-primary text-on-primary px-8 py-4 rounded-md font-headline font-bold text-sm hover:bg-primary-container transition-colors"
-                    >Start Your Intelligent Search</a
-                  >
+            </article>
+            <div data-job-grid class="grid grid-cols-1 lg:grid-cols-2 gap-6"></div>
+          </section>
+
+          <section data-route-view="applications" class="hidden space-y-6">
+            <article class="bg-white border border-slate-200 rounded-xl p-6">
+              <div class="flex items-start justify-between gap-4 flex-wrap">
+                <div>
+                  <p class="text-xs font-bold uppercase tracking-[0.2em] text-slate-500">Application Dossier</p>
+                  <h3 data-tailoring-title class="font-headline text-3xl font-black mt-2">Selected role</h3>
+                </div>
+                <div class="flex items-center gap-2">
+                  <button data-route-link="dashboard" data-route-label="Dashboard" class="px-4 py-2 rounded-lg bg-slate-100 text-slate-700 text-sm font-semibold">Open Dashboard</button>
+                  <button data-route-link="intake" data-route-label="Intake" class="px-4 py-2 rounded-lg bg-slate-100 text-slate-700 text-sm font-semibold">Open Intake</button>
                 </div>
               </div>
-              <div class="relative">
-                <div class="aspect-square bg-slate-100 rounded-2xl overflow-hidden shadow-2xl relative group">
-                  <img
-                    class="w-full h-full object-cover"
-                    alt="Modern corporate skyscraper reflecting a clear blue sky with sharp glass architecture and professional urban atmosphere"
-                    src="https://images.unsplash.com/photo-1497366754035-f200968a6e72?auto=format&fit=crop&w=1200&q=80"
-                  />
-                  <div class="absolute bottom-6 left-6 right-6 glass-panel p-4 rounded-xl border border-white/20">
-                    <div class="flex items-center justify-between">
-                      <div class="flex -space-x-2">
-                        <div class="w-8 h-8 rounded-full border-2 border-white bg-slate-300"></div>
-                        <div class="w-8 h-8 rounded-full border-2 border-white bg-slate-400"></div>
-                        <div class="w-8 h-8 rounded-full border-2 border-white bg-slate-500"></div>
-                      </div>
-                      <span class="text-[10px] font-bold font-label uppercase text-on-surface">500+ Hired Today</span>
-                    </div>
-                  </div>
+              <div class="mt-4 flex items-center gap-4">
+                <div class="relative w-16 h-16 flex items-center justify-center">
+                  <svg viewBox="0 0 64 64" preserveAspectRatio="xMidYMid meet" class="absolute inset-0 w-full h-full aspect-square -rotate-90">
+                    <circle class="text-slate-200" cx="32" cy="32" fill="none" r="28" stroke="currentColor" stroke-width="4"></circle>
+                    <circle class="text-indigo-600" cx="32" cy="32" fill="none" r="28" stroke="currentColor" stroke-dasharray="175.9" stroke-dashoffset="14" stroke-width="4"></circle>
+                  </svg>
+                  <span data-tailoring-score class="text-xl font-black">92<span class="text-[10px] font-bold">%</span></span>
                 </div>
+                <p data-tailoring-status class="text-sm text-slate-600">Tailoring in progress...</p>
               </div>
+              <div class="mt-4 relative max-w-md">
+                <span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-lg">search</span>
+                <input data-tailoring-search class="w-full bg-slate-100 border-none rounded-full py-2 pl-10 pr-4 text-sm focus:ring-2 focus:ring-indigo-200" placeholder="Search tailoring content..." type="text" />
+              </div>
+            </article>
+            <div class="grid lg:grid-cols-2 gap-6">
+              <article class="bg-white border border-slate-200 rounded-xl p-6"><h4 class="font-headline text-lg font-bold mb-3">Original Resume</h4><div data-original-resume class="text-sm text-slate-700 space-y-3"></div></article>
+              <article class="bg-white border border-slate-200 rounded-xl p-6"><h4 class="font-headline text-lg font-bold mb-3">AI Tailored Resume</h4><div data-tailored-resume class="text-sm text-slate-700 space-y-3"></div></article>
             </div>
-          </div>
+            <div class="flex flex-wrap gap-3">
+              <button type="button" data-edit-manual class="px-5 py-3 rounded-lg bg-slate-100 text-slate-700 font-semibold">Edit Manually</button>
+              <button data-approve-apply class="px-5 py-3 rounded-lg bg-indigo-600 text-white font-semibold">APPROVE & AI APPLY</button>
+            </div>
+            <article class="bg-white border border-slate-200 rounded-xl p-5">
+              <div class="flex items-center justify-between gap-3">
+                <h4 class="font-headline text-xl font-bold">Queued Applications</h4>
+                <span data-application-queue-status class="text-xs font-semibold text-slate-500 uppercase tracking-widest">0 queued/applied items</span>
+              </div>
+              <div data-application-queue-list class="mt-4 grid md:grid-cols-2 gap-3">
+                <article class="bg-white border border-slate-200 rounded-xl p-4 text-sm text-slate-600">Loading queue...</article>
+              </div>
+            </article>
+          </section>
+
+          <section data-route-view="calendar" class="hidden space-y-6">
+            <article class="bg-white border border-slate-200 rounded-xl p-6">
+              <h3 class="font-headline text-3xl font-black">Interview Calendar</h3>
+              <p class="text-slate-600 mt-1">Approved applications appear here with one-click Google Calendar links.</p>
+            </article>
+            <div data-calendar-list class="space-y-4"></div>
+          </section>
+
+          <section data-route-view="preferences" class="hidden space-y-6">
+            <article class="bg-white border border-slate-200 rounded-xl p-6">
+              <h3 class="font-headline text-3xl font-black">Preferences</h3>
+              <p class="text-slate-600 mt-1">These values are used for the next resume intake run.</p>
+            </article>
+            <form data-settings-form class="bg-white border border-slate-200 rounded-xl p-6 space-y-5">
+              <div><label class="block text-sm font-semibold mb-1">Target Roles (comma-separated)</label><input data-setting-roles class="w-full rounded-lg border-slate-300" type="text" /></div>
+              <div><label class="block text-sm font-semibold mb-1">Preferred Locations (comma-separated)</label><input data-setting-locations class="w-full rounded-lg border-slate-300" type="text" /></div>
+              <div class="grid sm:grid-cols-2 gap-4">
+                <div><label class="block text-sm font-semibold mb-1">Minimum Match Threshold</label><input data-setting-threshold class="w-full rounded-lg border-slate-300" type="number" min="50" max="99" /></div>
+                <div><label class="block text-sm font-semibold mb-1">Minimum Salary</label><input data-setting-min-salary class="w-full rounded-lg border-slate-300" type="text" /></div>
+              </div>
+              <div><label class="block text-sm font-semibold mb-1">Default Sources (comma-separated)</label><input data-setting-sources class="w-full rounded-lg border-slate-300" type="text" /></div>
+              <div class="flex gap-3"><button class="px-5 py-3 rounded-lg bg-indigo-600 text-white font-semibold" type="submit">Save Preferences</button><button data-route-link="intake" data-route-label="Intake" class="px-5 py-3 rounded-lg bg-slate-100 text-slate-700 font-semibold" type="button">Back to Intake</button></div>
+              <p data-settings-status class="text-sm text-slate-600"></p>
+            </form>
+          </section>
         </div>
-      </section>
-      <section class="py-24 px-8 text-center bg-primary-fixed/20">
-        <h2 class="font-headline text-3xl font-extrabold mb-4">Ready to automate your career growth?</h2>
-        <p class="text-secondary mb-10 max-w-xl mx-auto">Join 50,000+ professionals using AI to navigate the modern job market with precision.</p>
-        <div class="flex flex-col sm:flex-row justify-center gap-4">
-          <a href="dashboard.html" class="bg-primary text-on-primary px-8 py-4 rounded-md font-headline font-bold text-sm">Upload Resume Now</a>
-          <a href="dashboard.html" class="bg-surface-container-lowest text-primary border border-primary px-8 py-4 rounded-md font-headline font-bold text-sm">View Demo</a>
-        </div>
-      </section>
-    </main>
-    <footer class="w-full py-12 bg-white border-t border-slate-100">
-      <div class="flex flex-col md:flex-row justify-between items-center max-w-7xl mx-auto px-8 gap-8">
-        <div class="text-left">
-          <p class="font-headline font-black text-xl text-indigo-900 mb-2">APPLYPILOT</p>
-          <p class="font-body text-xs font-medium text-slate-400">© 2026 APPLYPILOT. Precision Match Engine.</p>
-        </div>
-        <div class="flex flex-wrap justify-center gap-8">
-          <a class="font-body text-xs font-medium text-slate-400 hover:underline decoration-indigo-500 underline-offset-4 transition-opacity" href="settings.html">Privacy Dossier</a>
-          <a class="font-body text-xs font-medium text-slate-400 hover:underline decoration-indigo-500 underline-offset-4 transition-opacity" href="settings.html">Terms of Intelligence</a>
-          <a class="font-body text-xs font-medium text-slate-400 hover:underline decoration-indigo-500 underline-offset-4 transition-opacity" href="settings.html">System API</a>
-          <a class="font-body text-xs font-medium text-slate-400 hover:underline decoration-indigo-500 underline-offset-4 transition-opacity" href="settings.html">Human Support</a>
-        </div>
-      </div>
-    </footer>
+      </main>
+    </div>
     <script src="./config.js"></script>
     <script src="./frontend.js"></script>
   </body>
