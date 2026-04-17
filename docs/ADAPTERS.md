@@ -42,3 +42,49 @@ ApplyPilot should search clean public ATS feeds before crawling. Crawling is a f
 - Deduplicate jobs by `applyUrl`, `sourceJobId`, and `company + title + location`.
 - Only submit applications after a user approves the tailored resume and calendar slot.
 - Use direct ATS feeds whenever possible instead of scraping LinkedIn, Indeed, or Naukri directly.
+
+## API Endpoints
+
+### `POST /api/analyze-resume`
+
+Multipart form fields:
+
+- `resume`: PDF, DOCX, or TXT resume.
+- `preferences`: JSON string with roles, locations, salary floor, work mode, notice period, and skill focus.
+
+Returns:
+
+```json
+{
+  "profile": {
+    "headline": "Mid-senior candidate with 4+ years of relevant experience",
+    "skills": ["React", "TypeScript"],
+    "preferences": {}
+  }
+}
+```
+
+### `POST /api/search-jobs`
+
+JSON body:
+
+```json
+{
+  "profile": {},
+  "sources": ["Greenhouse", "Lever", "Ashby", "SmartRecruiters", "Firecrawl"],
+  "limit": 25
+}
+```
+
+Returns:
+
+```json
+{
+  "jobs": [],
+  "diagnostics": []
+}
+```
+
+### `POST /api/intake`
+
+Multipart endpoint that combines resume analysis and job search in one request.

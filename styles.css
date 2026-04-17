@@ -594,6 +594,40 @@ a {
   border-top: 1px solid var(--line);
 }
 
+.diagnostic-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+  margin-top: 18px;
+}
+
+.diagnostic-card {
+  padding: 14px;
+  background: var(--background);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+}
+
+.diagnostic-card strong {
+  display: block;
+  font-size: 14px;
+}
+
+.diagnostic-card span {
+  display: inline-flex;
+  margin-top: 6px;
+  color: var(--primary-dark);
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.diagnostic-card p {
+  margin: 6px 0 0;
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.45;
+}
+
 .adapter-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -940,7 +974,8 @@ a {
   .job-card,
   .activity-card,
   .queue-card,
-  .adapter-grid {
+  .adapter-grid,
+  .diagnostic-grid {
     grid-template-columns: 1fr;
   }
 

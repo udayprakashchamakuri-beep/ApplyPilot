@@ -5,6 +5,7 @@ const state = {
   approvedApplications: [],
   selectedJob: null,
   selectedSources: ["Greenhouse", "Lever", "Ashby", "SmartRecruiters", "Firecrawl"],
+  searchDiagnostics: [],
 };
 
 const adapterPlan = [
@@ -183,11 +184,36 @@ const jobCatalog = [
 
 const connectors = {
   async analyzeResume(file, text, preferences) {
+    const apiBaseUrl = getApiBaseUrl();
+    if (apiBaseUrl) {
+      const formData = new FormData();
+      formData.append("resume", file);
+      formData.append("preferences", JSON.stringify(preferences));
+      const result = await postForm(`${apiBaseUrl}/api/analyze-resume`, formData);
+      return result.profile;
+    }
+
     await wait(650);
     return buildProfile(file, text, preferences);
   },
   async searchJobs(profile, sources) {
+    const apiBaseUrl = getApiBaseUrl();
+    if (apiBaseUrl) {
+      const result = await postJson(`${apiBaseUrl}/api/search-jobs`, {
+        profile,
+        sources,
+        limit: 25,
+      });
+      state.searchDiagnostics = result.diagnostics || [];
+      return normalizeBackendJobs(result.jobs || []);
+    }
+
     await wait(650);
+    state.searchDiagnostics = sources.map((source) => ({
+      source,
+      status: "demo",
+      message: "Using browser demo data. Configure backend API for live search.",
+    }));
     return scoreJobs(profile, sources);
   },
   async tailorResume(profile, job) {
@@ -316,7 +342,7 @@ async function runAutopilotSearch() {
   );
 
   if (!state.selectedSources.length) {
-    showToast("Choose at least one source", "Select LinkedIn, Naukri, Indeed, or company sites.");
+    showToast("Choose at least one source", "Select an ATS feed or company fallback source.");
     return;
   }
 
@@ -343,11 +369,22 @@ async function runAutopilotSearch() {
     focusSkills: splitInput(elements.focusSkills.value),
   };
 
-  state.resumeProfile = await connectors.analyzeResume(state.resumeFile, resumeText, preferences);
+  try {
+    state.resumeProfile = await connectors.analyzeResume(state.resumeFile, resumeText, preferences);
+  } catch (error) {
+    showToast("Backend analysis failed", `${error.message}. Falling back to browser demo analysis.`);
+    state.resumeProfile = buildProfile(state.resumeFile, resumeText, preferences);
+  }
   renderProfile(state.resumeProfile);
 
   renderTimeline("search");
-  state.matches = await connectors.searchJobs(state.resumeProfile, state.selectedSources);
+  try {
+    state.matches = await connectors.searchJobs(state.resumeProfile, state.selectedSources);
+  } catch (error) {
+    showToast("Backend job search failed", `${error.message}. Showing demo matches instead.`);
+    state.searchDiagnostics = [];
+    state.matches = scoreJobs(state.resumeProfile, state.selectedSources);
+  }
 
   renderTimeline("rank");
   await wait(250);
@@ -438,6 +475,7 @@ function renderProfile(profile) {
 function renderJobs() {
   if (!state.matches.length) {
     elements.jobList.innerHTML = `<p class="empty-note">No jobs matched the selected sources. Add more sources or lower the threshold.</p>`;
+    renderSearchDiagnostics();
     return;
   }
 
@@ -489,6 +527,35 @@ function renderJobs() {
       await openApproval(job);
     });
   });
+
+  renderSearchDiagnostics();
+}
+
+function renderSearchDiagnostics() {
+  const existing = document.getElementById("searchDiagnostics");
+  if (existing) {
+    existing.remove();
+  }
+
+  if (!state.searchDiagnostics.length) {
+    return;
+  }
+
+  const diagnostics = document.createElement("div");
+  diagnostics.id = "searchDiagnostics";
+  diagnostics.className = "diagnostic-grid";
+  diagnostics.innerHTML = state.searchDiagnostics
+    .map(
+      (item) => `
+        <div class="diagnostic-card">
+          <strong>${escapeHtml(item.source)}</strong>
+          <span>${escapeHtml(item.status)}</span>
+          <p>${escapeHtml(item.message || `${item.count || 0} jobs returned`)}</p>
+        </div>
+      `
+    )
+    .join("");
+  elements.jobList.after(diagnostics);
 }
 
 function renderAdapterPlan() {
@@ -749,6 +816,53 @@ function buildProfile(file, text, preferences) {
   };
 }
 
+function normalizeBackendJobs(jobs) {
+  return jobs.map((job) => ({
+    id: makeJobId(job),
+    source: job.source || "Backend",
+    company: job.company || "Unknown company",
+    role: job.title || job.role || "Untitled role",
+    title: job.title || job.role || "Untitled role",
+    location: job.location || "Not specified",
+    salary: job.compensation || "Compensation not listed",
+    type: job.type || "Full time",
+    posted: formatPostedAt(job.postedAt),
+    skills: job.matchedSkills?.length ? job.matchedSkills : job.skills || [],
+    matchedSkills: job.matchedSkills || [],
+    gaps: job.gaps || [],
+    match: job.matchScore || job.match || 70,
+    matchScore: job.matchScore || job.match || 70,
+    description: job.description || "",
+    applyUrl: job.applyUrl,
+    companyUrl: job.applyUrl,
+    remoteType: job.remoteType || "unknown",
+    interviewDate: job.interviewDate || defaultFutureDate(5),
+    assessmentDate: job.assessmentDate || defaultFutureDate(4),
+    friction: `${job.source || "Source"} application path after approval`,
+  }));
+}
+
+function makeJobId(job) {
+  return `${job.source || "source"}-${hashString(job.sourceJobId || job.applyUrl || job.title || Math.random())}`;
+}
+
+function hashString(value) {
+  let hash = 0;
+  const text = String(value);
+  for (let index = 0; index < text.length; index += 1) {
+    hash = (hash << 5) - hash + text.charCodeAt(index);
+    hash |= 0;
+  }
+  return Math.abs(hash).toString(36);
+}
+
+function formatPostedAt(value) {
+  if (!value) return "Recent";
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return "Recent";
+  return formatDateTime(date);
+}
+
 function scoreJobs(profile, selectedSources) {
   const threshold = profile.preferences.threshold;
   return jobCatalog
@@ -831,6 +945,44 @@ function buildCalendarUrl(job) {
     location: job.location,
   });
   return `https://calendar.google.com/calendar/render?${params.toString()}`;
+}
+
+function defaultFutureDate(daysAhead) {
+  const date = new Date();
+  date.setDate(date.getDate() + daysAhead);
+  date.setHours(10, 0, 0, 0);
+  return date.toISOString();
+}
+
+function getApiBaseUrl() {
+  return String(window.APPLYPILOT_API_BASE_URL || "").replace(/\/$/, "");
+}
+
+async function postForm(url, formData) {
+  const response = await fetch(url, {
+    method: "POST",
+    body: formData,
+  });
+  return parseApiResponse(response);
+}
+
+async function postJson(url, payload) {
+  const response = await fetch(url, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(payload),
+  });
+  return parseApiResponse(response);
+}
+
+async function parseApiResponse(response) {
+  const data = await response.json().catch(() => ({}));
+  if (!response.ok) {
+    throw new Error(data.error || `Request failed with ${response.status}`);
+  }
+  return data;
 }
 
 async function readResumeText(file) {

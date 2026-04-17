@@ -20,6 +20,31 @@ C:\Users\reddy\HACKATHON\ApplyPilot\index.html
 
 No install step is required.
 
+## Run with the backend API
+
+The public GitHub Pages site cannot store private API keys, so real job search runs through the backend.
+
+```powershell
+copy .env.example .env
+npm install
+npm start
+```
+
+Then open:
+
+```text
+http://localhost:8787
+```
+
+When opened from `localhost:8787`, the frontend automatically calls the backend APIs.
+
+Backend endpoints:
+
+- `POST /api/analyze-resume`: multipart form upload with `resume` and `preferences`.
+- `POST /api/search-jobs`: JSON body with `profile`, `sources`, and optional `limit`.
+- `POST /api/intake`: multipart form upload that analyzes the resume and searches jobs in one request.
+- `GET /api/health`: confirms backend and source configuration.
+
 ## What works in the browser demo
 
 - Resume upload intake for PDF, DOCX, DOC, and TXT.
@@ -53,7 +78,10 @@ resume parsing, site-specific application adapters, and compliance checks for ea
 ## Backend adapter files
 
 - `docs/ADAPTERS.md` defines the source priority order and normalized job schema.
-- `backend/source-adapters.js` contains backend-safe adapter and normalization scaffolding.
+- `backend/server.js` exposes the API.
+- `backend/resume-parser.js` parses TXT, PDF, and DOCX resumes server-side.
+- `backend/source-adapters.js` calls public ATS feeds and Firecrawl fallback.
+- `backend/matching.js` ranks normalized jobs for the user profile.
 - `.env.example` lists the required environment variables without committing any real secrets.
 
 Do not place real API keys in `index.html`, `app.js`, or any GitHub Pages file.
