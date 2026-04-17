@@ -341,6 +341,48 @@ a {
   line-height: 1;
 }
 
+.intelligence-grid {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 12px;
+  margin-top: 22px;
+}
+
+.intelligence-card {
+  display: grid;
+  gap: 10px;
+  padding: 16px;
+  background: var(--background);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+}
+
+.intelligence-card span {
+  width: 34px;
+  min-height: 30px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--primary-dark);
+  background: var(--primary-soft);
+  border-radius: var(--radius);
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.intelligence-card h3 {
+  margin: 0;
+  font-size: 16px;
+  line-height: 1.25;
+}
+
+.intelligence-card p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.55;
+}
+
 .mini-source-list {
   display: grid;
   gap: 10px;
@@ -1114,6 +1156,10 @@ a {
     grid-template-columns: 1fr;
   }
 
+  .intelligence-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
   .approval-side {
     border-left: 0;
     border-top: 1px solid var(--line);
@@ -1143,6 +1189,7 @@ a {
   .source-selector,
   .step-rail,
   .dashboard-stats,
+  .intelligence-grid,
   .match-insights,
   .job-card,
   .activity-card,
