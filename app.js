@@ -4,8 +4,81 @@ const state = {
   matches: [],
   approvedApplications: [],
   selectedJob: null,
-  selectedSources: ["LinkedIn", "Naukri", "Indeed", "Company"],
+  selectedSources: ["Greenhouse", "Lever", "Ashby", "SmartRecruiters", "Firecrawl"],
 };
+
+const adapterPlan = [
+  {
+    priority: 1,
+    name: "Greenhouse",
+    endpoint: "boards-api.greenhouse.io",
+    auth: "Public GET",
+    role: "Clean company ATS feed",
+  },
+  {
+    priority: 2,
+    name: "Lever",
+    endpoint: "api.lever.co",
+    auth: "Public GET",
+    role: "Fast public postings",
+  },
+  {
+    priority: 3,
+    name: "Ashby",
+    endpoint: "api.ashbyhq.com",
+    auth: "Public posting API",
+    role: "Strong metadata and compensation",
+  },
+  {
+    priority: 4,
+    name: "SmartRecruiters",
+    endpoint: "api.smartrecruiters.com",
+    auth: "Public search API",
+    role: "Broad indexed job search",
+  },
+  {
+    priority: 5,
+    name: "USAJOBS",
+    endpoint: "data.usajobs.gov",
+    auth: "API key",
+    role: "Government jobs",
+  },
+  {
+    priority: 6,
+    name: "Adzuna",
+    endpoint: "api.adzuna.com",
+    auth: "app_id + app_key",
+    role: "Aggregator coverage",
+  },
+  {
+    priority: 7,
+    name: "Remotive",
+    endpoint: "public jobs API",
+    auth: "Public",
+    role: "Remote-only layer",
+  },
+  {
+    priority: 8,
+    name: "Firecrawl",
+    endpoint: "api.firecrawl.dev",
+    auth: "Backend secret",
+    role: "Company careers fallback",
+  },
+  {
+    priority: 9,
+    name: "Bright Data",
+    endpoint: "web scraper API",
+    auth: "Backend secret",
+    role: "Blocked or JS-heavy pages",
+  },
+  {
+    priority: 10,
+    name: "Apify",
+    endpoint: "actor runs",
+    auth: "Backend token",
+    role: "Community job scrapers",
+  },
+];
 
 const calendarEvents = [
   {
@@ -23,7 +96,7 @@ const calendarEvents = [
 const jobCatalog = [
   {
     id: "job-linkedin-atlas",
-    source: "LinkedIn",
+    source: "Greenhouse",
     company: "AtlasForge Systems",
     role: "Senior Frontend Engineer",
     location: "Bengaluru, Hybrid",
@@ -36,11 +109,11 @@ const jobCatalog = [
     assessmentDate: "2026-04-21T18:00:00+05:30",
     applyUrl: "https://www.linkedin.com/jobs/",
     companyUrl: "https://www.linkedin.com/company/",
-    friction: "One click Easy Apply after approval",
+    friction: "Greenhouse board application path after approval",
   },
   {
     id: "job-naukri-sentient",
-    source: "Naukri",
+    source: "Lever",
     company: "SentientOps Labs",
     role: "Product Engineer",
     location: "Hyderabad, Remote",
@@ -53,11 +126,11 @@ const jobCatalog = [
     assessmentDate: "2026-04-23T19:30:00+05:30",
     applyUrl: "https://www.naukri.com/",
     companyUrl: "https://www.naukri.com/",
-    friction: "Needs profile confirmation before submit",
+    friction: "Lever posting form with profile confirmation",
   },
   {
     id: "job-indeed-river",
-    source: "Indeed",
+    source: "Ashby",
     company: "Riverstone Digital",
     role: "Full Stack Developer",
     location: "Remote India",
@@ -70,11 +143,11 @@ const jobCatalog = [
     assessmentDate: "2026-04-23T10:00:00+05:30",
     applyUrl: "https://www.indeed.com/",
     companyUrl: "https://www.indeed.com/",
-    friction: "Resume upload and short questionnaire",
+    friction: "Ashby job board application and screening questions",
   },
   {
     id: "job-company-linearcore",
-    source: "Company",
+    source: "SmartRecruiters",
     company: "LinearCore",
     role: "Frontend Platform Engineer",
     location: "Bengaluru, Remote friendly",
@@ -87,11 +160,11 @@ const jobCatalog = [
     assessmentDate: "2026-04-26T17:00:00+05:30",
     applyUrl: "https://boards.greenhouse.io/",
     companyUrl: "https://www.greenhouse.com/",
-    friction: "Company careers form with custom questions",
+    friction: "SmartRecruiters public job flow with custom questions",
   },
   {
     id: "job-company-veridian",
-    source: "Company",
+    source: "Firecrawl",
     company: "Veridian Careers",
     role: "Application Automation Engineer",
     location: "Pune, Hybrid",
@@ -104,7 +177,7 @@ const jobCatalog = [
     assessmentDate: "2026-04-28T18:30:00+05:30",
     applyUrl: "https://lever.co/",
     companyUrl: "https://www.lever.co/",
-    friction: "Official site form plus screening task",
+    friction: "Company careers page discovered through Firecrawl fallback",
   },
 ];
 
@@ -149,6 +222,7 @@ document.addEventListener("DOMContentLoaded", () => {
   hydrateElements();
   bindEvents();
   renderTimeline();
+  renderAdapterPlan();
   navigateToPage("intake");
 });
 
@@ -165,6 +239,7 @@ function hydrateElements() {
     "approvalDialog",
     "approvalContent",
     "activityList",
+    "adapterGrid",
     "queueList",
     "queueBadge",
     "calendarBadge",
@@ -298,7 +373,7 @@ function renderTimeline(activeStage) {
     {
       id: "search",
       title: "Job sources searched",
-      body: "LinkedIn, Naukri.com, Indeed, and company career sites are queried through source connectors.",
+      body: "Greenhouse, Lever, Ashby, SmartRecruiters, and company fallback adapters are queried through source connectors.",
     },
     {
       id: "rank",
@@ -414,6 +489,24 @@ function renderJobs() {
       await openApproval(job);
     });
   });
+}
+
+function renderAdapterPlan() {
+  elements.adapterGrid.innerHTML = adapterPlan
+    .map(
+      (adapter) => `
+        <article class="adapter-card">
+          <header>
+            <h3>${escapeHtml(adapter.name)}</h3>
+            <span class="adapter-rank">P${adapter.priority}</span>
+          </header>
+          <p><strong>Endpoint:</strong> ${escapeHtml(adapter.endpoint)}</p>
+          <p><strong>Auth:</strong> ${escapeHtml(adapter.auth)}</p>
+          <p>${escapeHtml(adapter.role)}</p>
+        </article>
+      `
+    )
+    .join("");
 }
 
 async function openApproval(job) {

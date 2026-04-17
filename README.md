@@ -29,6 +29,7 @@ No install step is required.
 - A suited-jobs page with jobs from LinkedIn, Naukri.com, Indeed, and company career sites.
 - Match scoring by role, skills, location, salary, and approval threshold.
 - An approval queue page for jobs waiting on user approval.
+- Source adapter plan for Greenhouse, Lever, Ashby, SmartRecruiters, USAJOBS, Adzuna, Remotive, Firecrawl, Bright Data, and Apify.
 - Tailored resume preview before applying.
 - User approval gate.
 - Calendar availability check.
@@ -48,3 +49,11 @@ The frontend is ready for backend replacement at these functions in `app.js`:
 
 Real submissions need backend services with user consent, stored tokens, Google Calendar OAuth,
 resume parsing, site-specific application adapters, and compliance checks for each job platform.
+
+## Backend adapter files
+
+- `docs/ADAPTERS.md` defines the source priority order and normalized job schema.
+- `backend/source-adapters.js` contains backend-safe adapter and normalization scaffolding.
+- `.env.example` lists the required environment variables without committing any real secrets.
+
+Do not place real API keys in `index.html`, `app.js`, or any GitHub Pages file.

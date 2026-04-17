@@ -157,11 +157,17 @@
 
               <fieldset class="source-selector">
                 <legend>Search sources</legend>
-                <label><input type="checkbox" name="source" value="LinkedIn" checked /> LinkedIn</label>
-                <label><input type="checkbox" name="source" value="Naukri" checked /> Naukri.com</label>
-                <label><input type="checkbox" name="source" value="Indeed" checked /> Indeed</label>
+                <label><input type="checkbox" name="source" value="Greenhouse" checked /> Greenhouse</label>
+                <label><input type="checkbox" name="source" value="Lever" checked /> Lever</label>
+                <label><input type="checkbox" name="source" value="Ashby" checked /> Ashby</label>
                 <label>
-                  <input type="checkbox" name="source" value="Company" checked /> Official company sites
+                  <input type="checkbox" name="source" value="SmartRecruiters" checked /> SmartRecruiters
+                </label>
+                <label>
+                  <input type="checkbox" name="source" value="USAJOBS" /> USAJOBS
+                </label>
+                <label>
+                  <input type="checkbox" name="source" value="Firecrawl" checked /> Company fallback
                 </label>
               </fieldset>
 
@@ -216,6 +222,17 @@
           </div>
           <div class="job-list" id="jobList">
             <p class="empty-note">Resume analysis will populate matching roles here.</p>
+          </div>
+          <div class="adapter-section">
+            <div class="section-heading">
+              <p class="eyebrow">Source adapters</p>
+              <h2>Public feeds first, crawling as fallback</h2>
+              <p>
+                ApplyPilot searches public ATS feeds before using crawlers for company careers pages.
+                API keys stay on a backend and never ship inside this public GitHub Pages site.
+              </p>
+            </div>
+            <div class="adapter-grid" id="adapterGrid"></div>
           </div>
           </div>
         </section>

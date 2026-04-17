@@ -434,7 +434,7 @@ a {
 
 .source-selector {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 12px;
   margin: 0;
   padding: 0;
@@ -586,6 +586,60 @@ a {
 
 .job-list {
   margin-top: 24px;
+}
+
+.adapter-section {
+  margin-top: 30px;
+  padding-top: 28px;
+  border-top: 1px solid var(--line);
+}
+
+.adapter-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+  margin-top: 20px;
+}
+
+.adapter-card {
+  display: grid;
+  gap: 8px;
+  padding: 16px;
+  background: var(--background);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+}
+
+.adapter-card header {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.adapter-card h3 {
+  margin: 0;
+  font-size: 16px;
+}
+
+.adapter-card p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.adapter-rank {
+  min-width: 32px;
+  min-height: 28px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--primary-dark);
+  background: var(--primary-soft);
+  border-radius: var(--radius);
+  font-size: 12px;
+  font-weight: 800;
 }
 
 .job-card {
@@ -885,7 +939,8 @@ a {
   .step-rail,
   .job-card,
   .activity-card,
-  .queue-card {
+  .queue-card,
+  .adapter-grid {
     grid-template-columns: 1fr;
   }
 
