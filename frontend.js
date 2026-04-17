@@ -4,13 +4,16 @@ const APPLICATIONS_KEY = "applypilot:applications";
 const SETTINGS_KEY = "applypilot:settings";
 const SAVED_JOBS_KEY = "applypilot:saved-jobs";
 const SPA_ROUTE_KEY = "applypilot:route";
+const STRATEGY_KEY = "applypilot:strategy";
 
 const LEGACY_ROUTE_PAGES = {
+  home: "index.html",
   intake: "index.html",
   dashboard: "insights.html",
   resume: "resume.html",
   "suited-jobs": "dashboard.html",
   applications: "tailoring.html",
+  queue: "tailoring.html",
   calendar: "calendar.html",
   preferences: "settings.html",
 };
@@ -46,9 +49,9 @@ function setupSpaNavigation() {
   const initialRoute =
     window.location.hash
       ? hashRoute
-      : windowRoute !== "intake"
+      : windowRoute !== "home"
       ? windowRoute
-      : storedRoute !== "intake"
+      : storedRoute !== "home"
       ? storedRoute
       : chooseDefaultRoute();
 
@@ -66,6 +69,7 @@ function refreshSpaRoute(route) {
   if (route === "dashboard") setupInsightsPage();
   if (route === "suited-jobs") setupDashboardPage();
   if (route === "applications") setupTailoringPage();
+  if (route === "queue") renderApplicationsQueue();
   if (route === "calendar") setupCalendarPage();
   if (route === "preferences") setupSettingsPage();
 }
@@ -121,12 +125,11 @@ function isSpaApp() {
 function normalizeRoute(route) {
   const cleaned = String(route || "").trim().toLowerCase();
   if (LEGACY_ROUTE_PAGES[cleaned]) return cleaned;
-  return "intake";
+  return "home";
 }
 
 function chooseDefaultRoute() {
-  const intake = readJson(STORAGE_KEY);
-  return intake?.profile ? "dashboard" : "intake";
+  return "home";
 }
 
 function consumeWindowRoute() {
@@ -500,6 +503,9 @@ function setupDashboardPage() {
   const intake = readJson(STORAGE_KEY);
   const searchInput = document.querySelector("[data-dashboard-search]");
   const updatePortfolioButton = document.querySelector("[data-update-portfolio]");
+  const adjustStrategyTopButton = document.querySelector("[data-adjust-strategy-top]");
+  const strategyLabel = document.querySelector("[data-strategy-label]");
+  const strategyDescription = document.querySelector("[data-strategy-description]");
   let query = String(searchInput?.value || "").trim().toLowerCase();
 
   if (!intake?.jobs?.length) {
@@ -511,14 +517,30 @@ function setupDashboardPage() {
         navigateTo("resume");
       });
     }
+    if (adjustStrategyTopButton && adjustStrategyTopButton.dataset.bound !== "true") {
+      adjustStrategyTopButton.dataset.bound = "true";
+      adjustStrategyTopButton.addEventListener("click", () => {
+        const next = cycleStrategy();
+        const meta = getStrategyMeta(next);
+        if (strategyLabel) strategyLabel.textContent = meta.label;
+        if (strategyDescription) strategyDescription.textContent = meta.description;
+        showToast("Strategy updated", `${meta.label} strategy is active.`);
+      });
+    }
     return;
   }
 
   const allJobs = intake.jobs;
 
   const rerender = () => {
+    const strategy = getCurrentStrategy();
+    const strategyMeta = getStrategyMeta(strategy);
+    if (strategyLabel) strategyLabel.textContent = strategyMeta.label;
+    if (strategyDescription) strategyDescription.textContent = strategyMeta.description;
+
+    const strategicJobs = applyStrategyToJobs(allJobs, intake.profile || {}, strategy);
     const savedIds = new Set((readJson(SAVED_JOBS_KEY) || []).map((job) => getJobId(job)));
-    const filteredJobs = allJobs.filter((job) => {
+    const filteredJobs = strategicJobs.filter((job) => {
       const roleText = `${job.title || job.role || ""} ${job.company || ""} ${job.location || ""}`.toLowerCase();
       const skillText = safeList(job.matchedSkills, []).join(" ").toLowerCase();
       const matchesQuery = !query || roleText.includes(query) || skillText.includes(query);
@@ -531,11 +553,11 @@ function setupDashboardPage() {
       return;
     }
 
-    setDashboardStatus(`${filteredJobs.length} live jobs ready. Search is active.`);
+    setDashboardStatus(`${filteredJobs.length} jobs ready in ${strategyMeta.label} mode.`);
     grid.innerHTML = filteredJobs.slice(0, 8).map((job) => renderJobCard(job, savedIds.has(getJobId(job)))).join("") + renderMarketCard(intake);
     grid.querySelectorAll("[data-select-job]").forEach((button) => {
       button.addEventListener("click", () => {
-        const job = allJobs.find((candidate) => getJobId(candidate) === button.dataset.selectJob);
+        const job = strategicJobs.find((candidate) => getJobId(candidate) === button.dataset.selectJob) || allJobs.find((candidate) => getJobId(candidate) === button.dataset.selectJob);
         localStorage.setItem(SELECTED_JOB_KEY, JSON.stringify(job));
         setupTailoringPage();
         navigateTo("applications");
@@ -550,6 +572,14 @@ function setupDashboardPage() {
         const nextSaved = exists ? saved.filter((item) => getJobId(item) !== getJobId(job)) : [job, ...saved];
         localStorage.setItem(SAVED_JOBS_KEY, JSON.stringify(nextSaved.slice(0, 100)));
         showToast(exists ? "Removed from saved jobs" : "Saved job", `${job.title || job.role || "Role"} at ${job.company || "Company"}`);
+        rerender();
+      });
+    });
+    grid.querySelectorAll("[data-adjust-strategy]").forEach((button) => {
+      button.addEventListener("click", () => {
+        const next = cycleStrategy();
+        const meta = getStrategyMeta(next);
+        showToast("Strategy updated", `${meta.label} strategy applied to suited jobs.`);
         rerender();
       });
     });
@@ -570,7 +600,88 @@ function setupDashboardPage() {
     });
   }
 
+  if (adjustStrategyTopButton && adjustStrategyTopButton.dataset.bound !== "true") {
+    adjustStrategyTopButton.dataset.bound = "true";
+    adjustStrategyTopButton.addEventListener("click", () => {
+      const next = cycleStrategy();
+      const meta = getStrategyMeta(next);
+      showToast("Strategy updated", `${meta.label} strategy applied to suited jobs.`);
+      rerender();
+    });
+  }
+
   rerender();
+}
+
+function getCurrentStrategy() {
+  const value = safeStorageGet(STRATEGY_KEY) || "balanced";
+  return ["balanced", "strict", "growth", "location"].includes(value) ? value : "balanced";
+}
+
+function getStrategyMeta(strategy) {
+  const meta = {
+    balanced: {
+      label: "Balanced",
+      description: "Balanced ranking across fit, skill overlap, and role relevance.",
+    },
+    strict: {
+      label: "Strict Fit",
+      description: "Prioritizes high-confidence matches and filters weaker roles.",
+    },
+    growth: {
+      label: "Growth",
+      description: "Surfaces stretch roles where targeted improvements can boost chances.",
+    },
+    location: {
+      label: "Location First",
+      description: "Prioritizes roles matching preferred locations and work mode.",
+    },
+  };
+  return meta[strategy] || meta.balanced;
+}
+
+function cycleStrategy() {
+  const order = ["balanced", "strict", "growth", "location"];
+  const current = getCurrentStrategy();
+  const currentIndex = order.indexOf(current);
+  const next = order[(currentIndex + 1) % order.length];
+  safeStorageSet(STRATEGY_KEY, next);
+  return next;
+}
+
+function applyStrategyToJobs(jobs, profile, strategy) {
+  const preferredLocations = safeList(profile?.preferences?.locations, [])
+    .map((item) => String(item || "").toLowerCase())
+    .filter(Boolean);
+
+  const scored = jobs.map((job) => {
+    const base = Number(job.matchScore || job.match || 0);
+    const gapCount = safeList(job.whyNotMatch, []).length;
+    const improvementCount = safeList(job.suggestedImprovements, []).length;
+    const locationText = `${job.location || ""} ${job.remoteType || ""}`.toLowerCase();
+    const locationMatch =
+      !preferredLocations.length || preferredLocations.some((location) => locationText.includes(location.toLowerCase()));
+
+    let score = base;
+    if (strategy === "strict") {
+      score = base + (base >= 85 ? 8 : 0) - gapCount * 2;
+    } else if (strategy === "growth") {
+      score = base + Math.min(10, improvementCount * 2) + (base < 80 ? 4 : 0);
+    } else if (strategy === "location") {
+      score = base + (locationMatch ? 16 : -8);
+    }
+
+    return { ...job, strategyScore: score, locationMatch };
+  });
+
+  const filtered =
+    strategy === "strict"
+      ? scored.filter((job) => Number(job.matchScore || job.match || 0) >= 75)
+      : strategy === "growth"
+      ? scored.filter((job) => Number(job.matchScore || job.match || 0) >= 60)
+      : scored;
+
+  return filtered.sort((a, b) => b.strategyScore - a.strategyScore || Number(b.matchScore || 0) - Number(a.matchScore || 0));
 }
 
 async function setupTailoringPage() {
@@ -579,7 +690,6 @@ async function setupTailoringPage() {
 
   bindTailoringSearch();
   bindManualEditButton();
-  renderApplicationsQueue();
 
   const intake = readJson(STORAGE_KEY);
   const selectedJob = readJson(SELECTED_JOB_KEY) || intake?.jobs?.[0];
@@ -634,10 +744,11 @@ async function setupTailoringPage() {
       localStorage.setItem(APPLICATIONS_KEY, JSON.stringify(applications));
       setTailoringStatus(`Application approved. Confirmation ${result.application.confirmationId}.`);
       approveButton.textContent = "APPLIED";
-      showToast("Application queued", "Approved application is now visible in the queue below and in Interview Calendar.");
+      showToast("Application queued", "Opening queued applications now.");
       setupInsightsPage();
       setupCalendarPage();
       renderApplicationsQueue();
+      navigateTo("queue");
     } catch (error) {
       approveButton.disabled = false;
       approveButton.textContent = "APPROVE & AI APPLY";
@@ -822,7 +933,7 @@ function renderMarketCard(intake) {
         <h3 class="text-2xl font-black font-headline leading-tight mb-4">Your best matches are clustering around ${escapeHtml(skills)}.</h3>
         <p class="text-indigo-100 font-medium text-sm leading-relaxed mb-6">Approvals and skipped jobs will become learning signals so future recommendations improve over time.</p>
       </div>
-      <button type="button" data-go-route="preferences" class="w-full py-4 bg-white text-indigo-900 font-headline font-black rounded-lg hover:bg-indigo-50 transition-colors">Adjust Strategy</button>
+      <button type="button" data-adjust-strategy class="w-full py-4 bg-white text-indigo-900 font-headline font-black rounded-lg hover:bg-indigo-50 transition-colors">Adjust Strategy</button>
     </article>
   `;
 }

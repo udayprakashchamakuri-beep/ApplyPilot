@@ -27,6 +27,9 @@
           <p class="text-xs uppercase tracking-widest text-slate-500 font-semibold">Career Intelligence</p>
         </div>
         <nav class="space-y-2 text-sm">
+          <a href="#home" data-route-link="home" data-route-nav="true" data-route-label="Home" class="flex items-center gap-2 px-3 py-2 rounded-lg text-slate-600 hover:bg-slate-100">
+            <span class="material-symbols-outlined text-[18px]">home</span>Home
+          </a>
           <a href="#intake" data-route-link="intake" data-route-nav="true" data-route-label="Intake" class="flex items-center gap-2 px-3 py-2 rounded-lg text-slate-600 hover:bg-slate-100">
             <span class="material-symbols-outlined text-[18px]">description</span>Intake
           </a>
@@ -41,6 +44,9 @@
           </a>
           <a href="#applications" data-route-link="applications" data-route-nav="true" data-route-label="Applications" class="flex items-center gap-2 px-3 py-2 rounded-lg text-slate-600 hover:bg-slate-100">
             <span class="material-symbols-outlined text-[18px]">send</span>Applications
+          </a>
+          <a href="#queue" data-route-link="queue" data-route-nav="true" data-route-label="Queued Applications" class="flex items-center gap-2 px-3 py-2 rounded-lg text-slate-600 hover:bg-slate-100">
+            <span class="material-symbols-outlined text-[18px]">inventory_2</span>Queued Applications
           </a>
           <a href="#calendar" data-route-link="calendar" data-route-nav="true" data-route-label="Interview Calendar" class="flex items-center gap-2 px-3 py-2 rounded-lg text-slate-600 hover:bg-slate-100">
             <span class="material-symbols-outlined text-[18px]">calendar_today</span>Interview Calendar
@@ -57,10 +63,23 @@
           <header class="flex items-center justify-between mb-6">
             <div>
               <p class="text-xs uppercase tracking-widest text-slate-500 font-semibold">Single Website Mode</p>
-              <h2 data-route-title class="font-headline text-3xl font-black">Intake</h2>
+              <h2 data-route-title class="font-headline text-3xl font-black">Home</h2>
             </div>
             <div class="text-sm text-slate-500">All sections run in this one page</div>
           </header>
+
+          <section data-route-view="home" class="space-y-6">
+            <article class="bg-white border border-slate-200 rounded-xl p-6">
+              <h3 class="font-headline text-3xl font-black">Welcome to APPLYPILOT</h3>
+              <p class="text-slate-600 mt-2">Use one control center for intake, suited jobs, approvals, queued applications, and interview tracking.</p>
+              <div class="mt-5 flex flex-wrap gap-3">
+                <button data-route-link="intake" data-route-label="Intake" class="px-5 py-3 rounded-lg bg-indigo-600 text-white font-semibold">Start Intake</button>
+                <button data-route-link="dashboard" data-route-label="Dashboard" class="px-5 py-3 rounded-lg bg-slate-100 text-slate-700 font-semibold">Open Dashboard</button>
+                <button data-route-link="suited-jobs" data-route-label="Suited Jobs" class="px-5 py-3 rounded-lg bg-slate-100 text-slate-700 font-semibold">See Suited Jobs</button>
+                <button data-route-link="queue" data-route-label="Queued Applications" class="px-5 py-3 rounded-lg bg-slate-100 text-slate-700 font-semibold">View Queue</button>
+              </div>
+            </article>
+          </section>
 
           <section data-route-view="intake" class="space-y-6">
             <article class="bg-white border border-slate-200 rounded-xl p-6">
@@ -130,9 +149,11 @@
                 <div>
                   <h3 class="font-headline text-3xl font-black">Suited Jobs</h3>
                   <p data-dashboard-status class="text-slate-600 mt-2">Real matched roles ranked by explainable AI score, fit risks, and exact improvement actions.</p>
+                  <p class="text-xs text-slate-500 mt-1"><span class="font-semibold">Strategy:</span> <span data-strategy-label>Balanced</span> - <span data-strategy-description>Balanced ranking across fit, skill overlap, and role relevance.</span></p>
                 </div>
                 <div class="flex gap-2">
                   <button data-route-link="dashboard" data-route-label="Dashboard" class="px-4 py-2 rounded-lg bg-slate-100 text-slate-700 text-sm font-semibold">Open Dashboard</button>
+                  <button data-adjust-strategy-top class="px-4 py-2 rounded-lg bg-slate-100 text-slate-700 text-sm font-semibold">Adjust Strategy</button>
                   <button data-update-portfolio class="px-4 py-2 rounded-lg bg-indigo-600 text-white text-sm font-semibold">Update Portfolio</button>
                 </div>
               </div>
@@ -178,10 +199,18 @@
             <div class="flex flex-wrap gap-3">
               <button type="button" data-edit-manual class="px-5 py-3 rounded-lg bg-slate-100 text-slate-700 font-semibold">Edit Manually</button>
               <button data-approve-apply class="px-5 py-3 rounded-lg bg-indigo-600 text-white font-semibold">APPROVE & AI APPLY</button>
+              <button data-route-link="queue" data-route-label="Queued Applications" class="px-5 py-3 rounded-lg bg-slate-100 text-slate-700 font-semibold">Open Queue</button>
             </div>
+          </section>
+
+          <section data-route-view="queue" class="hidden space-y-6">
+            <article class="bg-white border border-slate-200 rounded-xl p-6">
+              <h3 class="font-headline text-3xl font-black">Queued Applications</h3>
+              <p class="text-slate-600 mt-1">All approved jobs waiting in queue, with status, confirmation, and links.</p>
+            </article>
             <article class="bg-white border border-slate-200 rounded-xl p-5">
               <div class="flex items-center justify-between gap-3">
-                <h4 class="font-headline text-xl font-bold">Queued Applications</h4>
+                <h4 class="font-headline text-xl font-bold">Queue List</h4>
                 <span data-application-queue-status class="text-xs font-semibold text-slate-500 uppercase tracking-widest">0 queued/applied items</span>
               </div>
               <div data-application-queue-list class="mt-4 grid md:grid-cols-2 gap-3">
