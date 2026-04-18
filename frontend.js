@@ -211,22 +211,11 @@ function setupHomePage() {
 
   const firstTimeView = homeRoute.querySelector("[data-home-first-time]");
   const returningView = homeRoute.querySelector("[data-home-returning]");
-  const intake = readJson(STORAGE_KEY);
-  const applications = readJson(APPLICATIONS_KEY) || [];
-  const savedJobs = readJson(SAVED_JOBS_KEY) || [];
-  const seenBefore = safeStorageGet(HOME_VISIT_KEY) === "true";
-  const hasHistory = Boolean(intake?.profile || applications.length || savedJobs.length || seenBefore);
-
-  if (firstTimeView) firstTimeView.classList.toggle("hidden", hasHistory);
-  if (returningView) returningView.classList.toggle("hidden", !hasHistory);
-
-  if (hasHistory) {
-    renderReturningHome(intake, applications);
-  }
+  if (firstTimeView) firstTimeView.classList.remove("hidden");
+  if (returningView) returningView.classList.add("hidden");
 
   homeRoute.querySelectorAll("[data-home-start-intake]").forEach((button) => {
     button.onclick = () => {
-      safeStorageSet(HOME_VISIT_KEY, "true");
       navigateTo("intake");
     };
   });
@@ -234,12 +223,9 @@ function setupHomePage() {
   const sampleWorkflowButton = homeRoute.querySelector("[data-home-open-jobs]");
   if (sampleWorkflowButton) {
     sampleWorkflowButton.onclick = () => {
-      safeStorageSet(HOME_VISIT_KEY, "true");
       navigateTo("suited-jobs");
     };
   }
-
-  safeStorageSet(HOME_VISIT_KEY, "true");
 }
 
 function renderReturningHome(intake, applications) {
