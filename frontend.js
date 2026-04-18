@@ -6,6 +6,7 @@ const SAVED_JOBS_KEY = "applypilot:saved-jobs";
 const SPA_ROUTE_KEY = "applypilot:route";
 const STRATEGY_KEY = "applypilot:strategy";
 const HOME_VISIT_KEY = "applypilot:home-visited";
+let uploadStatusAnimation = null;
 
 const LEGACY_ROUTE_PAGES = {
   home: "index.html",
@@ -349,7 +350,7 @@ function summarizePipelineStages(applications) {
 }
 
 async function runIntake(file) {
-  setLandingStatus(`Analyzing ${file.name} and searching live sources...`);
+  setLandingStatus(`Analyzing ${file.name} and searching live sources`, { loading: true });
   const settings = readJson(SETTINGS_KEY) || {};
   const sources = normalizeSources(settings.sources);
   const preferences = buildDefaultPreferences();
@@ -1475,10 +1476,28 @@ function readJson(key) {
   }
 }
 
-function setLandingStatus(message) {
+function setLandingStatus(message, options = {}) {
+  if (uploadStatusAnimation) {
+    window.clearInterval(uploadStatusAnimation);
+    uploadStatusAnimation = null;
+  }
+
   document.querySelectorAll("[data-upload-status]").forEach((target) => {
     target.textContent = message;
+    target.classList.toggle("text-indigo-700", Boolean(options.loading));
+    target.classList.toggle("font-semibold", Boolean(options.loading));
   });
+
+  if (!options.loading) return;
+
+  let dotCount = 0;
+  uploadStatusAnimation = window.setInterval(() => {
+    dotCount = (dotCount + 1) % 4;
+    const dots = ".".repeat(dotCount || 3);
+    document.querySelectorAll("[data-upload-status]").forEach((target) => {
+      target.textContent = `${message}${dots}`;
+    });
+  }, 450);
 }
 
 function setDashboardStatus(message) {
