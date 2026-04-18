@@ -336,29 +336,71 @@
           </section>
 
           <section data-route-view="dashboard" data-control-page class="hidden space-y-6">
-            <article class="bg-white border border-slate-200 rounded-xl p-6">
-              <h3 class="font-headline text-2xl font-bold">Dashboard for Job Seeker</h3>
-              <p class="text-slate-600 mt-1">Track results and get personalized recommendations with explainable guidance.</p>
+            <article class="rounded-3xl border border-indigo-200/60 bg-gradient-to-br from-slate-900 via-indigo-950 to-slate-900 text-slate-100 p-6 md:p-8 shadow-[0_24px_48px_rgba(76,81,177,0.25)]">
+              <div class="flex flex-col md:flex-row md:items-center justify-between gap-6">
+                <div>
+                  <p class="text-xs uppercase tracking-[0.2em] text-indigo-200 font-semibold">Live Career Pulse</p>
+                  <h3 class="font-headline text-3xl md:text-4xl font-black mt-2">Dashboard Control Center</h3>
+                  <p class="text-slate-300 mt-2">Track progress, spot gaps, and prioritize the highest-conversion roles.</p>
+                </div>
+                <div class="rounded-2xl border border-indigo-300/40 bg-white/10 px-6 py-4">
+                  <p class="text-xs uppercase tracking-[0.18em] text-indigo-200 font-semibold">Profile Strength</p>
+                  <p data-profile-strength class="text-4xl font-headline font-black mt-2 text-cyan-300">0%</p>
+                </div>
+              </div>
+
+              <div class="mt-6 grid sm:grid-cols-2 xl:grid-cols-4 gap-4">
+                <article class="rounded-2xl border border-cyan-400/50 bg-cyan-400/10 p-4">
+                  <p class="text-xs uppercase tracking-widest text-cyan-200 font-semibold">Recommended</p>
+                  <p data-kpi-recommended class="text-4xl font-headline font-black mt-2 text-cyan-300">0</p>
+                </article>
+                <article class="rounded-2xl border border-indigo-300/40 bg-indigo-300/10 p-4">
+                  <p class="text-xs uppercase tracking-widest text-indigo-200 font-semibold">Saved</p>
+                  <p data-kpi-saved class="text-4xl font-headline font-black mt-2 text-indigo-100">0</p>
+                </article>
+                <article class="rounded-2xl border border-purple-300/40 bg-purple-300/10 p-4">
+                  <p class="text-xs uppercase tracking-widest text-purple-200 font-semibold">Applied</p>
+                  <p data-kpi-applied class="text-4xl font-headline font-black mt-2 text-purple-100">0</p>
+                </article>
+                <article class="rounded-2xl border border-teal-300/40 bg-teal-300/10 p-4">
+                  <p class="text-xs uppercase tracking-widest text-teal-200 font-semibold">Interviews</p>
+                  <p data-kpi-interview class="text-4xl font-headline font-black mt-2 text-teal-100">0</p>
+                </article>
+              </div>
             </article>
-            <div class="grid md:grid-cols-2 xl:grid-cols-4 gap-4">
-              <article class="bg-white rounded-xl border border-slate-200 p-4"><p class="text-xs uppercase tracking-widest text-slate-500 font-semibold">Recommended Jobs</p><p data-kpi-recommended class="text-3xl font-headline font-black mt-2">0</p></article>
-              <article class="bg-white rounded-xl border border-slate-200 p-4"><p class="text-xs uppercase tracking-widest text-slate-500 font-semibold">Saved Jobs</p><p data-kpi-saved class="text-3xl font-headline font-black mt-2">0</p></article>
-              <article class="bg-white rounded-xl border border-slate-200 p-4"><p class="text-xs uppercase tracking-widest text-slate-500 font-semibold">Applied Jobs</p><p data-kpi-applied class="text-3xl font-headline font-black mt-2">0</p></article>
-              <article class="bg-white rounded-xl border border-slate-200 p-4"><p class="text-xs uppercase tracking-widest text-slate-500 font-semibold">Interview Stage</p><p data-kpi-interview class="text-3xl font-headline font-black mt-2">0</p></article>
+
+            <div class="grid xl:grid-cols-3 gap-4">
+              <article class="rounded-2xl border border-indigo-100 bg-gradient-to-br from-white to-indigo-50 p-5 xl:col-span-2 shadow-sm">
+                <h3 class="font-headline text-xl font-bold">Top Recommendations</h3>
+                <ul data-recommendation-list class="mt-4 text-sm text-slate-700 space-y-3 list-disc pl-5"></ul>
+              </article>
+              <article class="rounded-2xl border border-cyan-100 bg-gradient-to-br from-white to-cyan-50 p-5 shadow-sm">
+                <h3 class="font-headline text-xl font-bold">Suitable Categories</h3>
+                <ul data-suitable-categories class="mt-4 text-sm text-slate-700 space-y-2 list-disc pl-5"></ul>
+              </article>
             </div>
-            <div class="grid lg:grid-cols-3 gap-4">
-              <article class="bg-white rounded-xl border border-slate-200 p-5"><p class="text-xs uppercase tracking-widest text-slate-500 font-semibold">Profile Strength</p><p data-profile-strength class="text-4xl font-headline font-black mt-3">0%</p></article>
-              <article class="bg-white rounded-xl border border-slate-200 p-5 lg:col-span-2"><p class="text-xs uppercase tracking-widest text-slate-500 font-semibold mb-3">Most Suitable Job Categories</p><ul data-suitable-categories class="text-sm text-slate-700 space-y-2 list-disc pl-5"></ul></article>
+
+            <div class="grid xl:grid-cols-2 gap-4">
+              <article class="rounded-2xl border border-purple-100 bg-gradient-to-br from-white to-purple-50 p-5 shadow-sm">
+                <h3 class="font-headline text-xl font-bold">Shortlist Intelligence</h3>
+                <ul data-shortlist-reasons class="mt-4 text-sm text-slate-700 space-y-3 list-disc pl-5"></ul>
+              </article>
+              <article class="rounded-2xl border border-teal-100 bg-gradient-to-br from-white to-teal-50 p-5 shadow-sm">
+                <h3 class="font-headline text-xl font-bold">Top Missing Skills</h3>
+                <ul data-top-missing-skills class="mt-4 text-sm text-slate-700 space-y-2 list-disc pl-5"></ul>
+              </article>
             </div>
-            <div class="grid lg:grid-cols-2 gap-4">
-              <article class="bg-white rounded-xl border border-slate-200 p-5"><h3 class="font-headline text-xl font-bold">Personalized Recommendations</h3><ul data-recommendation-list class="mt-4 text-sm text-slate-700 space-y-2 list-disc pl-5"></ul></article>
-              <article class="bg-white rounded-xl border border-slate-200 p-5"><h3 class="font-headline text-xl font-bold">Shortlist Intelligence</h3><ul data-shortlist-reasons class="mt-4 text-sm text-slate-700 space-y-2 list-disc pl-5"></ul></article>
+
+            <div class="grid xl:grid-cols-2 gap-4">
+              <article class="rounded-2xl border border-indigo-100 bg-gradient-to-br from-white to-indigo-50 p-5 shadow-sm">
+                <h3 class="font-headline text-xl font-bold">Track Results</h3>
+                <ul data-results-list class="mt-4 text-sm text-slate-700 space-y-2 list-disc pl-5"></ul>
+              </article>
+              <article class="rounded-2xl border border-fuchsia-100 bg-gradient-to-br from-white to-fuchsia-50 p-5 shadow-sm">
+                <h3 class="font-headline text-xl font-bold">Action Plan</h3>
+                <ul data-guidance-list class="mt-4 text-sm text-slate-700 space-y-2 list-disc pl-5"></ul>
+              </article>
             </div>
-            <div class="grid lg:grid-cols-2 gap-4">
-              <article class="bg-white rounded-xl border border-slate-200 p-5"><h3 class="font-headline text-xl font-bold">Top Missing Skills</h3><ul data-top-missing-skills class="mt-4 text-sm text-slate-700 space-y-2 list-disc pl-5"></ul></article>
-              <article class="bg-white rounded-xl border border-slate-200 p-5"><h3 class="font-headline text-xl font-bold">Track Results</h3><ul data-results-list class="mt-4 text-sm text-slate-700 space-y-2 list-disc pl-5"></ul></article>
-            </div>
-            <article class="bg-white rounded-xl border border-slate-200 p-5"><h3 class="font-headline text-xl font-bold">Action Plan</h3><ul data-guidance-list class="mt-4 text-sm text-slate-700 space-y-2 list-disc pl-5"></ul></article>
           </section>
 
           <section data-route-view="resume" data-resume-page class="hidden space-y-6">

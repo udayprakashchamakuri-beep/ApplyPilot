@@ -142,7 +142,8 @@ function createApp(options = {}) {
         return;
       }
 
-      const calendar = buildCalendarSuggestion(job);
+      const calendarDraft = buildCalendarSuggestion(job);
+      const calendar = await maybeCreateCalendarEvent(job, calendarDraft);
       const application = {
         provider: job.source || "ApplyPilot",
         confirmationId: `APP-${String(job.source || "JOB").slice(0, 3).toUpperCase()}-${Date.now()
@@ -152,7 +153,7 @@ function createApp(options = {}) {
         submittedAt: new Date().toISOString(),
         applyUrl: job.applyUrl,
         note:
-          "This MVP records the approved application and prepares the connector payload. Direct third-party submission and Google Calendar OAuth are the next production step.",
+          "Approved application has been queued. If a Google Calendar access token is configured, interview events are added automatically.",
       };
 
       res.json({
@@ -213,9 +214,69 @@ function buildCalendarSuggestion(job) {
     end: end.toISOString(),
     title: `${job.company || "Company"} ${job.title || job.role || "interview"} interview or assessment`,
     message:
-      "Calendar slot is prepared. Production Google Calendar OAuth can create the event after user approval.",
+      "Calendar slot prepared. If Google token is available, ApplyPilot will create the event automatically.",
     link: buildCalendarUrl(job, start, end),
   };
+}
+
+async function maybeCreateCalendarEvent(job, calendarDraft) {
+  const accessToken =
+    String(process.env.GOOGLE_CALENDAR_ACCESS_TOKEN || process.env.GOOGLE_ACCESS_TOKEN || "").trim();
+  if (!accessToken) {
+    return calendarDraft;
+  }
+
+  const calendarId = encodeURIComponent(String(process.env.GOOGLE_CALENDAR_ID || "primary"));
+  const timeZone = String(process.env.GOOGLE_CALENDAR_TIMEZONE || "Asia/Kolkata");
+  const endpoint = `https://www.googleapis.com/calendar/v3/calendars/${calendarId}/events`;
+
+  const payload = {
+    summary: calendarDraft.title,
+    description: `Application approved in ApplyPilot.\nSource: ${job.source || "Unknown"}\nJob URL: ${
+      job.applyUrl || "Not available"
+    }`,
+    location: job.location || "Online",
+    start: { dateTime: calendarDraft.start, timeZone },
+    end: { dateTime: calendarDraft.end, timeZone },
+  };
+
+  try {
+    const response = await fetch(endpoint, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(payload),
+    });
+
+    if (!response.ok) {
+      const errorText = await readResponseText(response);
+      return {
+        ...calendarDraft,
+        status: "ready_for_oauth",
+        error: errorText || `Google Calendar API error ${response.status}`,
+        message: "Automatic calendar sync failed. Open the calendar link to add it manually.",
+      };
+    }
+
+    const event = await response.json();
+    return {
+      ...calendarDraft,
+      status: "created",
+      eventId: event.id,
+      htmlLink: event.htmlLink,
+      link: event.htmlLink || calendarDraft.link,
+      message: "Interview event added to Google Calendar automatically.",
+    };
+  } catch (error) {
+    return {
+      ...calendarDraft,
+      status: "ready_for_oauth",
+      error: error.message || "Google Calendar request failed",
+      message: "Automatic calendar sync is unavailable right now. Open the calendar link to add it manually.",
+    };
+  }
 }
 
 function buildCalendarUrl(job, start, end) {
@@ -239,6 +300,14 @@ function defaultFutureDate(daysAhead) {
   date.setDate(date.getDate() + daysAhead);
   date.setHours(10, 0, 0, 0);
   return date.toISOString();
+}
+
+async function readResponseText(response) {
+  try {
+    return await response.text();
+  } catch {
+    return "";
+  }
 }
 
 function parsePreferences(value) {

@@ -544,7 +544,7 @@ function setupCalendarPage() {
     list.innerHTML = applications
       .map(({ job, result }) => {
         const slot = result?.calendar?.start || job.interviewDate || "";
-        const link = result?.calendar?.link || buildCalendarLinkFromJob(job);
+        const link = resolveCalendarLink(result?.calendar, job);
         return `
           <article class="bg-white rounded-xl border border-slate-200 p-5 flex flex-col gap-2">
             <h3 class="text-lg font-bold text-slate-900">${escapeHtml(job.title || job.role || "Role")} at ${escapeHtml(
@@ -733,6 +733,18 @@ function setupDashboardPage() {
         rerender();
       });
     });
+    grid.querySelectorAll("[data-open-job-post]").forEach((button) => {
+      button.addEventListener("click", () => {
+        const job =
+          strategicJobs.find((candidate) => getJobId(candidate) === button.dataset.openJobPost) ||
+          allJobs.find((candidate) => getJobId(candidate) === button.dataset.openJobPost);
+        if (!job?.applyUrl) {
+          showToast("Job link unavailable", "This role does not have a direct apply link yet.", "error");
+          return;
+        }
+        window.open(job.applyUrl, "_blank", "noopener,noreferrer");
+      });
+    });
   };
 
   if (searchInput && searchInput.dataset.bound !== "true") {
@@ -906,7 +918,12 @@ async function setupTailoringPage() {
       localStorage.setItem(APPLICATIONS_KEY, JSON.stringify(applications));
       setTailoringStatus(`Application approved. Confirmation ${result.application.confirmationId}.`);
       approveButton.textContent = "APPLIED";
-      showToast("Application queued", "Opening queued applications now.");
+      const calendarLink = resolveCalendarLink(result?.calendar, selectedJob);
+      if (calendarLink) {
+        window.open(calendarLink, "_blank", "noopener,noreferrer");
+      }
+      const calendarStatus = result?.calendar?.status === "created" ? "Event added to Google Calendar." : "Google Calendar event opened.";
+      showToast("Application queued", `${calendarStatus} Opening queued applications now.`);
       setupInsightsPage();
       setupCalendarPage();
       renderApplicationsQueue();
@@ -993,7 +1010,7 @@ function renderApplicationsQueue() {
       const result = entry.result || {};
       const confirmation = result?.application?.confirmationId || "Pending";
       const stage = entry.stage || "Applied";
-      const calendarLink = result?.calendar?.link || buildCalendarLinkFromJob(job);
+      const calendarLink = resolveCalendarLink(result?.calendar, job);
       return `
         <article class="bg-white border border-slate-200 rounded-xl p-4 flex flex-col gap-2">
           <div class="flex items-center justify-between gap-3">
@@ -1076,6 +1093,7 @@ function renderJobCard(job, isSaved = false) {
   const friction = safeList(job.whyNotMatch, ["No major blocker detected"]);
   const improvements = safeList(job.suggestedImprovements, ["Tailor resume before approval"]);
   const id = getJobId(job);
+  const hasApplyUrl = Boolean(job.applyUrl);
 
   return `
     <article class="bg-surface-container-lowest rounded-full p-8 transition-all hover:translate-y-[-4px]">
@@ -1130,7 +1148,10 @@ function renderJobCard(job, isSaved = false) {
       <div class="mt-8 flex gap-4">
         <button data-select-job="${escapeHtml(id)}" class="flex-1 py-3 bg-indigo-600 text-white font-headline font-bold rounded-lg hover:bg-indigo-700 transition-all flex items-center justify-center gap-2">
           Review & Apply
-          <span class="material-symbols-outlined text-sm">open_in_new</span>
+          <span class="material-symbols-outlined text-sm">task_alt</span>
+        </button>
+        <button data-open-job-post="${escapeHtml(id)}" ${hasApplyUrl ? "" : "disabled"} class="px-4 py-3 border border-slate-300 ${hasApplyUrl ? "text-slate-700 hover:text-indigo-700 hover:border-indigo-300" : "text-slate-300 cursor-not-allowed"} rounded-lg transition-colors" title="${hasApplyUrl ? "Open original job post" : "Job post link unavailable"}">
+          <span class="material-symbols-outlined">open_in_new</span>
         </button>
         <button data-save-job="${escapeHtml(id)}" class="px-4 py-3 bg-slate-50 ${isSaved ? "text-indigo-700" : "text-slate-500"} rounded-lg hover:text-indigo-700 transition-colors" title="${isSaved ? "Remove from saved jobs" : "Save job"}">
           <span class="material-symbols-outlined" style="${isSaved ? "font-variation-settings: 'FILL' 1;" : ""}">bookmark</span>
@@ -1512,6 +1533,10 @@ function buildCalendarLinkFromJob(job) {
     location: job.location || "Online",
   });
   return `https://calendar.google.com/calendar/render?${params.toString()}`;
+}
+
+function resolveCalendarLink(calendar, job) {
+  return calendar?.htmlLink || calendar?.link || buildCalendarLinkFromJob(job);
 }
 
 function showToast(title, message, type = "info") {
