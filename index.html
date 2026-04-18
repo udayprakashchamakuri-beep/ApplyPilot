@@ -4,7 +4,65 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>APPLYPILOT</title>
-    <script src="https://cdn.tailwindcss.com?plugins=forms"></script>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              "secondary-container": "#f0c1ff",
+              "on-secondary-fixed": "#580079",
+              "on-surface-variant": "#595c5d",
+              primary: "#4d51b1",
+              "surface-variant": "#dadddf",
+              "primary-fixed": "#9297fc",
+              "surface-tint": "#4d51b1",
+              "on-primary-fixed": "#000000",
+              "surface-container-highest": "#dadddf",
+              secondary: "#8930b0",
+              "on-primary": "#f4f1ff",
+              outline: "#757778",
+              "surface-container-low": "#eff1f2",
+              "surface-container": "#e6e8ea",
+              "surface-container-high": "#e0e3e4",
+              "on-secondary-container": "#72129a",
+              surface: "#f5f6f7",
+              "on-primary-fixed-variant": "#191a80",
+              "on-primary-container": "#0d0a78",
+              "tertiary-fixed-dim": "#3cd2eb",
+              "on-secondary-fixed-variant": "#7d21a4",
+              "inverse-on-surface": "#9b9d9e",
+              tertiary: "#006573",
+              "surface-dim": "#d1d5d7",
+              "on-tertiary-container": "#004d58",
+              "surface-container-lowest": "#ffffff",
+              "tertiary-container": "#50e1f9",
+              "secondary-fixed": "#f0c1ff",
+              background: "#f5f6f7",
+              "primary-container": "#9297fc",
+              "surface-bright": "#f5f6f7",
+              "secondary-fixed-dim": "#eaaeff",
+              "inverse-primary": "#9094fa",
+              "on-surface": "#2c2f30",
+              "inverse-surface": "#0c0f10",
+              "on-background": "#2c2f30"
+            },
+            borderRadius: {
+              DEFAULT: "0.25rem",
+              lg: "0.5rem",
+              xl: "0.75rem",
+              full: "9999px"
+            },
+            fontFamily: {
+              headline: ["Manrope"],
+              body: ["Inter"],
+              label: ["Inter"]
+            }
+          }
+        }
+      };
+    </script>
     <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet" />
     <style>
@@ -30,8 +88,8 @@
           <a href="#home" data-route-link="home" data-route-nav="true" data-route-label="Home" class="flex items-center gap-2 px-3 py-2 rounded-lg text-slate-600 hover:bg-slate-100">
             <span class="material-symbols-outlined text-[18px]">home</span>Home
           </a>
-          <a href="#intake" data-route-link="intake" data-route-nav="true" data-route-label="Intake" class="flex items-center gap-2 px-3 py-2 rounded-lg text-slate-600 hover:bg-slate-100">
-            <span class="material-symbols-outlined text-[18px]">description</span>Intake
+          <a href="#intake" data-route-link="intake" data-route-nav="true" data-route-label="Profile Setup" class="flex items-center gap-2 px-3 py-2 rounded-lg text-slate-600 hover:bg-slate-100">
+            <span class="material-symbols-outlined text-[18px]">description</span>Profile Setup
           </a>
           <a href="#dashboard" data-route-link="dashboard" data-route-nav="true" data-route-label="Dashboard" class="flex items-center gap-2 px-3 py-2 rounded-lg text-slate-600 hover:bg-slate-100">
             <span class="material-symbols-outlined text-[18px]">space_dashboard</span>Dashboard
@@ -48,8 +106,8 @@
           <a href="#applications" data-route-link="applications" data-route-nav="true" data-route-label="Applications" class="flex items-center gap-2 px-3 py-2 rounded-lg text-slate-600 hover:bg-slate-100">
             <span class="material-symbols-outlined text-[18px]">send</span>Applications
           </a>
-          <a href="#queue" data-route-link="queue" data-route-nav="true" data-route-label="Queued Applications" class="flex items-center gap-2 px-3 py-2 rounded-lg text-slate-600 hover:bg-slate-100">
-            <span class="material-symbols-outlined text-[18px]">inventory_2</span>Queued Applications
+          <a href="#queue" data-route-link="queue" data-route-nav="true" data-route-label="Application Queue" class="flex items-center gap-2 px-3 py-2 rounded-lg text-slate-600 hover:bg-slate-100">
+            <span class="material-symbols-outlined text-[18px]">inventory_2</span>Application Queue
           </a>
           <a href="#calendar" data-route-link="calendar" data-route-nav="true" data-route-label="Interview Calendar" class="flex items-center gap-2 px-3 py-2 rounded-lg text-slate-600 hover:bg-slate-100">
             <span class="material-symbols-outlined text-[18px]">calendar_today</span>Interview Calendar
@@ -63,7 +121,7 @@
 
       <main class="p-6 lg:p-10">
         <div class="max-w-6xl mx-auto">
-          <header class="flex items-center justify-between mb-6">
+          <header data-main-header class="flex items-center justify-between mb-6">
             <div>
               <p class="text-xs uppercase tracking-widest text-slate-500 font-semibold">Single Website Mode</p>
               <h2 data-route-title class="font-headline text-3xl font-black">Home</h2>
@@ -72,7 +130,120 @@
           </header>
 
           <section data-route-view="home" class="space-y-6">
-            <article data-home-first-time class="bg-white border border-slate-200 rounded-xl p-6 hidden">
+            <article data-home-first-time class="hidden -mx-6 lg:-mx-10 overflow-hidden">
+              <nav class="sticky top-0 z-20 bg-white/70 backdrop-blur-xl shadow-sm">
+                <div class="max-w-7xl mx-auto flex justify-between items-center px-8 py-4">
+                  <div class="text-2xl font-extrabold tracking-tighter bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">ApplyPilot</div>
+                  <div class="hidden md:flex items-center space-x-8">
+                    <a class="text-slate-600 hover:text-indigo-500 font-headline font-medium text-sm tracking-tight transition-all duration-300 hover:opacity-80" href="#home-features">Features</a>
+                    <a class="text-slate-600 hover:text-indigo-500 font-headline font-medium text-sm tracking-tight transition-all duration-300 hover:opacity-80" href="#home-how-it-works">How it Works</a>
+                    <a class="text-slate-600 hover:text-indigo-500 font-headline font-medium text-sm tracking-tight transition-all duration-300 hover:opacity-80" href="#home-intelligence">Intelligence</a>
+                  </div>
+                  <button data-home-start-intake class="bg-gradient-to-r from-primary to-secondary text-on-primary px-6 py-2.5 rounded-full font-medium text-sm hover:shadow-[0_0_20px_rgba(77,81,177,0.3)] transition-all active:scale-95">Get Started</button>
+                </div>
+              </nav>
+
+              <header class="relative min-h-[760px] flex items-center overflow-hidden">
+                <div class="absolute inset-0 z-0">
+                  <img class="w-full h-full object-cover" alt="Futuristic workspace with AI interfaces" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAA5Mym2pXq9nSGJSzqvPHyDmrcR0SGUj5fJaNyuxnIB5yqd6bMwppGwbBVygG22J_u3XtdUkOLqcy3ldsRFnB0x2YGNHOKtvcF5b_upX37jxlCMTRmyybioGYrFbf8It0grJwkGRB8ej3RoSwVoVBJ8lcXrebkRjH1PzyBAVaZPfI5JzmfTkYFNuN3Ax4cyvIYwL977m_EtKObXvbZIxUeRbO2MNi8czu-F79muDbojVkfMc7eF7QyYE6VrmEh8W48N05VtBvbmgJx" />
+                  <div class="absolute inset-0 bg-gradient-to-br from-primary/90 via-secondary/80 to-background/20 backdrop-blur-[2px]"></div>
+                </div>
+                <div class="relative z-10 max-w-7xl mx-auto px-8 grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+                  <div class="max-w-2xl">
+                    <span class="inline-block px-4 py-1.5 mb-6 rounded-full bg-white/10 backdrop-blur-md border border-white/20 text-white font-medium text-sm tracking-wide uppercase">The Next Generation of Hiring</span>
+                    <h1 class="text-5xl md:text-7xl font-extrabold text-white leading-[1.1] tracking-tighter mb-8">
+                      Your AI-Powered <br /><span class="text-secondary-container">Career Pilot</span>
+                    </h1>
+                    <p class="text-xl text-on-primary/90 leading-relaxed mb-10 font-body">
+                      Automate your job search and land your dream role with intelligent matching. Our neural curator handles the heavy lifting while you focus on the interview.
+                    </p>
+                    <div class="flex flex-wrap gap-4">
+                      <button data-home-start-intake class="bg-white text-primary hover:bg-surface-container-lowest px-10 py-4 rounded-full font-bold text-lg shadow-xl transition-all transform hover:-translate-y-1 hover:shadow-2xl">Get Started</button>
+                    </div>
+                  </div>
+                  <div class="hidden lg:block relative">
+                    <div class="bg-white/10 backdrop-blur-2xl rounded-3xl p-8 border border-white/20 shadow-2xl transform rotate-2">
+                      <div class="flex items-center gap-4 mb-6">
+                        <div class="w-12 h-12 rounded-full bg-secondary-container flex items-center justify-center">
+                          <span class="material-symbols-outlined text-secondary" style="font-variation-settings: 'FILL' 1;">auto_awesome</span>
+                        </div>
+                        <div>
+                          <p class="text-white font-bold">Applying to: Senior Product Designer</p>
+                          <p class="text-white/60 text-sm">Status: High Probability Match</p>
+                        </div>
+                      </div>
+                      <div class="space-y-4">
+                        <div class="h-2 w-full bg-white/20 rounded-full overflow-hidden"><div class="h-full bg-secondary-container w-[88%]"></div></div>
+                        <div class="flex justify-between text-xs text-white/80 font-medium"><span>Resume Alignment</span><span>88%</span></div>
+                      </div>
+                    </div>
+                    <div class="absolute -bottom-20 -right-20 w-64 h-64 bg-secondary-container/30 blur-[100px] -z-10"></div>
+                  </div>
+                </div>
+              </header>
+
+              <section id="home-how-it-works" class="py-24 bg-surface">
+                <div class="max-w-7xl mx-auto px-8">
+                  <div class="text-center mb-16">
+                    <h2 class="text-4xl md:text-5xl font-extrabold tracking-tight text-on-surface mb-6">Autonomous Career Trajectory</h2>
+                    <p class="text-on-surface-variant text-lg max-w-2xl mx-auto leading-relaxed">We've distilled the complex job search into a refined three-stage propulsion system.</p>
+                  </div>
+                  <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                    <div class="bg-surface-container-lowest p-8 rounded-3xl shadow-[0_20px_40px_rgba(77,81,177,0.04)]">
+                      <div class="w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center mb-6"><span class="material-symbols-outlined text-primary text-3xl">account_circle</span></div>
+                      <h3 class="text-2xl font-bold mb-4 text-on-surface">Profile Setup</h3>
+                      <p class="text-on-surface-variant leading-relaxed">Upload your experience and let our AI parse your profile into a high-performance career dataset.</p>
+                    </div>
+                    <div class="bg-surface-container-lowest p-8 rounded-3xl shadow-[0_20px_40px_rgba(77,81,177,0.04)]">
+                      <div class="w-16 h-16 rounded-2xl bg-secondary/10 flex items-center justify-center mb-6"><span class="material-symbols-outlined text-secondary text-3xl">hub</span></div>
+                      <h3 class="text-2xl font-bold mb-4 text-on-surface">AI Sourcing</h3>
+                      <p class="text-on-surface-variant leading-relaxed">Our neural network scans multiple platforms in real-time, finding opportunities aligned with your goals.</p>
+                    </div>
+                    <div class="bg-surface-container-lowest p-8 rounded-3xl shadow-[0_20px_40px_rgba(77,81,177,0.04)]">
+                      <div class="w-16 h-16 rounded-2xl bg-tertiary-container/20 flex items-center justify-center mb-6"><span class="material-symbols-outlined text-tertiary text-3xl">rocket_launch</span></div>
+                      <h3 class="text-2xl font-bold mb-4 text-on-surface">Automated Application</h3>
+                      <p class="text-on-surface-variant leading-relaxed">ApplyPilot tailors and submits your application after approval, with queue and interview tracking.</p>
+                    </div>
+                  </div>
+                </div>
+              </section>
+
+              <section id="home-intelligence" class="py-24 bg-surface-container-low overflow-hidden relative">
+                <div class="absolute top-0 right-0 w-[500px] h-[500px] bg-secondary-container/20 blur-[120px] rounded-full translate-x-1/2 -translate-y-1/2"></div>
+                <div class="absolute bottom-0 left-0 w-[500px] h-[500px] bg-primary-container/20 blur-[120px] rounded-full -translate-x-1/2 translate-y-1/2"></div>
+                <div class="max-w-7xl mx-auto px-8 relative z-10">
+                  <div class="mb-16" id="home-features">
+                    <h2 class="text-4xl md:text-5xl font-extrabold tracking-tight text-on-surface mb-4">Deep Neural Intelligence</h2>
+                    <p class="text-on-surface-variant text-lg">Beyond simple automation, informed strategic placement.</p>
+                  </div>
+                  <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+                    <div class="lg:col-span-8 bg-surface-container-lowest rounded-3xl p-8">
+                      <div class="w-12 h-12 bg-primary/5 rounded-xl flex items-center justify-center mb-6"><span class="material-symbols-outlined text-primary">insights</span></div>
+                      <h3 class="text-3xl font-extrabold mb-4 text-on-surface tracking-tight">Best-Fit Role Intelligence</h3>
+                      <p class="text-on-surface-variant leading-relaxed text-lg">Our algorithm evaluates company and role signals to rank where you are most likely to succeed.</p>
+                    </div>
+                    <div class="lg:col-span-4 bg-gradient-to-br from-primary to-secondary rounded-3xl p-8 text-white">
+                      <div class="w-12 h-12 bg-white/10 rounded-xl flex items-center justify-center mb-6"><span class="material-symbols-outlined text-white">psychology</span></div>
+                      <h3 class="text-2xl font-bold mb-4 tracking-tight">Rejection Probability Explanation</h3>
+                      <p class="text-on-primary/80 leading-relaxed">Understand blockers before applying, then get exact changes to improve shortlist odds.</p>
+                    </div>
+                    <div class="lg:col-span-12 bg-secondary-container/40 rounded-3xl p-8 border border-secondary-container/20 flex flex-col md:flex-row items-center gap-8">
+                      <div class="flex-1">
+                        <div class="w-12 h-12 bg-secondary/10 rounded-xl flex items-center justify-center mb-6"><span class="material-symbols-outlined text-secondary">extension</span></div>
+                        <h3 class="text-3xl font-extrabold mb-4 text-on-surface tracking-tight">Skill-Gap Explanation</h3>
+                        <p class="text-on-surface-variant leading-relaxed text-lg">Receive personalized recommendations to bridge the gap between your current profile and dream role.</p>
+                      </div>
+                      <div class="flex-shrink-0 flex gap-3 flex-wrap justify-center">
+                        <div class="px-6 py-3 rounded-full bg-white font-bold text-secondary shadow-sm">Python</div>
+                        <div class="px-6 py-3 rounded-full bg-white font-bold text-secondary shadow-sm">LLM Fine-tuning</div>
+                        <div class="px-6 py-3 rounded-full bg-secondary text-white font-bold shadow-lg shadow-secondary/20">+3 more</div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </section>
+
+              <div class="hidden">
               <h3 class="font-headline text-3xl font-black">Welcome to APPLYPILOT</h3>
               <p class="text-slate-600 mt-2">Your AI career copilot for intelligent job discovery, explainable matching, and approval-based auto-apply.</p>
               <div class="mt-5 grid lg:grid-cols-3 gap-4">
@@ -116,6 +287,7 @@
                 <button data-home-start-intake class="px-5 py-3 rounded-lg bg-indigo-600 text-white font-semibold">Get Started</button>
                 <button data-home-open-jobs class="px-5 py-3 rounded-lg bg-slate-100 text-slate-700 font-semibold">See Sample Workflow</button>
               </div>
+              </div>
             </article>
 
             <article data-home-returning class="bg-white border border-slate-200 rounded-xl p-6 hidden">
@@ -144,16 +316,16 @@
                 </article>
               </div>
               <div class="mt-5 flex gap-3 flex-wrap">
-                <button data-home-start-intake class="px-8 py-3 rounded-lg bg-indigo-600 text-white font-semibold">Start Intake</button>
+                <button data-home-start-intake class="px-8 py-3 rounded-lg bg-indigo-600 text-white font-semibold">Start Profile Setup</button>
                 <button data-go-route="suited-jobs" class="px-8 py-3 rounded-lg bg-slate-100 text-slate-700 font-semibold">Open Suited Jobs</button>
-                <button data-go-route="queue" class="px-8 py-3 rounded-lg bg-slate-100 text-slate-700 font-semibold">Open Queue</button>
+                <button data-go-route="queue" class="px-8 py-3 rounded-lg bg-slate-100 text-slate-700 font-semibold">Open Application Queue</button>
               </div>
             </article>
           </section>
 
           <section data-route-view="intake" class="space-y-6">
             <article class="bg-white border border-slate-200 rounded-xl p-6">
-              <h3 class="font-headline text-2xl font-bold">Upload Resume</h3>
+              <h3 class="font-headline text-2xl font-bold">Profile Setup</h3>
               <p class="text-slate-600 mt-1">Upload once, analyze once, then manage everything without leaving this page.</p>
               <div data-upload-zone class="mt-6 border-2 border-dashed border-slate-300 rounded-xl p-10 text-center cursor-pointer hover:border-indigo-500 transition-colors">
                 <span class="material-symbols-outlined text-4xl text-indigo-600">cloud_upload</span>
@@ -222,9 +394,6 @@
                   <p class="text-xs text-slate-500 mt-1"><span class="font-semibold">Strategy:</span> <span data-strategy-label>Balanced</span> - <span data-strategy-description>Balanced ranking across fit, skill overlap, and role relevance.</span></p>
                 </div>
                 <div class="flex gap-2">
-                  <button data-route-link="dashboard" data-route-label="Dashboard" class="px-4 py-2 rounded-lg bg-slate-100 text-slate-700 text-sm font-semibold">Open Dashboard</button>
-                  <button data-route-link="saved-jobs" data-route-label="Saved Jobs" class="px-4 py-2 rounded-lg bg-slate-100 text-slate-700 text-sm font-semibold">Open Saved Jobs</button>
-                  <button data-adjust-strategy-top class="px-4 py-2 rounded-lg bg-slate-100 text-slate-700 text-sm font-semibold">Adjust Strategy</button>
                   <button data-update-portfolio class="px-4 py-2 rounded-lg bg-indigo-600 text-white text-sm font-semibold">Update Portfolio</button>
                 </div>
               </div>
@@ -261,7 +430,7 @@
                 </div>
                 <div class="flex items-center gap-2">
                   <button data-route-link="dashboard" data-route-label="Dashboard" class="px-4 py-2 rounded-lg bg-slate-100 text-slate-700 text-sm font-semibold">Open Dashboard</button>
-                  <button data-route-link="intake" data-route-label="Intake" class="px-4 py-2 rounded-lg bg-slate-100 text-slate-700 text-sm font-semibold">Open Intake</button>
+                  <button data-route-link="intake" data-route-label="Profile Setup" class="px-4 py-2 rounded-lg bg-slate-100 text-slate-700 text-sm font-semibold">Open Profile Setup</button>
                 </div>
               </div>
               <div class="mt-4 flex items-center gap-4">
@@ -286,13 +455,13 @@
             <div class="flex flex-wrap gap-3">
               <button type="button" data-edit-manual class="px-5 py-3 rounded-lg bg-slate-100 text-slate-700 font-semibold">Edit Manually</button>
               <button data-approve-apply class="px-5 py-3 rounded-lg bg-indigo-600 text-white font-semibold">APPROVE & AI APPLY</button>
-              <button data-route-link="queue" data-route-label="Queued Applications" class="px-5 py-3 rounded-lg bg-slate-100 text-slate-700 font-semibold">Open Queue</button>
+              <button data-route-link="queue" data-route-label="Application Queue" class="px-5 py-3 rounded-lg bg-slate-100 text-slate-700 font-semibold">Open Queue</button>
             </div>
           </section>
 
           <section data-route-view="queue" class="hidden space-y-6">
             <article class="bg-white border border-slate-200 rounded-xl p-6">
-              <h3 class="font-headline text-3xl font-black">Queued Applications</h3>
+              <h3 class="font-headline text-3xl font-black">Application Queue</h3>
               <p class="text-slate-600 mt-1">All approved jobs waiting in queue, with status, confirmation, and links.</p>
             </article>
             <article class="bg-white border border-slate-200 rounded-xl p-5">
@@ -327,7 +496,7 @@
                 <div><label class="block text-sm font-semibold mb-1">Minimum Salary</label><input data-setting-min-salary class="w-full rounded-lg border-slate-300" type="text" /></div>
               </div>
               <div><label class="block text-sm font-semibold mb-1">Default Sources (comma-separated)</label><input data-setting-sources class="w-full rounded-lg border-slate-300" type="text" /></div>
-              <div class="flex gap-3"><button class="px-5 py-3 rounded-lg bg-indigo-600 text-white font-semibold" type="submit">Save Preferences</button><button data-route-link="intake" data-route-label="Intake" class="px-5 py-3 rounded-lg bg-slate-100 text-slate-700 font-semibold" type="button">Back to Intake</button></div>
+              <div class="flex gap-3"><button class="px-5 py-3 rounded-lg bg-indigo-600 text-white font-semibold" type="submit">Save Preferences</button><button data-route-link="intake" data-route-label="Profile Setup" class="px-5 py-3 rounded-lg bg-slate-100 text-slate-700 font-semibold" type="button">Back to Profile Setup</button></div>
               <p data-settings-status class="text-sm text-slate-600"></p>
             </form>
           </section>

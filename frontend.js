@@ -98,6 +98,11 @@ function renderSpaRoute(route) {
     const label = document.querySelector(`[data-route-link="${route}"]`)?.dataset.routeLabel || route;
     title.textContent = label;
   }
+
+  const mainHeader = document.querySelector("[data-main-header]");
+  if (mainHeader) {
+    mainHeader.classList.toggle("hidden", route === "home");
+  }
 }
 
 function setSpaRoute(route) {
@@ -407,7 +412,7 @@ function setupResumePage() {
     if (headline) headline.textContent = "No resume uploaded yet";
     if (summary) summary.textContent = "Upload your resume from the landing page to generate your profile.";
     if (skills) skills.innerHTML = `<span class="px-3 py-1 rounded-full bg-slate-100 text-slate-500 text-xs font-semibold">Waiting for resume</span>`;
-    if (meta) meta.textContent = "Use Start intake on the landing page.";
+    if (meta) meta.textContent = "Use Start Profile Setup on Home.";
     if (action) action.onclick = () => {
       navigateTo("intake");
     };
@@ -989,7 +994,7 @@ function renderApplicationsQueue() {
   if (!applications.length) {
     list.innerHTML = `
       <article class="bg-white border border-slate-200 rounded-xl p-4 text-sm text-slate-600">
-        No queued applications yet. Click <strong>Approve & AI Apply</strong> and it will appear here instantly.
+        No applications in queue yet. Click <strong>Approve & AI Apply</strong> and it will appear here instantly.
       </article>
     `;
     return;
@@ -1234,7 +1239,7 @@ function renderEmptyJobsState() {
     <article class="bg-white rounded-xl border border-slate-200 p-8">
       <h3 class="text-2xl font-bold mb-2">No live jobs yet</h3>
       <p class="text-slate-600 mb-4">Upload your resume first so APPLYPILOT can fetch real jobs from backend sources.</p>
-      <a href="#" data-go-route="intake" class="inline-flex px-4 py-2 rounded-lg bg-indigo-600 text-white font-semibold">Go to intake</a>
+      <a href="#" data-go-route="intake" class="inline-flex px-4 py-2 rounded-lg bg-indigo-600 text-white font-semibold">Go to Profile Setup</a>
     </article>
   `;
 }
